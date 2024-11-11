@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python -m venv ibm/.venv/cwq
-source ibm/.venv/cwq/bin/activate
+python -m venv ibm/.venv
+source ibm/.venv/bin/activate
 
 pip install -r ibm/requirements.txt

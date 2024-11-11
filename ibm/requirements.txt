@@ -1,2 +1,5 @@
 qiskit
 qiskit-aer
+matplotlib
+pylatexenc
+qiskit-ibm-provider
