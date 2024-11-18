@@ -1,4 +1,5 @@
-from qiskit_aer import Aer
+from qiskit_aer import Aer, AerSimulator
+from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
 from qiskit.circuit import ClassicalRegister
 from qiskit.quantum_info import SparsePauliOp
@@ -9,12 +10,12 @@ from qiskit.primitives import BackendSamplerV2
 import numpy as np
 
 
-def initialize():
+def initialize(noise_model):
     service = QiskitRuntimeService()
-    # Choose IBM Quantum backend
-    backend = service.backend('ibm_brisbane')
 
-    estimator = BackendEstimatorV2(backend=backend)
+    backend = AerSimulator(noise_model=noise_model) if noise_model else service.backend('ibm_brisbane')
+
+    estimator = None if noise_model else BackendEstimatorV2(backend=backend)
     sampler = BackendSamplerV2(backend=backend)
 
     return backend, sampler, estimator
@@ -57,6 +58,17 @@ def qet_circuit(h, k, apply_h,  num_qubits, name, backend):
     return qc, qc_transpiled
 
 
+def create_noise_model(p_dephase):
+    # Create dephasing error
+    dephase_error = phase_damping_error(p_dephase)
+
+    # Build the noise model
+    noise_model = NoiseModel()
+    noise_model.add_all_qubit_quantum_error(dephase_error, ['id', 'measure'])  # Affect idling and measurement steps
+
+    return noise_model
+
+
 def run_sim(qc, name, total_shots):
     # Use the Qiskit simulator
     simulator = Aer.get_backend('qasm_simulator')
@@ -75,12 +87,7 @@ def run_sim(qc, name, total_shots):
     return counts_sim
 
 
-def run_sampler(sampler, qc_transpiled, op, total_shots):
-    op_sam = op.copy()
-    op_sam.apply_layout(layout=qc_transpiled.layout)
-
-    # Run the circuits and get quasi-probabilities
-    pub = (qc_transpiled, [op_sam], None)
+def run_sampler(sampler, qc_transpiled, total_shots):
     job = sampler.run([qc_transpiled], shots=total_shots)
     return job.result()._pub_results[0].data.c.get_counts()
 
