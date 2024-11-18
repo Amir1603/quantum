@@ -28,23 +28,25 @@ def calc_expectations(h1_counts, v_counts, total_shots):
 
 
 # Call twice - sim + hw
-def print_expectations(h1_counts, v_counts, total_shots):
+def print_expectations(h1_counts, v_counts, total_shots, p_dephase):
     E1, z_expectation, xx_expectation = calc_expectations(h1_counts, v_counts, total_shots)
-    print(f'<H1> = {z_expectation}\t<V> = {xx_expectation}\t<E1> = {E1}')
+    print(f'For p_dephase = {p_dephase}:\t<H1> = {z_expectation}\t<V> = {xx_expectation}\t<E1> = {E1}')
 
 
-def create_histograms(h1_counts_list, v_counts_list, legend, colors, total_shots):
+def create_histograms(h1_counts_list, v_counts_list, legend, colors, total_shots, p_dephase):
     if not h1_counts_list:
         return
     
     if not (len(h1_counts_list) == len(v_counts_list) == len(legend) == len(colors)):
         return
 
+    dephase_str = str(p_dephase).replace('.', '_')
+
     h1_prob_list = [{k: v / total_shots for k, v in h1_counts.items()} for h1_counts in h1_counts_list]
-    plot_histogram(h1_prob_list, legend=legend, color=colors, title="Z (H1) Classical bits results")
+    plot_histogram(h1_prob_list, legend=legend, color=colors, title=f"Z (H1) Classical bits results for p_dephase={p_dephase}", filename=f'h1_hist_{dephase_str}')
 
     v_prob_list = [{k: v / total_shots for k, v in v_counts.items()} for v_counts in v_counts_list]
-    plot_histogram(v_prob_list, legend=legend, color=colors, title="XX (V) Classical bits results")
+    plot_histogram(v_prob_list, legend=legend, color=colors, title=f"XX (V) Classical bits results for p_dephase={p_dephase}", filename=f'v_hist_{dephase_str}')
 
 
 def print_results(result_h1, result_v):
