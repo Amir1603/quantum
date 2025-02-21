@@ -1,7 +1,7 @@
 import argparse
 import analysis
 import runner
-from qiskit.quantum_info import SparsePauliOp
+from qiskit.quantum_info import SparsePauliOp, concurrence
 import numpy as np
 
 
@@ -19,8 +19,8 @@ def single_run(h1, v, p_dephase, run_simulator, run_sampler, run_estimator):
 
     if run_simulator:
         print('Running simulator')
-        h1_counts_sim = runner.run_sim(qc_h1, "H1", total_shots)
-        v_counts_sim = runner.run_sim(qc_v, "V", total_shots)
+        h1_counts_sim, h1_rho = runner.run_sim(qc_h1, "H1", total_shots)
+        v_counts_sim, v_rho = runner.run_sim(qc_v, "V", total_shots)
         
         analysis.print_expectations(h1_counts_sim, v_counts_sim, total_shots, p_dephase)
         h1_counts_list.append(h1_counts_sim)
@@ -31,9 +31,13 @@ def single_run(h1, v, p_dephase, run_simulator, run_sampler, run_estimator):
     if run_sampler:
         print(f'Running sampler with backend {backend}')
 
-        h1_counts_hw = runner. run_sampler(sampler, qc_h1_transpiled, total_shots)
-        v_counts_hw = runner.run_sampler(sampler, qc_v_transpiled, total_shots)
-        
+        h1_counts_hw, h1_rho = runner. run_sampler(sampler, qc_h1_transpiled, total_shots)
+        v_counts_hw, v_rho = runner.run_sampler(sampler, qc_v_transpiled, total_shots)
+        h1_rho = h1_rho / h1_rho.trace()
+        print(f'Validity {h1_rho.is_valid()}')
+        print(f'H1 concurrence {concurrence(h1_rho)}')
+        print(f'V concurrence {concurrence(v_rho)}')
+
         analysis.print_expectations(h1_counts_hw, v_counts_hw, total_shots, p_dephase)
         h1_counts_list.append(h1_counts_hw)
         v_counts_list.append(v_counts_hw)

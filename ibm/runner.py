@@ -1,8 +1,8 @@
 from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
-from qiskit.circuit import ClassicalRegister
-from qiskit.quantum_info import SparsePauliOp
+from qiskit.circuit import ClassicalRegister, Delay
+from qiskit.quantum_info import SparsePauliOp, DensityMatrix
 from qiskit.visualization import plot_histogram, circuit_drawer
 from qiskit.primitives import BackendEstimatorV2
 from qiskit_ibm_runtime import QiskitRuntimeService
@@ -22,6 +22,9 @@ def initialize(noise_model):
 
 
 def qet_circuit(h, k, apply_h,  num_qubits, name, backend):
+    delay_time = 10000
+    delay = Delay(delay_time)
+
     qc = QuantumCircuit(2, 2)
 
     # Prepare the ground state
@@ -35,6 +38,9 @@ def qet_circuit(h, k, apply_h,  num_qubits, name, backend):
     
     # Alice's measurement
     qc.measure(0, 0)  # Measure qubit 0 into classical bit 0
+
+    # Idle Bob’s qubit before he acts
+    qc.append(delay, [1])
 
     # Bob's conditional operation
     phi = np.arcsin(
@@ -76,6 +82,7 @@ def run_sim(qc, name, total_shots):
 
     job_sim = simulator.run(qc_compiled, shots=total_shots)
     result_sim = job_sim.result()
+    rho = result_sim.data()['density_matrix']
     counts_sim = result_sim.get_counts(qc_compiled)
 
     counts_sim = {k.removeprefix('00 '): v for k, v in counts_sim.items()}
@@ -84,12 +91,25 @@ def run_sim(qc, name, total_shots):
     print(counts_sim)
     plot_histogram(counts_sim)
 
-    return counts_sim
+    return counts_sim, rho
 
 
 def run_sampler(sampler, qc_transpiled, total_shots):
     job = sampler.run([qc_transpiled], shots=total_shots)
-    return job.result()._pub_results[0].data.c.get_counts()
+
+    result = job.result()
+    counts = result._pub_results[0].data.c.get_counts()
+    
+    # Assuming 'counts' is a dictionary of measurement outcomes from the raw sampler
+    total_counts = sum(counts.values())
+    probabilities = {state: count / total_counts for state, count in counts.items()}
+
+    # Construct the density matrix
+    rho = DensityMatrix.from_label('00')  # Initialize with an arbitrary state
+    for state, prob in probabilities.items():
+        rho += prob * DensityMatrix.from_label(state)
+
+    return counts, rho
 
 
 def run_estimator(estimator, qc_transpiled, op_str, op1, op2):
