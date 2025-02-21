@@ -1,2 +1,7 @@
 qiskit
 qiskit-aer
+matplotlib
+pylatexenc
+setuptools
+qiskit-ibm-provider
+nbconvert # For exporting notebook as pdf
