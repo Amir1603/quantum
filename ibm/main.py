@@ -3,13 +3,20 @@ from conf import Conf
 from runner import Runner
 
 
-def run(p_dephase, conf, runner):
-    runner.initialize(p_dephase)
+def run_over_list(l, lambda_func):
+    if l:
+        for item in l:
+            lambda_func(item)
+    else:
+        lambda_func(None)
+
+
+def single_run(conf, runner, p_dephase=None, backend_name=None):
+    runner.initialize(p_dephase, backend_name)
     runner.single_run(p_dephase, conf)
 
 
 if __name__ == "__main__":
-
     conf = Conf()
 
     parser = argparse.ArgumentParser()
@@ -37,8 +44,8 @@ if __name__ == "__main__":
 
     runner = Runner(conf)
 
-    if conf.p_dephase_list:
-        for p_dephase in conf.p_dephase_list:
-            run(p_dephase, conf, runner)
-    else:
-        run(None, conf, runner)
+    run_over_list(conf.backends,
+                  lambda backend:
+                    run_over_list(conf.p_dephase_list,
+                                  lambda p_dephase:
+                                    single_run(conf, runner, p_dephase=p_dephase, backend_name=backend)))

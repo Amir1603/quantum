@@ -24,9 +24,18 @@ class Runner():
         self.service = QiskitRuntimeService()
 
 
-    def initialize(self, p_dephase):
+    def __choose_backend(self, backend_name):
+        if self.noise_model:
+            return AerSimulator(noise_model=self.noise_model)
+        elif backend_name:
+            return self.service.backend(backend_name)
+        else:
+            return self.service.least_busy(operational=True, simulator=False)
+
+
+    def initialize(self, p_dephase, backend_name):
         self._create_noise_model(p_dephase) if p_dephase else None
-        self.backend = AerSimulator(noise_model=self.noise_model) if self.noise_model else self.service.backend('ibm_brisbane')
+        self.backend = self.__choose_backend(backend_name)
 
         self.estimator = None if self.noise_model else EstimatorV2(mode=self.backend)
         self.sampler = SamplerV2(mode=self.backend)
@@ -40,7 +49,6 @@ class Runner():
         apply_h: Bool indicating wether to apply hadmard gate.
         num_qubits: The number of qubits for the circuit.
         name: The classical register name.
-        backend: The backend to optimize and transpile the circuit for.
 
         Returns:
         qc: The constructed QuantumCircuit object.
@@ -209,7 +217,7 @@ class Runner():
             colors.append('midnightblue')
 
         if conf.run_estimator:
-            print('Running estimator with backend {backend}')
+            print('Running estimator with backend {self.backend}')
 
             if conf.error_mitigation:
                 self._prep_error_mitigation()
