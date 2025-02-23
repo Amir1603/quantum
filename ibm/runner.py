@@ -1,8 +1,9 @@
+import analysis
 from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
 from qiskit.circuit import ClassicalRegister, Delay
-from qiskit.quantum_info import SparsePauliOp, DensityMatrix
+from qiskit.quantum_info import SparsePauliOp, DensityMatrix, concurrence
 from qiskit.visualization import plot_histogram, circuit_drawer
 from qiskit.primitives import BackendEstimatorV2
 from qiskit_ibm_runtime import QiskitRuntimeService
@@ -160,3 +161,55 @@ def run_estimator(estimator, qc_transpiled, op_str, op1, op2):
     pub = (qc_transpiled, [op_expanded], None)
     job = estimator.run([pub])
     return job.result()
+
+
+def single_run(h, k, total_shots, h1, v, p_dephase, run_simulator, run_sampler, run_estimator, error_mitigation):
+    noise_model = create_noise_model(p_dephase) if p_dephase else None
+    backend, sampler, estimator = initialize(noise_model)
+
+    qc_h1, qc_h1_transpiled = qet_circuit(h, k, False, h1.num_qubits, 'h1', backend)
+    qc_v, qc_v_transpiled = qet_circuit(h, k, True, v.num_qubits, 'v', backend)
+
+    h1_counts_list = []
+    v_counts_list = []
+    legend = []
+    colors = []
+
+    if run_simulator:
+        print('Running simulator')
+        h1_counts_sim, h1_rho = run_sim(qc_h1, "H1", total_shots)
+        v_counts_sim, v_rho = run_sim(qc_v, "V", total_shots)
+        
+        analysis.print_expectations(h1_counts_sim, v_counts_sim, total_shots, p_dephase)
+        h1_counts_list.append(h1_counts_sim)
+        v_counts_list.append(v_counts_sim)
+        legend.append('Simulator')
+        colors.append('crimson')
+
+    if run_sampler:
+        print(f'Running sampler with backend {backend}')
+
+        h1_counts_hw, h1_rho = run_sampler(sampler, qc_h1_transpiled, total_shots)
+        v_counts_hw, v_rho = run_sampler(sampler, qc_v_transpiled, total_shots)
+        h1_rho = h1_rho / h1_rho.trace()
+        print(f'Validity {h1_rho.is_valid()}')
+        print(f'H1 concurrence {concurrence(h1_rho)}')
+        print(f'V concurrence {concurrence(v_rho)}')
+
+        analysis.print_expectations(h1_counts_hw, v_counts_hw, total_shots, p_dephase)
+        h1_counts_list.append(h1_counts_hw)
+        v_counts_list.append(v_counts_hw)
+        legend.append('Raw Sampler')
+        colors.append('midnightblue')
+
+    if run_estimator:
+        print('Running estimator with backend {backend}')
+
+        if error_mitigation:
+            prep_error_mitigation(estimator)
+
+        result_h1 = run_estimator(estimator, qc_h1_transpiled, "Z", op1=h, op2=h**2 / np.sqrt(h**2 + k**2))
+        result_v = run_estimator(estimator, qc_v_transpiled, "XX", op1=2*k, op2=2 * k**2 / np.sqrt(h**2 + k**2))
+        analysis.print_results(result_h1, result_v)
+
+    analysis.create_histograms(h1_counts_list, v_counts_list, legend, colors, total_shots, p_dephase)
