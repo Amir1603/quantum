@@ -1,4 +1,5 @@
 import analysis
+from conf import Conf
 from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
@@ -13,14 +14,14 @@ import numpy as np
 
 class Runner():
 
-    def __init__(self, h, k, total_shots):
-        self.h = h
-        self.k = k
-        self.total_shots = total_shots
+    def __init__(self, conf: Conf):
+        self.conf = conf.h
+        self.k = conf.k
+        self.total_shots = conf.total_shots
         self.noise_model = None
 
-        self.h1 = SparsePauliOp.from_list([("ZI", h), ("II", h**2 / np.sqrt(h**2 + k**2))])
-        self.v = SparsePauliOp.from_list([("XX", 2 * k), ("II", 2 * k**2 / np.sqrt(h**2 + k**2))])
+        self.h1 = SparsePauliOp.from_list([("ZI", conf.h), ("II", conf.h**2 / np.sqrt(conf.h**2 + conf.k**2))])
+        self.v = SparsePauliOp.from_list([("XX", 2 * conf.k), ("II", 2 * conf.k**2 / np.sqrt(conf.h**2 + conf.k**2))])
 
         self.service = QiskitRuntimeService()
 
@@ -172,7 +173,7 @@ class Runner():
         return job.result()
 
 
-    def single_run(self, p_dephase, run_simulator, run_sampler, run_estimator, error_mitigation):
+    def single_run(self, p_dephase, conf):
         qc_h1, qc_h1_transpiled = self._qet_circuit(False, self.h1.num_qubits, 'h1')
         qc_v, qc_v_transpiled = self._qet_circuit(True, self.v.num_qubits, 'v')
 
@@ -181,7 +182,7 @@ class Runner():
         legend = []
         colors = []
 
-        if run_simulator:
+        if conf.run_simulator:
             print('Running simulator')
             h1_counts_sim, h1_rho = self._run_sim(qc_h1, "H1")
             v_counts_sim, v_rho = self._run_sim(qc_v, "V")
@@ -192,7 +193,7 @@ class Runner():
             legend.append('Simulator')
             colors.append('crimson')
 
-        if run_sampler:
+        if conf.run_sampler:
             print(f'Running sampler with backend {self.backend}')
 
             h1_counts_hw, h1_rho = self._run_sampler(qc_h1_transpiled)
@@ -208,10 +209,10 @@ class Runner():
             legend.append('Raw Sampler')
             colors.append('midnightblue')
 
-        if run_estimator:
+        if conf.run_estimator:
             print('Running estimator with backend {backend}')
 
-            if error_mitigation:
+            if conf.error_mitigation:
                 self._prep_error_mitigation()
 
             result_h1 = self._run_estimator(qc_h1_transpiled, "Z", op1=self.h, op2=self.h**2 / np.sqrt(self.h**2 + self.k**2))
