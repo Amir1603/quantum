@@ -91,6 +91,30 @@ def create_noise_model(p_dephase):
     return noise_model
 
 
+def prep_error_mitigation(estimator):
+    # estimator.options.default_shots = total_shots
+    # estimator.options.twirling.enable_gates = True
+    # estimator.options.twirling.num_randomizations = 64
+    # estimator.options.twirling.shots_per_randomization = 100
+
+    # estimator.options.dynamical_decoupling.enable = True
+    # estimator.options.dynamical_decoupling.sequence_type = "XpXm"
+
+    estimator.options.resilience.measure_mitigation = True
+    estimator.options.resilience.measure_noise_learning.num_randomizations = 64
+    estimator.options.resilience.measure_noise_learning.shots_per_randomization = 100
+
+    # estimator.options.resilience.zne_mitigation = True
+    # estimator.options.resilience.zne.noise_factors = (1, 3, 5)
+    # estimator.options.resilience.zne.extrapolator = "exponential"
+
+    estimator.options.resilience.zne_mitigation = True
+    estimator.options.resilience.zne.amplifier = "pea"
+
+    # estimator.options.resilience.pec_mitigation = True
+    # estimator.options.resilience.pec.max_overhead = 100
+
+
 def run_sim(qc, name, total_shots):
     # Use the Qiskit simulator
     simulator = Aer.get_backend('qasm_simulator')

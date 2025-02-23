@@ -5,7 +5,7 @@ from qiskit.quantum_info import SparsePauliOp, concurrence
 import numpy as np
 
 
-def single_run(h1, v, p_dephase, run_simulator, run_sampler, run_estimator):
+def single_run(h1, v, p_dephase, run_simulator, run_sampler, run_estimator, error_mitigation):
     noise_model = runner.create_noise_model(p_dephase) if p_dephase else None
     backend, sampler, estimator = runner.initialize(noise_model)
 
@@ -47,6 +47,9 @@ def single_run(h1, v, p_dephase, run_simulator, run_sampler, run_estimator):
     if run_estimator:
         print('Running estimator with backend {backend}')
 
+        if error_mitigation:
+            runner.prep_error_mitigation(estimator)
+
         result_h1 = runner.run_estimator(estimator, qc_h1_transpiled, "Z", op1=h, op2=h**2 / np.sqrt(h**2 + k**2))
         result_v = runner.run_estimator(estimator, qc_v_transpiled, "XX", op1=2*k, op2=2 * k**2 / np.sqrt(h**2 + k**2))
         analysis.print_results(result_h1, result_v)
@@ -61,6 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('--h-param', type=float, default=1.0)
     parser.add_argument('--k-param', type=float, default=1.0)
     parser.add_argument('--total-shots', type=float, default=1024)
+    parser.add_argument('--error_mitigation', action='store_true')
 
     parser.add_argument('--run-simulator', action='store_true')
     parser.add_argument('--run-sampler', action='store_true')
@@ -73,6 +77,7 @@ if __name__ == "__main__":
     h = args.h_param
     k = args.k_param
     total_shots = args.total_shots
+    error_mitigation = args.error_mitigation
 
     run_simulator = args.run_simulator or args.run_all
     run_sampler = args.run_sampler or args.run_all
@@ -86,4 +91,4 @@ if __name__ == "__main__":
 
     p_dephase_list.sort()
     for p_dephase in p_dephase_list:
-        single_run(h1, v, p_dephase, run_simulator, run_sampler, run_estimator)
+        single_run(h1, v, p_dephase, run_simulator, run_sampler, run_estimator, error_mitigation)
