@@ -22,6 +22,22 @@ def initialize(noise_model):
 
 
 def qet_circuit(h, k, apply_h,  num_qubits, name, backend):
+    """
+    Constructs the quantum circuit for the QET experiment.
+
+    Args:
+      h: Parameter h for the Hamiltonian.
+      k: Parameter k for the Hamiltonian.
+      apply_h: Bool indicating wether to apply hadmard gate.
+      num_qubits: The number of qubits for the circuit.
+      name: The classical register name.
+      backend: The backend to optimize and transpile the circuit for.
+
+    Returns:
+      qc: The constructed QuantumCircuit object.
+      qc_transpiled: The transpiled quantum circuit object.
+    """
+    
     delay_time = 10000
     delay = Delay(delay_time)
 

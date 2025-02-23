@@ -31,7 +31,7 @@ def single_run(h1, v, p_dephase, run_simulator, run_sampler, run_estimator):
     if run_sampler:
         print(f'Running sampler with backend {backend}')
 
-        h1_counts_hw, h1_rho = runner. run_sampler(sampler, qc_h1_transpiled, total_shots)
+        h1_counts_hw, h1_rho = runner.run_sampler(sampler, qc_h1_transpiled, total_shots)
         v_counts_hw, v_rho = runner.run_sampler(sampler, qc_v_transpiled, total_shots)
         h1_rho = h1_rho / h1_rho.trace()
         print(f'Validity {h1_rho.is_valid()}')
@@ -55,11 +55,11 @@ def single_run(h1, v, p_dephase, run_simulator, run_sampler, run_estimator):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(add_help=False)
+    parser = argparse.ArgumentParser()
 
     parser.add_argument('-p', '--dephase', nargs='+', type=float)
-    parser.add_argument('-h', type=float, default=1.0)
-    parser.add_argument('-k', type=float, default=1.0)
+    parser.add_argument('--h-param', type=float, default=1.0)
+    parser.add_argument('--k-param', type=float, default=1.0)
     parser.add_argument('--total-shots', type=float, default=1024)
 
     parser.add_argument('--run-simulator', action='store_true')
@@ -70,8 +70,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     p_dephase_list = args.dephase
-    h = args.h
-    k = args.k
+    h = args.h_param
+    k = args.k_param
     total_shots = args.total_shots
 
     run_simulator = args.run_simulator or args.run_all
