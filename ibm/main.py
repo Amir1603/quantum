@@ -1,6 +1,11 @@
 import argparse
 from conf import Conf
-import runner
+from runner import Runner
+
+
+def run(p_dephase, conf, runner):
+    runner.initialize(p_dephase)
+    runner.single_run(p_dephase, conf)
 
 
 if __name__ == "__main__":
@@ -30,8 +35,10 @@ if __name__ == "__main__":
     if conf.p_dephase_list and conf.run_estimator:
         raise "Cannot run Estimator with dephasing noise!"
 
-    run = runner.Runner(conf)
+    runner = Runner(conf)
 
-    for p_dephase in conf.p_dephase_list:
-        run.initialize(p_dephase)
-        run.single_run(p_dephase, conf)
+    if conf.p_dephase_list:
+        for p_dephase in conf.p_dephase_list:
+            run(p_dephase, conf, runner)
+    else:
+        run(None, conf, runner)

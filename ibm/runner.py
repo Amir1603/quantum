@@ -6,16 +6,14 @@ from qiskit import QuantumCircuit, transpile
 from qiskit.circuit import ClassicalRegister, Delay
 from qiskit.quantum_info import SparsePauliOp, DensityMatrix, concurrence
 from qiskit.visualization import plot_histogram, circuit_drawer
-from qiskit.primitives import BackendEstimatorV2
-from qiskit_ibm_runtime import QiskitRuntimeService
-from qiskit.primitives import BackendSamplerV2
+from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2, EstimatorV2
 import numpy as np
 
 
 class Runner():
 
     def __init__(self, conf: Conf):
-        self.conf = conf.h
+        self.h = conf.h
         self.k = conf.k
         self.total_shots = conf.total_shots
         self.noise_model = None
@@ -30,8 +28,8 @@ class Runner():
         self._create_noise_model(p_dephase) if p_dephase else None
         self.backend = AerSimulator(noise_model=self.noise_model) if self.noise_model else self.service.backend('ibm_brisbane')
 
-        self.estimator = None if self.noise_model else BackendEstimatorV2(backend=self.backend)
-        self.sampler = BackendSamplerV2(backend=self.backend)
+        self.estimator = None if self.noise_model else EstimatorV2(mode=self.backend)
+        self.sampler = SamplerV2(mode=self.backend)
 
 
     def _qet_circuit(self, apply_h,  num_qubits, name):
@@ -133,7 +131,6 @@ class Runner():
 
         job_sim = simulator.run(qc_compiled, shots=self.total_shots)
         result_sim = job_sim.result()
-        rho = result_sim.data()['density_matrix']
         counts_sim = result_sim.get_counts(qc_compiled)
 
         counts_sim = {k.removeprefix('00 '): v for k, v in counts_sim.items()}
@@ -142,7 +139,7 @@ class Runner():
         print(counts_sim)
         plot_histogram(counts_sim)
 
-        return counts_sim, rho
+        return counts_sim
 
 
     def _run_sampler(self, qc_transpiled):
@@ -184,8 +181,8 @@ class Runner():
 
         if conf.run_simulator:
             print('Running simulator')
-            h1_counts_sim, h1_rho = self._run_sim(qc_h1, "H1")
-            v_counts_sim, v_rho = self._run_sim(qc_v, "V")
+            h1_counts_sim = self._run_sim(qc_h1, "H1")
+            v_counts_sim = self._run_sim(qc_v, "V")
             
             analysis.print_expectations(h1_counts_sim, v_counts_sim, self.total_shots, p_dephase)
             h1_counts_list.append(h1_counts_sim)
@@ -199,9 +196,11 @@ class Runner():
             h1_counts_hw, h1_rho = self._run_sampler(qc_h1_transpiled)
             v_counts_hw, v_rho = self._run_sampler(qc_v_transpiled)
             h1_rho = h1_rho / h1_rho.trace()
-            print(f'Validity {h1_rho.is_valid()}')
-            print(f'H1 concurrence {concurrence(h1_rho)}')
-            print(f'V concurrence {concurrence(v_rho)}')
+            print(f'Validity: h1 - {h1_rho.is_valid()} v - {v_rho.is_valid()}')
+            if h1_rho.is_valid():
+                print(f'H1 concurrence {concurrence(h1_rho)}')
+            if v_rho.is_valid():
+                print(f'V concurrence {concurrence(v_rho)}')
 
             analysis.print_expectations(h1_counts_hw, v_counts_hw, self.total_shots, p_dephase)
             h1_counts_list.append(h1_counts_hw)
