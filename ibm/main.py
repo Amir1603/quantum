@@ -1,7 +1,5 @@
 import argparse
 import runner
-from qiskit.quantum_info import SparsePauliOp
-import numpy as np
 
 
 if __name__ == "__main__":
@@ -33,9 +31,9 @@ if __name__ == "__main__":
     if p_dephase_list and run_estimator:
         raise "Cannot run Estimator with dephasing noise!"
 
-    h1 = SparsePauliOp.from_list([("ZI", h), ("II", h**2 / np.sqrt(h**2 + k**2))])
-    v = SparsePauliOp.from_list([("XX", 2 * k), ("II", 2 * k**2 / np.sqrt(h**2 + k**2))])
-
+    run = runner.Runner(h, k, total_shots)
     p_dephase_list.sort()
+
     for p_dephase in p_dephase_list:
-        runner.single_run(h, k, total_shots, h1, v, p_dephase, run_simulator, run_sampler, run_estimator, error_mitigation)
+        run.initialize(p_dephase)
+        runner.single_run(p_dephase, run_simulator, run_sampler, run_estimator, error_mitigation)
