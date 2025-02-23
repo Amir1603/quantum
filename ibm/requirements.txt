@@ -4,5 +4,7 @@ matplotlib
 pylatexenc
 setuptools
 qiskit-ibm-provider
-# nbconvert # For exporting notebook as pdf
+qiskit-ibm-runtime
 pytest
+pyyaml
+# nbconvert # For exporting notebook as pdf
