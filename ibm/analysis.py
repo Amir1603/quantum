@@ -7,8 +7,8 @@ import os
 class Analyzer:
     run_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    def __init__(self, subfolder):
-        self.directory = f'artifacts/{Analyzer.run_time}/{subfolder}'
+    def __init__(self, h, k, subfolder):
+        self.directory = f'artifacts/{Analyzer.run_time}/h-{h}_k-{k}/{subfolder}'
         os.makedirs(self.directory, exist_ok=False)
         self.report_content = []
 
