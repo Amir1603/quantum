@@ -1,11 +1,10 @@
-import analysis
+from analysis import Analyzer
 from conf import Conf
 from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
 from qiskit.circuit import ClassicalRegister, Delay
 from qiskit.quantum_info import SparsePauliOp, DensityMatrix, concurrence
-from qiskit.visualization import plot_histogram, circuit_drawer
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2, EstimatorV2
 import numpy as np
 
@@ -21,6 +20,7 @@ class Runner():
         self.h1 = SparsePauliOp.from_list([("ZI", conf.h), ("II", conf.h**2 / np.sqrt(conf.h**2 + conf.k**2))])
         self.v = SparsePauliOp.from_list([("XX", 2 * conf.k), ("II", 2 * conf.k**2 / np.sqrt(conf.h**2 + conf.k**2))])
 
+        self.analyzer = None
         self.service = QiskitRuntimeService()
 
 
@@ -34,8 +34,13 @@ class Runner():
 
 
     def initialize(self, p_dephase, backend_name):
-        self._create_noise_model(p_dephase) if p_dephase else None
+        self.p_dephase = p_dephase
+
+        if p_dephase:
+            self._create_noise_model()
+
         self.backend = self.__choose_backend(backend_name)
+        self.analyzer = Analyzer(self.backend.name)
 
         self.estimator = None if self.noise_model else EstimatorV2(mode=self.backend)
         self.sampler = SamplerV2(mode=self.backend)
@@ -59,6 +64,7 @@ class Runner():
         delay = Delay(delay_time)
 
         qc = QuantumCircuit(2, 2)
+        qc.name = f'{name}_qc'
 
         # Prepare the ground state
         theta = -np.arccos(
@@ -92,14 +98,15 @@ class Runner():
         cr = ClassicalRegister(num_qubits, name)
         qc.add_register(cr)  # Add the ClassicalRegister
         qc_transpiled = transpile(qc, self.backend)
-        circuit_drawer(qc, output='mpl')
+
+        self.analyzer.draw_circuit(qc)
 
         return qc, qc_transpiled
 
 
-    def _create_noise_model(self, p_dephase):
+    def _create_noise_model(self):
         # Create dephasing error
-        dephase_error = phase_damping_error(p_dephase)
+        dephase_error = phase_damping_error(self.p_dephase)
 
         # Build the noise model
         noise_model = NoiseModel()
@@ -143,9 +150,7 @@ class Runner():
 
         counts_sim = {k.removeprefix('00 '): v for k, v in counts_sim.items()}
 
-        print(f"{name} Simulation results:")
-        print(counts_sim)
-        plot_histogram(counts_sim)
+        self.analyzer.hist(counts_sim, name, self.p_dephase)
 
         return counts_sim
 
@@ -178,7 +183,7 @@ class Runner():
         return job.result()
 
 
-    def single_run(self, p_dephase, conf):
+    def single_run(self, conf):
         qc_h1, qc_h1_transpiled = self._qet_circuit(False, self.h1.num_qubits, 'h1')
         qc_v, qc_v_transpiled = self._qet_circuit(True, self.v.num_qubits, 'v')
 
@@ -189,10 +194,10 @@ class Runner():
 
         if conf.run_simulator:
             print('Running simulator')
-            h1_counts_sim = self._run_sim(qc_h1, "H1")
-            v_counts_sim = self._run_sim(qc_v, "V")
+            h1_counts_sim = self._run_sim(qc_h1, "H1", self.p_dephase)
+            v_counts_sim = self._run_sim(qc_v, "V", self.p_dephase)
             
-            analysis.print_expectations(h1_counts_sim, v_counts_sim, self.total_shots, p_dephase)
+            self.analyzer.print_expectations(h1_counts_sim, v_counts_sim, self.total_shots, self.p_dephase)
             h1_counts_list.append(h1_counts_sim)
             v_counts_list.append(v_counts_sim)
             legend.append('Simulator')
@@ -210,7 +215,7 @@ class Runner():
             if v_rho.is_valid():
                 print(f'V concurrence {concurrence(v_rho)}')
 
-            analysis.print_expectations(h1_counts_hw, v_counts_hw, self.total_shots, p_dephase)
+            self.analyzer.print_expectations(h1_counts_hw, v_counts_hw, self.total_shots, self.p_dephase)
             h1_counts_list.append(h1_counts_hw)
             v_counts_list.append(v_counts_hw)
             legend.append('Raw Sampler')
@@ -224,6 +229,6 @@ class Runner():
 
             result_h1 = self._run_estimator(qc_h1_transpiled, "Z", op1=self.h, op2=self.h**2 / np.sqrt(self.h**2 + self.k**2))
             result_v = self._run_estimator(qc_v_transpiled, "XX", op1=2*self.k, op2=2 * self.k**2 / np.sqrt(self.h**2 + self.k**2))
-            analysis.print_results(result_h1, result_v)
+            self.analyzer.print_results(result_h1, result_v)
 
-        analysis.create_histograms(h1_counts_list, v_counts_list, legend, colors, self.total_shots, p_dephase)
+        self.analyzer.create_histograms(h1_counts_list, v_counts_list, legend, colors, self.total_shots, self.p_dephase)

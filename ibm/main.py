@@ -13,7 +13,7 @@ def run_over_list(l, lambda_func):
 
 def single_run(conf, runner, p_dephase=None, backend_name=None):
     runner.initialize(p_dephase, backend_name)
-    runner.single_run(p_dephase, conf)
+    runner.single_run(conf)
 
 
 if __name__ == "__main__":
