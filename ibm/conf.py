@@ -15,7 +15,7 @@ class Conf:
                 conf = Conf()
                 conf.h = p[0]
                 conf.k = p[1]
-                conf.total_shots = 1e4
+                conf.total_shots = 10000
                 conf.error_mitigation = False
                 conf.run_simulator = True
                 conf.run_sampler = True # Also runs a simulator and not a specific backend backend
@@ -30,7 +30,7 @@ class Conf:
                 conf = Conf()
                 conf.h = p[0]
                 conf.k = p[1]
-                conf.total_shots = 1e4
+                conf.total_shots = 10000
                 conf.error_mitigation = False
                 conf.run_simulator = False
                 conf.run_sampler = True
