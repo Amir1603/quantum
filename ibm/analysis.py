@@ -1,3 +1,4 @@
+from conf import Conf
 from datetime import datetime
 from qiskit.visualization import plot_histogram, circuit_drawer
 from qiskit.quantum_info import concurrence
@@ -6,6 +7,15 @@ import os
 
 class Analyzer:
     run_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    confs = []
+
+    def save_conf(conf: Conf):
+        Analyzer.confs.append(conf)
+
+    def dump_confs():
+        with open(f'artifacts/{Analyzer.run_time}/conf.txt', 'w') as f:
+            f.write(str(Analyzer.confs))
+
 
     def __init__(self, h, k, subfolder):
         self.directory = f'artifacts/{Analyzer.run_time}/h-{h}_k-{k}/{subfolder}'

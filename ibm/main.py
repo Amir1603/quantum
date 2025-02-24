@@ -60,3 +60,5 @@ if __name__ == "__main__":
     for c in confs:
         runner = Runner(c)
         single_run(c, runner, p_dephase=c.p_dephase, backend_name=c.backend)
+
+    Runner.wrap()

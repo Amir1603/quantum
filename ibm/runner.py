@@ -23,6 +23,8 @@ class Runner():
         self.analyzer = None
         self.service = QiskitRuntimeService()
 
+        Analyzer.save_conf(conf)
+
 
     def __choose_backend(self, backend_name):
         if self.noise_model:
@@ -48,6 +50,10 @@ class Runner():
 
     def finalize_run(self):
         self.analyzer.generate_html_report()
+
+
+    def wrap():
+        Analyzer.dump_confs()
 
 
     def _qet_circuit(self, apply_h,  num_qubits, name):
