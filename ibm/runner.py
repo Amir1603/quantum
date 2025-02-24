@@ -33,7 +33,7 @@ class Runner():
             return self.service.least_busy(operational=True, simulator=False)
 
 
-    def initialize(self, p_dephase, backend_name):
+    def init_run(self, p_dephase, backend_name):
         self.p_dephase = p_dephase
 
         if p_dephase:
@@ -44,6 +44,10 @@ class Runner():
 
         self.estimator = None if self.noise_model else EstimatorV2(mode=self.backend)
         self.sampler = SamplerV2(mode=self.backend)
+
+
+    def finalize_run(self):
+        self.analyzer.generate_pdf_report()
 
 
     def _qet_circuit(self, apply_h,  num_qubits, name):
@@ -183,7 +187,7 @@ class Runner():
         return job.result()
 
 
-    def single_run(self, conf):
+    def exec(self, conf):
         qc_h1, qc_h1_transpiled = self._qet_circuit(False, self.h1.num_qubits, 'h1')
         qc_v, qc_v_transpiled = self._qet_circuit(True, self.v.num_qubits, 'v')
 

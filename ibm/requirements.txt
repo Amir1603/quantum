@@ -1,9 +1,10 @@
-qiskit
-qiskit-aer
+fpdf2
 matplotlib
 pylatexenc
-setuptools
+pyyaml
+qiskit
+qiskit-aer
 qiskit-ibm-provider
 qiskit-ibm-runtime
-pyyaml
+setuptools
 # nbconvert # For exporting notebook as pdf
