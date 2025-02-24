@@ -1,6 +1,6 @@
 from datetime import datetime
 from qiskit.visualization import plot_histogram, circuit_drawer
-from fpdf import FPDF
+from qiskit.quantum_info import concurrence
 import os
 
 
@@ -61,11 +61,31 @@ class Analyzer:
 
         return (E1, z_expectation, xx_expectation)
 
+    def add_section(self, section_name):
+        self.report_content.append(f'<h2>{section_name}</h2>')
+        print(f'\n{section_name}\n')
+
+    def print_rho(self, h1_rho, v_rho):
+        h1_rho = h1_rho / h1_rho.trace()
+        text = f'Validity: h1 - {h1_rho.is_valid()} v - {v_rho.is_valid()}'
+        print(text)
+        self.report_content.append(f'<p>{text}</p>')
+
+        if h1_rho.is_valid():
+            text = f'H1 concurrence {concurrence(h1_rho)}'
+            print(text)
+            self.report_content.append(f'<p>{text}</p>')
+
+        if v_rho.is_valid():
+            text = f'V concurrence {concurrence(v_rho)}'
+            print(text)
+            self.report_content.append(f'<p>{text}</p>')
+
     def print_expectations(self, h1_counts, v_counts, total_shots, p_dephase):
         E1, z_expectation, xx_expectation = self._calc_expectations(h1_counts, v_counts, total_shots)
-        text = f'For p_dephase = {p_dephase}:\t<H1> = {z_expectation}\t<V> = {xx_expectation}\t<E1> = {E1}'
+        text = f'For p_dephase = {p_dephase}: H1 = {z_expectation} ; V = {xx_expectation} ; E1 = {E1}'
         print(text)
-        self.report_content.append(text)
+        self.report_content.append(f'<p>{text}</p>')
 
     def create_histograms(self, h1_counts_list, v_counts_list, legend, colors, total_shots, p_dephase):
         if not h1_counts_list:
@@ -79,54 +99,68 @@ class Analyzer:
         plot_histogram(h1_prob_list, legend=legend, color=colors,
                        title=self._build_title('Z (H1) Classical bits results', p_dephase),
                        filename=h1_filename)
-        self.report_content.append(h1_filename)
+        self.report_content.append(f'<img src="{os.getcwd()}/{h1_filename}" alt="H1 Histogram">')
 
         v_prob_list = [{k: v / total_shots for k, v in v_counts.items()} for v_counts in v_counts_list]
         v_filename = self._build_filename('v_hist', p_dephase)
         plot_histogram(v_prob_list, legend=legend, color=colors,
                        title=self._build_title('XX (V) Classical bits results', p_dephase),
                        filename=v_filename)
-        self.report_content.append(v_filename)
+        self.report_content.append(f'<img src="{os.getcwd()}/{v_filename}" alt="V Histogram">')
 
     def print_results(self, result_h1, result_v):
-        text_h1 = f'H1 Results:\n<H1> = {result_h1._pub_results[0].data["evs"][0]} +- {result_h1._pub_results[0].data["stds"][0]}'
-        text_v = f'V Results:\n<V> = {result_v._pub_results[0].data["evs"][0]} +- {result_v._pub_results[0].data["stds"][0]}'
+        text_h1 = f'H1 Results:\nH1 = {result_h1._pub_results[0].data["evs"][0]} +- {result_h1._pub_results[0].data["stds"][0]}'
+        text_v = f'V Results:\nV = {result_v._pub_results[0].data["evs"][0]} +- {result_v._pub_results[0].data["stds"][0]}'
         print(text_h1)
         print()
         print(text_v)
-        self.report_content.append(text_h1)
-        self.report_content.append(text_v)
+        self.report_content.append(f'<p>{text_h1}</p>')
+        self.report_content.append(f'<p>{text_v}</p>')
 
     def draw_circuit(self, qc):
         filename = self._build_filename(qc.name)
         circuit_drawer(qc, output='mpl', filename=filename)
-        self.report_content.append(filename)
+        self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="Circuit Diagram">')
         return filename
 
     def hist(self, counts, name, p_dephase):
-        title = self._build_title(f'{name} Simulation results', p_dephase)
+        title = self._build_title(f'{name} Simulation results', p_dephase, 'qasm_simulator')
         print(title)
         print(counts)
         filename = self._build_filename(f'{name}_sim', p_dephase)
         plot_histogram(counts,
                        title=title,
                        filename=filename)
-        self.report_content.append(title)
-        self.report_content.append(filename)
+        self.report_content.append(f'<p>{title}</p>')
+        self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="Simulation Results">')
 
-    def generate_pdf_report(self):
-        pdf = FPDF()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
+    def generate_html_report(self):
+        html_content = """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Quantum Experiment Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                img { max-width: 100%; height: auto; }
+                .content { margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>
+            <h1>Quantum Experiment Report</h1>
+        """
 
         for content in self.report_content:
-            if content.endswith('.png'):
-                pdf.add_page()
-                pdf.image(content, x=10, y=10, w=190)
-            else:
-                pdf.multi_cell(0, 10, content)
+            html_content += f'<div class="content">{content}</div>\n'
 
-        pdf_output = f'{self.directory}/report.pdf'
-        pdf.output(pdf_output)
-        print(f'Report saved as {pdf_output}')
+        html_content += """
+        </body>
+        </html>
+        """
+
+        html_output = f'{self.directory}/report.html'
+        with open(html_output, 'w') as f:
+            f.write(html_content)
+        print(f'Report saved as {html_output}')

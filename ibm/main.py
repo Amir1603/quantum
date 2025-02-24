@@ -55,6 +55,8 @@ if __name__ == "__main__":
     print(f'sampler num: {len([i for i in confs if i.run_sampler and i.p_dephase is None])}')
     print(f'estimator num: {len([i for i in confs if i.run_estimator])}')
 
+    input("Press Enter to continue...")
+
     for c in confs:
         runner = Runner(c)
         single_run(c, runner, p_dephase=c.p_dephase, backend_name=c.backend)

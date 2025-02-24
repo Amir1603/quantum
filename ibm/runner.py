@@ -4,7 +4,7 @@ from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
 from qiskit.circuit import ClassicalRegister, Delay
-from qiskit.quantum_info import SparsePauliOp, DensityMatrix, concurrence
+from qiskit.quantum_info import SparsePauliOp, DensityMatrix
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2, EstimatorV2
 import numpy as np
 
@@ -47,7 +47,7 @@ class Runner():
 
 
     def finalize_run(self):
-        self.analyzer.generate_pdf_report()
+        self.analyzer.generate_html_report()
 
 
     def _qet_circuit(self, apply_h,  num_qubits, name):
@@ -197,7 +197,7 @@ class Runner():
         colors = []
 
         if conf.run_simulator:
-            print('Running simulator')
+            self.analyzer.add_section('Simulator')
             h1_counts_sim = self._run_sim(qc_h1, "H1")
             v_counts_sim = self._run_sim(qc_v, "V")
             
@@ -208,16 +208,12 @@ class Runner():
             colors.append('crimson')
 
         if conf.run_sampler:
-            print(f'Running sampler with backend {self.backend}')
+            self.analyzer.add_section(f'Sampler with backend {self.backend.name}')
 
             h1_counts_hw, h1_rho = self._run_sampler(qc_h1_transpiled)
             v_counts_hw, v_rho = self._run_sampler(qc_v_transpiled)
-            h1_rho = h1_rho / h1_rho.trace()
-            print(f'Validity: h1 - {h1_rho.is_valid()} v - {v_rho.is_valid()}')
-            if h1_rho.is_valid():
-                print(f'H1 concurrence {concurrence(h1_rho)}')
-            if v_rho.is_valid():
-                print(f'V concurrence {concurrence(v_rho)}')
+            
+            self.analyzer.print_rho(h1_rho, v_rho)
 
             self.analyzer.print_expectations(h1_counts_hw, v_counts_hw, self.total_shots, self.p_dephase)
             h1_counts_list.append(h1_counts_hw)
@@ -226,7 +222,7 @@ class Runner():
             colors.append('midnightblue')
 
         if conf.run_estimator:
-            print('Running estimator with backend {self.backend}')
+            self.analyzer.add_section(f'Estimator with backend {self.backend.name}')
 
             if conf.error_mitigation:
                 self._prep_error_mitigation()
@@ -235,4 +231,5 @@ class Runner():
             result_v = self._run_estimator(qc_v_transpiled, "XX", op1=2*self.k, op2=2 * self.k**2 / np.sqrt(self.h**2 + self.k**2))
             self.analyzer.print_results(result_h1, result_v)
 
+        self.analyzer.add_section(f'Summary histograms')
         self.analyzer.create_histograms(h1_counts_list, v_counts_list, legend, colors, self.total_shots, self.p_dephase)
