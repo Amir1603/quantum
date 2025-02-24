@@ -198,8 +198,8 @@ class Runner():
 
         if conf.run_simulator:
             print('Running simulator')
-            h1_counts_sim = self._run_sim(qc_h1, "H1", self.p_dephase)
-            v_counts_sim = self._run_sim(qc_v, "V", self.p_dephase)
+            h1_counts_sim = self._run_sim(qc_h1, "H1")
+            v_counts_sim = self._run_sim(qc_v, "V")
             
             self.analyzer.print_expectations(h1_counts_sim, v_counts_sim, self.total_shots, self.p_dephase)
             h1_counts_list.append(h1_counts_sim)

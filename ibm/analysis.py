@@ -17,19 +17,19 @@ class Analyzer:
         extended_header = f'{self.directory}/{header}'
 
         if p_dephase and suffix:
-            return f'{extended_header}_{dephase_str}_{suffix}'
+            return f'{extended_header}_{dephase_str}_{suffix}.png'
         elif p_dephase and not suffix:
-            return f'{extended_header}_{dephase_str}_{suffix}'
+            return f'{extended_header}_{dephase_str}_{suffix}.png'
         elif not p_dephase and suffix:
-            return f'{extended_header}_{suffix}'
+            return f'{extended_header}_{suffix}.png'
         else:
-            return f'{extended_header}'
+            return f'{extended_header}.png'
 
     def _build_title(self, header, p_dephase, suffix=None):
         if p_dephase and suffix:
             return f'{header} for p_dephase={p_dephase} {suffix}'
         elif p_dephase and not suffix:
-            return f'{header} for p_dephase={p_dephase} {suffix}'
+            return f'{header} for p_dephase={p_dephase}'
         elif not p_dephase and suffix:
             return f'{header} {suffix}'
         else:
