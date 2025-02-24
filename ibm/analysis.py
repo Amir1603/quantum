@@ -17,8 +17,8 @@ class Analyzer:
             f.write(str(Analyzer.confs))
 
 
-    def __init__(self, h, k, subfolder):
-        self.directory = f'artifacts/{Analyzer.run_time}/h-{h}_k-{k}/{subfolder}'
+    def __init__(self, h, k, p_dephase, subfolder):
+        self.directory = f'artifacts/{Analyzer.run_time}/h-{h}_k-{k}/{p_dephase}/{subfolder}'
         os.makedirs(self.directory, exist_ok=False)
         self.report_content = []
 

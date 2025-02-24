@@ -42,7 +42,7 @@ class Runner():
             self._create_noise_model()
 
         self.backend = self.__choose_backend(backend_name)
-        self.analyzer = Analyzer(self.h, self.k, self.backend.name)
+        self.analyzer = Analyzer(self.h, self.k, self.p_dephase, self.backend.name)
 
         self.estimator = None if self.noise_model else EstimatorV2(mode=self.backend)
         self.sampler = SamplerV2(mode=self.backend)

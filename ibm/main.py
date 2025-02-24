@@ -58,6 +58,11 @@ if __name__ == "__main__":
     input("Press Enter to continue...")
 
     for c in confs:
+        print()
+        print('****************************************************')
+        print(c)
+        print('****************************************************')
+        print()
         runner = Runner(c)
         single_run(c, runner, p_dephase=c.p_dephase, backend_name=c.backend)
 
