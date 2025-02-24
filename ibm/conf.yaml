@@ -6,8 +6,8 @@ run_estimator: true
 run_sampler: true
 run_simulator: true
 total_shots: 1024
-# p_dephase: 
-# backend:
+p_dephase: 
+backend:
 # - 'qasm_simulator'
 # - 'ibm_brisbane'
 # - 'ibm_kyiv'
