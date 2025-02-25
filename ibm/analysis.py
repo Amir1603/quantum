@@ -93,7 +93,20 @@ class Analyzer:
 
     def print_expectations(self, h1_counts, v_counts, total_shots, p_dephase):
         E1, z_expectation, xx_expectation = self._calc_expectations(h1_counts, v_counts, total_shots)
-        text = f'For p_dephase = {p_dephase}: H1 = {z_expectation} ; V = {xx_expectation} ; E1 = {E1}'
+        
+        text = f'For p_dephase = {p_dephase}:'
+        print(text)
+        self.report_content.append(f'<p>{text}</p>')
+        
+        text = f'H1 Counts: {h1_counts}'
+        print(text)
+        self.report_content.append(f'<p>{text}</p>')
+
+        text = f'V Counts: {v_counts}'
+        print(text)
+        self.report_content.append(f'<p>{text}</p>')
+
+        text = f'H1 = {z_expectation} ; V = {xx_expectation} ; E1 = {E1}'
         print(text)
         self.report_content.append(f'<p>{text}</p>')
 
@@ -135,14 +148,16 @@ class Analyzer:
 
     def hist(self, counts, name, p_dephase):
         title = self._build_title(f'{name} Simulation results', p_dephase, 'qasm_simulator')
-        print(title)
-        print(counts)
         filename = self._build_filename(f'{name}_sim', p_dephase)
-        plot_histogram(counts,
+        probs = {k: v / sum(counts.values()) for k, v in counts.items()}
+
+        print(title)
+        print(probs)
+        plot_histogram(probs,
                        title=title,
                        filename=filename)
         self.report_content.append(f'<p>{title}</p>')
-        self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="Simulation Results">')
+        self.report_content.append(f'<p>{probs}</p>')
 
     def generate_html_report(self):
         html_content = """

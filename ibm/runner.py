@@ -12,9 +12,7 @@ import numpy as np
 class Runner():
 
     def __init__(self, conf: Conf):
-        self.h = conf.h
-        self.k = conf.k
-        self.total_shots = conf.total_shots
+        self.conf = conf
         self.noise_model = None
 
         self.h1 = SparsePauliOp.from_list([("ZI", conf.h), ("II", conf.h**2 / np.sqrt(conf.h**2 + conf.k**2))])
@@ -42,7 +40,7 @@ class Runner():
             self._create_noise_model()
 
         self.backend = self.__choose_backend(backend_name)
-        self.analyzer = Analyzer(self.h, self.k, self.p_dephase, self.backend.name)
+        self.analyzer = Analyzer(self.conf.h, self.conf.k, self.p_dephase, self.backend.name)
 
         self.estimator = None if self.noise_model else EstimatorV2(mode=self.backend)
         self.sampler = SamplerV2(mode=self.backend)
@@ -78,7 +76,7 @@ class Runner():
 
         # Prepare the ground state
         theta = -np.arccos(
-            (1 / np.sqrt(2)) * np.sqrt(1 - self.h / np.sqrt(self.h**2 + self.k**2))
+            (1 / np.sqrt(2)) * np.sqrt(1 - self.conf.h / np.sqrt(self.conf.h**2 + self.conf.k**2))
         )
         qc.ry(2 * theta, 0)
         qc.cx(0, 1)
@@ -93,7 +91,7 @@ class Runner():
 
         # Bob's conditional operation
         phi = np.arcsin(
-            (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
+            (self.conf.h * self.conf.k) / np.sqrt((self.conf.h**2 + 2 * self.conf.k**2)**2 + self.conf.h**2 * self.conf.k**2)
         ) / 2
 
         # Bob's conditional operation
@@ -109,7 +107,8 @@ class Runner():
         qc.add_register(cr)  # Add the ClassicalRegister
         qc_transpiled = transpile(qc, self.backend)
 
-        self.analyzer.draw_circuit(qc)
+        if self.conf.draw_circuit:
+            self.analyzer.draw_circuit(qc)
 
         return qc, qc_transpiled
 
@@ -154,7 +153,7 @@ class Runner():
         simulator = Aer.get_backend('qasm_simulator')
         qc_compiled = transpile(qc, simulator)
 
-        job_sim = simulator.run(qc_compiled, shots=self.total_shots)
+        job_sim = simulator.run(qc_compiled, shots=self.conf.total_shots)
         result_sim = job_sim.result()
         counts_sim = result_sim.get_counts(qc_compiled)
 
@@ -166,7 +165,7 @@ class Runner():
 
 
     def _run_sampler(self, qc_transpiled):
-        job = self.sampler.run([qc_transpiled], shots=self.total_shots)
+        job = self.sampler.run([qc_transpiled], shots=self.conf.total_shots)
 
         result = job.result()
         counts = result._pub_results[0].data.c.get_counts()
@@ -207,7 +206,7 @@ class Runner():
             h1_counts_sim = self._run_sim(qc_h1, "H1")
             v_counts_sim = self._run_sim(qc_v, "V")
             
-            self.analyzer.print_expectations(h1_counts_sim, v_counts_sim, self.total_shots, self.p_dephase)
+            self.analyzer.print_expectations(h1_counts_sim, v_counts_sim, self.conf.total_shots, self.p_dephase)
             h1_counts_list.append(h1_counts_sim)
             v_counts_list.append(v_counts_sim)
             legend.append('Simulator')
@@ -221,21 +220,22 @@ class Runner():
             
             self.analyzer.print_rho(h1_rho, v_rho)
 
-            self.analyzer.print_expectations(h1_counts_hw, v_counts_hw, self.total_shots, self.p_dephase)
+            self.analyzer.print_expectations(h1_counts_hw, v_counts_hw, self.conf.total_shots, self.p_dephase)
             h1_counts_list.append(h1_counts_hw)
             v_counts_list.append(v_counts_hw)
             legend.append('Raw Sampler')
             colors.append('midnightblue')
 
+        # TODO - Estimator observables definition mith be wrong
         if conf.run_estimator:
             self.analyzer.add_section(f'Estimator with backend {self.backend.name}')
 
             if conf.error_mitigation:
                 self._prep_error_mitigation()
 
-            result_h1 = self._run_estimator(qc_h1_transpiled, "Z", op1=self.h, op2=self.h**2 / np.sqrt(self.h**2 + self.k**2))
-            result_v = self._run_estimator(qc_v_transpiled, "XX", op1=2*self.k, op2=2 * self.k**2 / np.sqrt(self.h**2 + self.k**2))
+            result_h1 = self._run_estimator(qc_h1_transpiled, "Z", op1=self.conf.h, op2=self.conf.h**2 / np.sqrt(self.conf.h**2 + self.conf.k**2))
+            result_v = self._run_estimator(qc_v_transpiled, "XX", op1=2*self.conf.k, op2=2 * self.conf.k**2 / np.sqrt(self.conf.h**2 + self.conf.k**2))
             self.analyzer.print_results(result_h1, result_v)
 
         self.analyzer.add_section(f'Summary histograms')
-        self.analyzer.create_histograms(h1_counts_list, v_counts_list, legend, colors, self.total_shots, self.p_dephase)
+        self.analyzer.create_histograms(h1_counts_list, v_counts_list, legend, colors, self.conf.total_shots, self.p_dephase)

@@ -23,6 +23,7 @@ class Conf:
                 conf.run_all = False
                 conf.p_dephase = p_dephase
                 conf.backend = None
+                conf.draw_circuit = False
 
                 confs.append(conf)
 
@@ -32,12 +33,13 @@ class Conf:
                 conf.k = p[1]
                 conf.total_shots = 10000
                 conf.error_mitigation = False
-                conf.run_simulator = False
+                conf.run_simulator = True
                 conf.run_sampler = True
-                conf.run_estimator = True
+                conf.run_estimator = False
                 conf.run_all = False
                 conf.p_dephase = None
                 conf.backend = backend
+                conf.draw_circuit = False
 
                 confs.append(conf)
 
@@ -54,6 +56,7 @@ class Conf:
         self.run_all = False
         self.p_dephase = None
         self.backend = None
+        self.draw_circuit = False
 
 
     def load(self):
@@ -71,4 +74,4 @@ class Conf:
 
 
     def __repr__(self):
-        return f"<Conf h:{self.h} v:{self.v} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_estimator:{self.run_estimator} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}>"
+        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_estimator:{self.run_estimator} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}>"
