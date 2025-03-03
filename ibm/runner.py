@@ -25,7 +25,7 @@ class Runner():
 
 
     def __choose_backend(self, backend_name):
-        if self.noise_model:
+        if self.noise_model or (not self.conf.run_sampler and not self.conf.run_estimator):
             return AerSimulator(noise_model=self.noise_model)
         elif backend_name:
             return self.service.backend(backend_name)
@@ -40,10 +40,11 @@ class Runner():
             self._create_noise_model()
 
         self.backend = self.__choose_backend(backend_name)
-        self.analyzer = Analyzer(self.conf.h, self.conf.k, self.p_dephase, self.backend.name)
+        self.analyzer = Analyzer(self.conf.h, self.conf.k, self.p_dephase, self.conf.delay_time, self.backend.name)
 
         self.estimator = None if self.noise_model else EstimatorV2(mode=self.backend)
-        self.sampler = SamplerV2(mode=self.backend)
+        self.sampler = None if self.noise_model else SamplerV2(mode=self.backend)
+        self.simulator = AerSimulator(noise_model=self.noise_model)
 
 
     def finalize_run(self):
@@ -67,10 +68,6 @@ class Runner():
         qc: The constructed QuantumCircuit object.
         qc_transpiled: The transpiled quantum circuit object.
         """
-        
-        delay_time = 10000
-        delay = Delay(delay_time)
-
         qc = QuantumCircuit(2, 2)
         qc.name = f'{name}_qc'
 
@@ -87,7 +84,9 @@ class Runner():
         qc.measure(0, 0)  # Measure qubit 0 into classical bit 0
 
         # Idle Bob’s qubit before he acts
-        qc.append(delay, [1])
+        if self.conf.delay_time > 0:
+            delay = Delay(self.conf.delay_time)
+            qc.append(delay, [1])
 
         # Bob's conditional operation
         phi = np.arcsin(
@@ -119,7 +118,7 @@ class Runner():
 
         # Build the noise model
         noise_model = NoiseModel()
-        noise_model.add_all_qubit_quantum_error(dephase_error, ['id', 'measure'])  # Affect idling and measurement steps
+        noise_model.add_all_qubit_quantum_error(dephase_error, ['id', 'measure', 'rz', 'sx'])  # Affect idling and measurement steps
 
         self.noise_model = noise_model
 
@@ -150,10 +149,9 @@ class Runner():
 
     def _run_sim(self, qc, name):
         # Use the Qiskit simulator
-        simulator = Aer.get_backend('qasm_simulator')
-        qc_compiled = transpile(qc, simulator)
+        qc_compiled = transpile(qc, self.simulator)
 
-        job_sim = simulator.run(qc_compiled, shots=self.conf.total_shots)
+        job_sim = self.simulator.run(qc_compiled, shots=self.conf.total_shots)
         result_sim = job_sim.result()
         counts_sim = result_sim.get_counts(qc_compiled)
 

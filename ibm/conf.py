@@ -1,47 +1,50 @@
-import os
 import yaml
 
 
 class Conf:
     def generate_all_confs():
         parameters = [(1, 0.2), (1, 0.5), (1, 1), (1.5, 1)] # (h, k) list
-        p_dephase_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-        backends = ['ibm_kyiv', 'ibm_sherbrooke', 'ibm_brisbane']
+        p_dephase_list = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        backends = []#'ibm_kyiv', 'ibm_sherbrooke', 'ibm_brisbane']
+        delays = [0, 100000]
 
         confs = []
 
         for p in parameters:
-            for p_dephase in p_dephase_list:
-                conf = Conf()
-                conf.h = p[0]
-                conf.k = p[1]
-                conf.total_shots = 10000
-                conf.error_mitigation = False
-                conf.run_simulator = True
-                conf.run_sampler = True # Also runs a simulator and not a specific backend backend
-                conf.run_estimator = False
-                conf.run_all = False
-                conf.p_dephase = p_dephase
-                conf.backend = None
-                conf.draw_circuit = False
+            for delay in delays:
+                for p_dephase in p_dephase_list:
+                    conf = Conf()
+                    conf.h = p[0]
+                    conf.k = p[1]
+                    conf.total_shots = 10000
+                    conf.error_mitigation = False
+                    conf.run_simulator = True
+                    conf.run_sampler = False
+                    conf.run_estimator = False
+                    conf.run_all = False
+                    conf.p_dephase = p_dephase
+                    conf.backend = None
+                    conf.draw_circuit = True
+                    conf.delay_time = delay
 
-                confs.append(conf)
+                    confs.append(conf)
 
-            for backend in backends:
-                conf = Conf()
-                conf.h = p[0]
-                conf.k = p[1]
-                conf.total_shots = 10000
-                conf.error_mitigation = False
-                conf.run_simulator = True
-                conf.run_sampler = True
-                conf.run_estimator = False
-                conf.run_all = False
-                conf.p_dephase = None
-                conf.backend = backend
-                conf.draw_circuit = False
+                for backend in backends:
+                    conf = Conf()
+                    conf.h = p[0]
+                    conf.k = p[1]
+                    conf.total_shots = 10000
+                    conf.error_mitigation = False
+                    conf.run_simulator = True
+                    conf.run_sampler = True
+                    conf.run_estimator = False
+                    conf.run_all = False
+                    conf.p_dephase = None
+                    conf.backend = backend
+                    conf.draw_circuit = False
+                    conf.delay_time = delay
 
-                confs.append(conf)
+                    confs.append(conf)
 
         return confs
 
@@ -57,6 +60,7 @@ class Conf:
         self.p_dephase = None
         self.backend = None
         self.draw_circuit = False
+        self.delay_time = 10000
 
 
     def load(self):
