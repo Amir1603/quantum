@@ -1,25 +1,16 @@
 error_mitigation: false
 h: 1.0
 k: 1.0
-p_dephase_list:
-- 0.1
-- 0.2
-- 0.3
-- 0.4
-- 0.5
-- 0.6
-- 0.7
-- 0.8
-- 0.9
-- 1.0
 run_all: false
-run_estimator: true
-run_sampler: true
+run_estimator: false
+run_sampler: false
 run_simulator: true
-total_shots: 1024
-# backends:
+total_shots: 10000
+p_dephase: 0.1
+backend:
 # - 'qasm_simulator'
 # - 'ibm_brisbane'
 # - 'ibm_kyiv'
 # - 'ibm_sherbrooke'
-backends: []
+draw_circuit: false
+delay_time: 0

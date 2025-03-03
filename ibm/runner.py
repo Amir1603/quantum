@@ -1,11 +1,10 @@
-import analysis
+from analysis import Analyzer
 from conf import Conf
 from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
 from qiskit.circuit import ClassicalRegister, Delay
-from qiskit.quantum_info import SparsePauliOp, DensityMatrix, concurrence
-from qiskit.visualization import plot_histogram, circuit_drawer
+from qiskit.quantum_info import SparsePauliOp, DensityMatrix
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2, EstimatorV2
 import numpy as np
 
@@ -13,19 +12,20 @@ import numpy as np
 class Runner():
 
     def __init__(self, conf: Conf):
-        self.h = conf.h
-        self.k = conf.k
-        self.total_shots = conf.total_shots
+        self.conf = conf
         self.noise_model = None
 
         self.h1 = SparsePauliOp.from_list([("ZI", conf.h), ("II", conf.h**2 / np.sqrt(conf.h**2 + conf.k**2))])
         self.v = SparsePauliOp.from_list([("XX", 2 * conf.k), ("II", 2 * conf.k**2 / np.sqrt(conf.h**2 + conf.k**2))])
 
+        self.analyzer = None
         self.service = QiskitRuntimeService()
+
+        Analyzer.save_conf(conf)
 
 
     def __choose_backend(self, backend_name):
-        if self.noise_model:
+        if self.noise_model or (not self.conf.run_sampler and not self.conf.run_estimator):
             return AerSimulator(noise_model=self.noise_model)
         elif backend_name:
             return self.service.backend(backend_name)
@@ -33,12 +33,26 @@ class Runner():
             return self.service.least_busy(operational=True, simulator=False)
 
 
-    def initialize(self, p_dephase, backend_name):
-        self._create_noise_model(p_dephase) if p_dephase else None
+    def init_run(self, p_dephase, backend_name):
+        self.p_dephase = p_dephase
+
+        if p_dephase:
+            self._create_noise_model()
+
         self.backend = self.__choose_backend(backend_name)
+        self.analyzer = Analyzer(self.conf.h, self.conf.k, self.p_dephase, self.conf.delay_time, self.backend.name)
 
         self.estimator = None if self.noise_model else EstimatorV2(mode=self.backend)
-        self.sampler = SamplerV2(mode=self.backend)
+        self.sampler = None if self.noise_model else SamplerV2(mode=self.backend)
+        self.simulator = AerSimulator(noise_model=self.noise_model)
+
+
+    def finalize_run(self):
+        self.analyzer.generate_html_report()
+
+
+    def wrap():
+        Analyzer.dump_confs()
 
 
     def _qet_circuit(self, apply_h,  num_qubits, name):
@@ -54,15 +68,12 @@ class Runner():
         qc: The constructed QuantumCircuit object.
         qc_transpiled: The transpiled quantum circuit object.
         """
-        
-        delay_time = 10000
-        delay = Delay(delay_time)
-
         qc = QuantumCircuit(2, 2)
+        qc.name = f'{name}_qc'
 
         # Prepare the ground state
         theta = -np.arccos(
-            (1 / np.sqrt(2)) * np.sqrt(1 - self.h / np.sqrt(self.h**2 + self.k**2))
+            (1 / np.sqrt(2)) * np.sqrt(1 - self.conf.h / np.sqrt(self.conf.h**2 + self.conf.k**2))
         )
         qc.ry(2 * theta, 0)
         qc.cx(0, 1)
@@ -73,11 +84,13 @@ class Runner():
         qc.measure(0, 0)  # Measure qubit 0 into classical bit 0
 
         # Idle Bob’s qubit before he acts
-        qc.append(delay, [1])
+        if self.conf.delay_time > 0:
+            delay = Delay(self.conf.delay_time)
+            qc.append(delay, [1])
 
         # Bob's conditional operation
         phi = np.arcsin(
-            (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
+            (self.conf.h * self.conf.k) / np.sqrt((self.conf.h**2 + 2 * self.conf.k**2)**2 + self.conf.h**2 * self.conf.k**2)
         ) / 2
 
         # Bob's conditional operation
@@ -92,18 +105,20 @@ class Runner():
         cr = ClassicalRegister(num_qubits, name)
         qc.add_register(cr)  # Add the ClassicalRegister
         qc_transpiled = transpile(qc, self.backend)
-        circuit_drawer(qc, output='mpl')
+
+        if self.conf.draw_circuit:
+            self.analyzer.draw_circuit(qc)
 
         return qc, qc_transpiled
 
 
-    def _create_noise_model(self, p_dephase):
+    def _create_noise_model(self):
         # Create dephasing error
-        dephase_error = phase_damping_error(p_dephase)
+        dephase_error = phase_damping_error(self.p_dephase)
 
         # Build the noise model
         noise_model = NoiseModel()
-        noise_model.add_all_qubit_quantum_error(dephase_error, ['id', 'measure'])  # Affect idling and measurement steps
+        noise_model.add_all_qubit_quantum_error(dephase_error, ['id', 'measure', 'rz', 'sx'])  # Affect idling and measurement steps
 
         self.noise_model = noise_model
 
@@ -134,24 +149,21 @@ class Runner():
 
     def _run_sim(self, qc, name):
         # Use the Qiskit simulator
-        simulator = Aer.get_backend('qasm_simulator')
-        qc_compiled = transpile(qc, simulator)
+        qc_compiled = transpile(qc, self.simulator)
 
-        job_sim = simulator.run(qc_compiled, shots=self.total_shots)
+        job_sim = self.simulator.run(qc_compiled, shots=self.conf.total_shots)
         result_sim = job_sim.result()
         counts_sim = result_sim.get_counts(qc_compiled)
 
         counts_sim = {k.removeprefix('00 '): v for k, v in counts_sim.items()}
 
-        print(f"{name} Simulation results:")
-        print(counts_sim)
-        plot_histogram(counts_sim)
+        self.analyzer.hist(counts_sim, name, self.p_dephase)
 
         return counts_sim
 
 
     def _run_sampler(self, qc_transpiled):
-        job = self.sampler.run([qc_transpiled], shots=self.total_shots)
+        job = self.sampler.run([qc_transpiled], shots=self.conf.total_shots)
 
         result = job.result()
         counts = result._pub_results[0].data.c.get_counts()
@@ -178,7 +190,7 @@ class Runner():
         return job.result()
 
 
-    def single_run(self, p_dephase, conf):
+    def exec(self, conf):
         qc_h1, qc_h1_transpiled = self._qet_circuit(False, self.h1.num_qubits, 'h1')
         qc_v, qc_v_transpiled = self._qet_circuit(True, self.v.num_qubits, 'v')
 
@@ -188,42 +200,40 @@ class Runner():
         colors = []
 
         if conf.run_simulator:
-            print('Running simulator')
+            self.analyzer.add_section('Simulator')
             h1_counts_sim = self._run_sim(qc_h1, "H1")
             v_counts_sim = self._run_sim(qc_v, "V")
             
-            analysis.print_expectations(h1_counts_sim, v_counts_sim, self.total_shots, p_dephase)
+            self.analyzer.print_expectations(h1_counts_sim, v_counts_sim, self.conf.total_shots, self.p_dephase)
             h1_counts_list.append(h1_counts_sim)
             v_counts_list.append(v_counts_sim)
             legend.append('Simulator')
             colors.append('crimson')
 
         if conf.run_sampler:
-            print(f'Running sampler with backend {self.backend}')
+            self.analyzer.add_section(f'Sampler with backend {self.backend.name}')
 
             h1_counts_hw, h1_rho = self._run_sampler(qc_h1_transpiled)
             v_counts_hw, v_rho = self._run_sampler(qc_v_transpiled)
-            h1_rho = h1_rho / h1_rho.trace()
-            print(f'Validity: h1 - {h1_rho.is_valid()} v - {v_rho.is_valid()}')
-            if h1_rho.is_valid():
-                print(f'H1 concurrence {concurrence(h1_rho)}')
-            if v_rho.is_valid():
-                print(f'V concurrence {concurrence(v_rho)}')
+            
+            self.analyzer.print_rho(h1_rho, v_rho)
 
-            analysis.print_expectations(h1_counts_hw, v_counts_hw, self.total_shots, p_dephase)
+            self.analyzer.print_expectations(h1_counts_hw, v_counts_hw, self.conf.total_shots, self.p_dephase)
             h1_counts_list.append(h1_counts_hw)
             v_counts_list.append(v_counts_hw)
             legend.append('Raw Sampler')
             colors.append('midnightblue')
 
+        # TODO - Estimator observables definition mith be wrong
         if conf.run_estimator:
-            print('Running estimator with backend {self.backend}')
+            self.analyzer.add_section(f'Estimator with backend {self.backend.name}')
 
             if conf.error_mitigation:
                 self._prep_error_mitigation()
 
-            result_h1 = self._run_estimator(qc_h1_transpiled, "Z", op1=self.h, op2=self.h**2 / np.sqrt(self.h**2 + self.k**2))
-            result_v = self._run_estimator(qc_v_transpiled, "XX", op1=2*self.k, op2=2 * self.k**2 / np.sqrt(self.h**2 + self.k**2))
-            analysis.print_results(result_h1, result_v)
+            result_h1 = self._run_estimator(qc_h1_transpiled, "Z", op1=self.conf.h, op2=self.conf.h**2 / np.sqrt(self.conf.h**2 + self.conf.k**2))
+            result_v = self._run_estimator(qc_v_transpiled, "XX", op1=2*self.conf.k, op2=2 * self.conf.k**2 / np.sqrt(self.conf.h**2 + self.conf.k**2))
+            self.analyzer.print_results(result_h1, result_v)
 
-        analysis.create_histograms(h1_counts_list, v_counts_list, legend, colors, self.total_shots, p_dephase)
+        self.analyzer.add_section(f'Summary histograms')
+        self.analyzer.create_histograms(h1_counts_list, v_counts_list, legend, colors, self.conf.total_shots, self.p_dephase)
