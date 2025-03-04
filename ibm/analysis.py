@@ -45,7 +45,7 @@ class Analyzer:
         else:
             return f'{header}'
 
-    def _calc_expectations(self, h1_counts, v_counts, total_shots):
+    def calc_expectations(self, h1_counts, v_counts, total_shots):
         z_expectation = 0
         xx_expectation = 0
 
@@ -91,9 +91,7 @@ class Analyzer:
             print(text)
             self.report_content.append(f'<p>{text}</p>')
 
-    def print_expectations(self, h1_counts, v_counts, total_shots, p_dephase):
-        E1, z_expectation, xx_expectation = self._calc_expectations(h1_counts, v_counts, total_shots)
-        
+    def print_expectations(self, E1, z_expectation, xx_expectation, h1_counts, v_counts, p_dephase):
         text = f'For p_dephase = {p_dephase}:'
         print(text)
         self.report_content.append(f'<p>{text}</p>')

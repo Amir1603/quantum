@@ -4,9 +4,9 @@ import yaml
 class Conf:
     def generate_all_confs():
         parameters = [(1, 0.2), (1, 0.5), (1, 1), (1.5, 1)] # (h, k) list
-        p_dephase_list = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        p_dephase_list = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         backends = []#'ibm_kyiv', 'ibm_sherbrooke', 'ibm_brisbane']
-        delays = [0, 100000]
+        delays = [0]
 
         confs = []
 

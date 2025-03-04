@@ -1,7 +1,10 @@
 import argparse
 from conf import Conf
 from runner import Runner
+from results import Results
+from analysis import Analyzer
 
+res = Results(Analyzer.run_time)
 
 def run_over_list(l, lambda_func):
     if l:
@@ -13,7 +16,7 @@ def run_over_list(l, lambda_func):
 
 def single_run(conf, runner, p_dephase=None, backend_name=None):
     runner.init_run(p_dephase, backend_name)
-    runner.exec(conf)
+    runner.exec(conf, res)
     runner.finalize_run()
 
 
@@ -67,3 +70,6 @@ if __name__ == "__main__":
         single_run(c, runner, p_dephase=c.p_dephase, backend_name=c.backend)
 
     Runner.wrap()
+
+    res.generate_expectation_graphs()
+    res.generate_counts_graphs()
