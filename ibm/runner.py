@@ -1,5 +1,6 @@
 from analysis import Analyzer
 from conf import Conf
+from observable import Observable
 from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
@@ -12,12 +13,11 @@ from results import Results
 
 class Runner():
 
-    def __init__(self, conf: Conf):
+    def __init__(self, conf: Conf, observables: list[Observable]):
         self.conf = conf
         self.noise_model = None
 
-        self.h1 = SparsePauliOp.from_list([("ZI", conf.h), ("II", conf.h**2 / np.sqrt(conf.h**2 + conf.k**2))])
-        self.v = SparsePauliOp.from_list([("XX", 2 * conf.k), ("II", 2 * conf.k**2 / np.sqrt(conf.h**2 + conf.k**2))])
+        self.observables = observables
 
         self.analyzer = None
         self.service = QiskitRuntimeService()
@@ -56,21 +56,20 @@ class Runner():
         Analyzer.dump_confs()
 
 
-    def _qet_circuit(self, apply_h,  num_qubits, name):
+    def _qet_circuit(self, obs: Observable, num_qubits):
         """
         Constructs the quantum circuit for the QET experiment.
 
         Args:
-        apply_h: Bool indicating wether to apply hadmard gate.
+        obs: The observable to measure and create the circuit for.
         num_qubits: The number of qubits for the circuit.
-        name: The classical register name.
 
         Returns:
         qc: The constructed QuantumCircuit object.
         qc_transpiled: The transpiled quantum circuit object.
         """
         qc = QuantumCircuit(2, 2)
-        qc.name = f'{name}_qc'
+        qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
         theta = -np.arccos(
@@ -98,12 +97,11 @@ class Runner():
         qc.ry(2 * phi, 1).c_if(0, 0)  # Apply U(+1) if classical bit 0 is 0
         qc.ry(-2 * phi, 1).c_if(0, 1)  # Apply U(-1) if classical bit 0 is 1
 
-        if apply_h:
-            qc.h(1)
+        obs.apply_gate_on_qc(qc)
 
         qc.measure(1, 1)  # Measure qubit 1 into classical bit 1
 
-        cr = ClassicalRegister(num_qubits, name)
+        cr = ClassicalRegister(num_qubits, obs.name)
         qc.add_register(cr)  # Add the ClassicalRegister
         qc_transpiled = transpile(qc, self.backend)
 
@@ -192,53 +190,43 @@ class Runner():
 
 
     def exec(self, conf, results: Results):
-        qc_h1, qc_h1_transpiled = self._qet_circuit(False, self.h1.num_qubits, 'h1')
-        qc_v, qc_v_transpiled = self._qet_circuit(True, self.v.num_qubits, 'v')
-
-        h1_counts_list = []
-        v_counts_list = []
+        counts_list = []
         legend = []
         colors = []
 
-        if conf.run_simulator:
-            self.analyzer.add_section('Simulator')
-            h1_counts_sim = self._run_sim(qc_h1, "H1")
-            v_counts_sim = self._run_sim(qc_v, "V")
-            
-            E1_sim, z_expectation_sim, xx_expectation_sim = self.analyzer.calc_expectations(h1_counts_sim, v_counts_sim, self.conf.total_shots)
-            self.analyzer.print_expectations(E1_sim, z_expectation_sim, xx_expectation_sim, h1_counts_sim, v_counts_sim, self.p_dephase)
-            h1_counts_list.append(h1_counts_sim)
-            v_counts_list.append(v_counts_sim)
-            legend.append('Simulator')
-            colors.append('crimson')
-            results.add_result('simulator', self.conf.h, self.conf.k, self.p_dephase, h1_counts_sim, v_counts_sim, z_expectation_sim, xx_expectation_sim, E1_sim)
+        for obs in self.observables:
+            observable = obs["observable"]
 
-        if conf.run_sampler:
-            self.analyzer.add_section(f'Sampler with backend {self.backend.name}')
+            qc, qc_transpiled = self._qet_circuit(obs, observable.num_qubits)
 
-            h1_counts_hw, h1_rho = self._run_sampler(qc_h1_transpiled)
-            v_counts_hw, v_rho = self._run_sampler(qc_v_transpiled)
-            
-            self.analyzer.print_rho(h1_rho, v_rho)
+            if conf.run_simulator:
+                self.analyzer.add_section('Simulator')
+                counts_sim = self._run_sim(qc, obs.name)
+                
+                expectation_sim = self.analyzer.calc_expectation(obs, counts_sim, self.conf.total_shots)
+                self.analyzer.print_expectation(expectation_sim, counts_sim, self.p_dephase, obs)
+                
+                counts_list.append(counts_sim)
+                legend.append('Simulator')
+                colors.append('crimson')
+                
+                results.add_result('simulator', self.conf.h, self.conf.k, self.p_dephase, counts_sim, expectation_sim, obs)
 
-            E1_hw, z_expectation_hw, xx_expectation_hw = self.analyzer.calc_expectations(h1_counts_hw, v_counts_hw, self.conf.total_shots)
-            self.analyzer.print_expectations(E1_hw, z_expectation_hw, xx_expectation_hw, h1_counts_hw, v_counts_hw, self.p_dephase)
-            h1_counts_list.append(h1_counts_hw)
-            v_counts_list.append(v_counts_hw)
-            legend.append('Raw Sampler')
-            colors.append('midnightblue')
-            results.add_result('sampler', self.conf.h, self.conf.k, self.p_dephase, h1_counts_hw, v_counts_hw, z_expectation_hw, xx_expectation_hw, E1_hw)
+            if conf.run_sampler:
+                self.analyzer.add_section(f'Sampler with backend {self.backend.name}')
 
-        # TODO - Estimator observables definition mith be wrong
-        if conf.run_estimator:
-            self.analyzer.add_section(f'Estimator with backend {self.backend.name}')
+                counts_hw, rho = self._run_sampler(qc_transpiled)
+                
+                self.analyzer.print_rho(rho, obs)
 
-            if conf.error_mitigation:
-                self._prep_error_mitigation()
-
-            result_h1 = self._run_estimator(qc_h1_transpiled, "Z", op1=self.conf.h, op2=self.conf.h**2 / np.sqrt(self.conf.h**2 + self.conf.k**2))
-            result_v = self._run_estimator(qc_v_transpiled, "XX", op1=2*self.conf.k, op2=2 * self.conf.k**2 / np.sqrt(self.conf.h**2 + self.conf.k**2))
-            self.analyzer.print_results(result_h1, result_v)
+                expectation_hw = self.analyzer.calc_expectation(obs, counts_hw, self.conf.total_shots)
+                self.analyzer.print_expectation(expectation_hw, counts_hw, self.p_dephase, obs)
+                
+                counts_list.append(counts_hw)
+                legend.append('Raw Sampler')
+                colors.append('midnightblue')
+                
+                results.add_result('sampler', self.conf.h, self.conf.k, self.p_dephase, counts_hw, expectation_hw, obs)
 
         self.analyzer.add_section(f'Summary histograms')
-        self.analyzer.create_histograms(h1_counts_list, v_counts_list, legend, colors, self.conf.total_shots, self.p_dephase)
+        self.analyzer.create_histogram(counts_list, legend, colors, self.conf.total_shots, self.p_dephase, obs)

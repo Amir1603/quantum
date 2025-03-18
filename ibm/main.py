@@ -1,9 +1,9 @@
 import argparse
+from analysis import Analyzer
 from conf import Conf
+from observable import create_observables
 from runner import Runner
 from results import Results
-from analysis import Analyzer
-
 res = Results(Analyzer.run_time)
 
 def run_over_list(l, lambda_func):
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         print(c)
         print('****************************************************')
         print()
-        runner = Runner(c)
+        runner = Runner(c, create_observables(c))
         single_run(c, runner, p_dephase=c.p_dephase, backend_name=c.backend)
 
     Runner.wrap()

@@ -1,3 +1,4 @@
+from observable import Observable
 import matplotlib.pyplot as plt
 
 class Results:
@@ -5,23 +6,17 @@ class Results:
         self.data = {}
         self.run_time = run_time
 
-    def add_result(self, source, h, k, p_dephase, h1_counts, v_counts, h1_expectation, v_expectation, e_expectation):
-        key = (h, k)
+    def add_result(self, source, h, k, p_dephase, counts, expectation, obs: Observable):
+        key = (h, k, obs.name)
         if key not in self.data:
             self.data[key] = {
-                'h1_counts': [],
-                'v_counts': [],
-                'h1_expectations': [],
-                'v_expectations': [],
-                'e_expectations': [],
+                'counts': [],
+                'expectation': [],
                 'p_dephase': [],
-                'source': []
+                'source': [],
             }
-        self.data[key]['h1_counts'].append(h1_counts)
-        self.data[key]['v_counts'].append(v_counts)
-        self.data[key]['h1_expectations'].append(h1_expectation)
-        self.data[key]['v_expectations'].append(v_expectation)
-        self.data[key]['e_expectations'].append(e_expectation)
+        self.data[key]['counts'].append(counts)
+        self.data[key]['expectation'].append(expectation)
         self.data[key]['p_dephase'].append(p_dephase)
         self.data[key]['source'].append(source)
 
