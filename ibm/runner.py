@@ -7,6 +7,7 @@ from qiskit.circuit import ClassicalRegister, Delay
 from qiskit.quantum_info import SparsePauliOp, DensityMatrix
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2, EstimatorV2
 import numpy as np
+from results import Results
 
 
 class Runner():
@@ -190,7 +191,7 @@ class Runner():
         return job.result()
 
 
-    def exec(self, conf):
+    def exec(self, conf, results: Results):
         qc_h1, qc_h1_transpiled = self._qet_circuit(False, self.h1.num_qubits, 'h1')
         qc_v, qc_v_transpiled = self._qet_circuit(True, self.v.num_qubits, 'v')
 
@@ -204,11 +205,13 @@ class Runner():
             h1_counts_sim = self._run_sim(qc_h1, "H1")
             v_counts_sim = self._run_sim(qc_v, "V")
             
-            self.analyzer.print_expectations(h1_counts_sim, v_counts_sim, self.conf.total_shots, self.p_dephase)
+            E1_sim, z_expectation_sim, xx_expectation_sim = self.analyzer.calc_expectations(h1_counts_sim, v_counts_sim, self.conf.total_shots)
+            self.analyzer.print_expectations(E1_sim, z_expectation_sim, xx_expectation_sim, h1_counts_sim, v_counts_sim, self.p_dephase)
             h1_counts_list.append(h1_counts_sim)
             v_counts_list.append(v_counts_sim)
             legend.append('Simulator')
             colors.append('crimson')
+            results.add_result('simulator', self.conf.h, self.conf.k, self.p_dephase, h1_counts_sim, v_counts_sim, z_expectation_sim, xx_expectation_sim, E1_sim)
 
         if conf.run_sampler:
             self.analyzer.add_section(f'Sampler with backend {self.backend.name}')
@@ -218,11 +221,13 @@ class Runner():
             
             self.analyzer.print_rho(h1_rho, v_rho)
 
-            self.analyzer.print_expectations(h1_counts_hw, v_counts_hw, self.conf.total_shots, self.p_dephase)
+            E1_hw, z_expectation_hw, xx_expectation_hw = self.analyzer.calc_expectations(h1_counts_hw, v_counts_hw, self.conf.total_shots)
+            self.analyzer.print_expectations(E1_hw, z_expectation_hw, xx_expectation_hw, h1_counts_hw, v_counts_hw, self.p_dephase)
             h1_counts_list.append(h1_counts_hw)
             v_counts_list.append(v_counts_hw)
             legend.append('Raw Sampler')
             colors.append('midnightblue')
+            results.add_result('sampler', self.conf.h, self.conf.k, self.p_dephase, h1_counts_hw, v_counts_hw, z_expectation_hw, xx_expectation_hw, E1_hw)
 
         # TODO - Estimator observables definition mith be wrong
         if conf.run_estimator:
