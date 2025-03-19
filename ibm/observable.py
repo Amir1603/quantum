@@ -149,8 +149,8 @@ class Charge(Observable):
         phi = np.arcsin(
             (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
         ) / 2
-        qc.ry(-2 * np.pi, bob_qubit).c_if(alice_creg, 0)  # b=0: Ry(0) = I (no rotation)
-        qc.ry(2 * np.pi, bob_qubit).c_if(alice_creg, 1)  # b=1: Ry(-2pi)
+        qc.ry(0, bob_qubit).c_if(alice_creg, 0)  # b=0: Ry(0) = I (no rotation)
+        qc.ry(-2, bob_qubit).c_if(alice_creg, 1)  # b=1: Ry(-2)
 
     def get_bob_measurement_basis(self):
         """
@@ -174,7 +174,7 @@ class Charge(Observable):
         The eigenvalue is 1 if the measurement is 0, and 0 if the measurement is 1.
         We consider '0' as the positive outcome.
         """
-        return bitstring == '0'
+        return bitstring[1] == '0'
 
     def description(self):
         return "I+Z (J_0)"
