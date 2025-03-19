@@ -51,10 +51,7 @@ class Analyzer:
 
         if counts:
             for key, count in counts.items():
-                if obs.is_positive_count(key):
-                    expectation += count
-                else:
-                    expectation -= count
+                expectation += obs.get_expectation(key, count)
 
             expectation /= total_shots
 

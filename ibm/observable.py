@@ -86,8 +86,11 @@ class H1(Energy):
     def get_bob_measurement_basis(self):
         return "Z"
 
-    def is_positive_count(self, bitstring: str) -> bool:
-        return bitstring[1] == '0' # Check the second bit for <H1>
+    def get_expectation(self, bitstring: str, count):
+        if bitstring[1] == '0': # Check the second bit for <H1>
+            return count
+        else:
+            return -count
 
     def description(self):
         return "Z (H1)"
@@ -106,8 +109,11 @@ class V(Energy):
     def get_bob_measurement_basis(self):
         return "X"
 
-    def is_positive_count(self, bitstring: str) -> bool:
-        return bitstring in ('11', '00')
+    def get_expectation(self, bitstring: str, count):
+        if bitstring in ('11', '00'):
+            return count
+        else:
+            return -count
 
     def description(self):
         return "XX (V)"
@@ -168,13 +174,16 @@ class Charge(Observable):
         else:
             raise ValueError("Invalid site specified")
 
-    def is_positive_count(self, bitstring: str) -> bool:
+    def get_expectation(self, bitstring: str, count):
         """
         For a single site, the charge density operator is (I + Z) / 2.
         The eigenvalue is 1 if the measurement is 0, and 0 if the measurement is 1.
         We consider '0' as the positive outcome.
         """
-        return bitstring[1] == '0'
+        if bitstring[1] == '0':
+            return count
+        else:
+            return 0
 
     def description(self):
         return "I+Z (J_0)"
@@ -235,12 +244,16 @@ class Current(Observable):
         else:
             raise ValueError("Invalid site specified")
 
-    def is_positive_count(self, bitstring: str) -> bool:
+    def get_expectation(self, bitstring: str, count):
         """
         The current operator is X(I-Z)/2. The eigenvalue of X is +1 or -1.
         We consider the +1 outcome as the positive outcome.
         """
-        return bitstring == '0'
+        # TODO - fix the condition (currently same as Charge)
+        if bitstring[1] == '0':
+            return count
+        else:
+            return 0
 
     def description(self):
         return "X*(I-Z) (J_1)"
