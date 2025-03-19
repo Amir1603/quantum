@@ -61,27 +61,21 @@ class Runner():
         Constructs the quantum circuit for the QET experiment.
 
         Args:
-        obs: The observable to measure and create the circuit for.
-        num_qubits: The number of qubits for the circuit.
+            obs: The Observable object.
+            num_qubits: The number of qubits for the circuit.
 
         Returns:
-        qc: The constructed QuantumCircuit object.
-        qc_transpiled: The transpiled quantum circuit object.
+            qc: The constructed QuantumCircuit object.
+            qc_transpiled: The transpiled quantum circuit object.
         """
         qc = QuantumCircuit(2, 2)
         qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
-        theta = -np.arccos(
-            (1 / np.sqrt(2)) * np.sqrt(1 - self.conf.h / np.sqrt(self.conf.h**2 + self.conf.k**2))
-        )
-        qc.ry(2 * theta, 0)
-        qc.cx(0, 1)
+        obs.apply_ground_state(qc, [0, 1])
 
-        qc.h(0)
-        
         # Alice's measurement
-        qc.measure(0, 0)  # Measure qubit 0 into classical bit 0
+        obs.apply_alice_measurement(qc, 0, 0)
 
         # Idle Bob’s qubit before he acts
         if self.conf.delay_time > 0:
@@ -89,20 +83,16 @@ class Runner():
             qc.append(delay, [1])
 
         # Bob's conditional operation
-        phi = np.arcsin(
-            (self.conf.h * self.conf.k) / np.sqrt((self.conf.h**2 + 2 * self.conf.k**2)**2 + self.conf.h**2 * self.conf.k**2)
-        ) / 2
+        obs.apply_bob_operation(qc, 1, 0)
 
-        # Bob's conditional operation
-        qc.ry(2 * phi, 1).c_if(0, 0)  # Apply U(+1) if classical bit 0 is 0
-        qc.ry(-2 * phi, 1).c_if(0, 1)  # Apply U(-1) if classical bit 0 is 1
+        # Bob's measurement basis
+        if obs.get_bob_measurement_basis() == "X":
+            qc.h(1)
 
-        obs.apply_gate_on_qc(qc)
-
-        qc.measure(1, 1)  # Measure qubit 1 into classical bit 1
+        qc.measure(1, 1)
 
         cr = ClassicalRegister(num_qubits, obs.name)
-        qc.add_register(cr)  # Add the ClassicalRegister
+        qc.add_register(cr)
         qc_transpiled = transpile(qc, self.backend)
 
         if self.conf.draw_circuit:
@@ -166,7 +156,7 @@ class Runner():
 
         result = job.result()
         counts = result._pub_results[0].data.c.get_counts()
-        
+
         # Assuming 'counts' is a dictionary of measurement outcomes from the raw sampler
         total_counts = sum(counts.values())
         probabilities = {state: count / total_counts for state, count in counts.items()}
@@ -202,14 +192,14 @@ class Runner():
             if conf.run_simulator:
                 self.analyzer.add_section('Simulator')
                 counts_sim = self._run_sim(qc, obs.name)
-                
+
                 expectation_sim = self.analyzer.calc_expectation(obs, counts_sim, self.conf.total_shots)
                 self.analyzer.print_expectation(expectation_sim, counts_sim, self.p_dephase, obs)
-                
+
                 counts_list.append(counts_sim)
                 legend.append('Simulator')
                 colors.append('crimson')
-                
+
                 results.add_result('simulator', self.conf.h, self.conf.k, self.p_dephase, counts_sim, expectation_sim, obs)
 
             if conf.run_sampler:
@@ -221,11 +211,11 @@ class Runner():
 
                 expectation_hw = self.analyzer.calc_expectation(obs, counts_hw, self.conf.total_shots)
                 self.analyzer.print_expectation(expectation_hw, counts_hw, self.p_dephase, obs)
-                
+
                 counts_list.append(counts_hw)
                 legend.append('Raw Sampler')
                 colors.append('midnightblue')
-                
+
                 results.add_result('sampler', self.conf.h, self.conf.k, self.p_dephase, counts_hw, expectation_hw, obs)
 
         self.analyzer.add_section(f'Summary histograms')

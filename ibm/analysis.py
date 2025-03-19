@@ -48,7 +48,6 @@ class Analyzer:
 
     def calc_expectation(self, obs: Observable, counts, total_shots):
         expectation = 0
-        xx_expectation = 0
 
         if counts:
             for key, count in counts.items():
