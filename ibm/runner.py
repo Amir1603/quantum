@@ -182,10 +182,9 @@ class Runner():
     def exec(self, conf, results: Results):
         counts_list = []
         legend = []
-        colors = []
 
         for obs in self.observables:
-            observable = obs["observable"]
+            observable = obs.expression
 
             qc, qc_transpiled = self._qet_circuit(obs, observable.num_qubits)
 
@@ -197,8 +196,7 @@ class Runner():
                 self.analyzer.print_expectation(expectation_sim, counts_sim, self.p_dephase, obs)
 
                 counts_list.append(counts_sim)
-                legend.append('Simulator')
-                colors.append('crimson')
+                legend.append(f'{obs.name} Simulator')
 
                 results.add_result('simulator', self.conf.h, self.conf.k, self.p_dephase, counts_sim, expectation_sim, obs)
 
@@ -213,10 +211,9 @@ class Runner():
                 self.analyzer.print_expectation(expectation_hw, counts_hw, self.p_dephase, obs)
 
                 counts_list.append(counts_hw)
-                legend.append('Raw Sampler')
-                colors.append('midnightblue')
+                legend.append(f'{obs.name} Raw Sampler')
 
                 results.add_result('sampler', self.conf.h, self.conf.k, self.p_dephase, counts_hw, expectation_hw, obs)
 
         self.analyzer.add_section(f'Summary histograms')
-        self.analyzer.create_histogram(counts_list, legend, colors, self.conf.total_shots, self.p_dephase, obs)
+        self.analyzer.create_histogram(counts_list, legend, self.conf.total_shots, self.p_dephase)

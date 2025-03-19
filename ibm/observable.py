@@ -26,7 +26,7 @@ class Observable:
     def get_operator(self, site):
         raise NotImplementedError()
 
-    def description():
+    def description(self):
         raise NotImplementedError()
 
 
@@ -89,7 +89,7 @@ class H1(Energy):
     def is_positive_count(self, bitstring: str) -> bool:
         return bitstring[1] == '0' # Check the second bit for <H1>
 
-    def description():
+    def description(self):
         return "Z (H1)"
 
 
@@ -109,7 +109,7 @@ class V(Energy):
     def is_positive_count(self, bitstring: str) -> bool:
         return bitstring in ('11', '00')
 
-    def description():
+    def description(self):
         return "XX (V)"
 
 
@@ -176,7 +176,7 @@ class Charge(Observable):
         """
         return bitstring == '0'
 
-    def description():
+    def description(self):
         return "I+Z (J_0)"
 
 
@@ -242,8 +242,21 @@ class Current(Observable):
         """
         return bitstring == '0'
 
-    def description():
+    def description(self):
         return "X*(I-Z) (J_1)"
 
-def create_observables(conf: Conf) -> list[Observable]:
-        return [H1(conf), V(conf)]
+
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class ObservableFactory(metaclass=Singleton):
+    def __init__(self):
+        self.obs_list = []
+
+    def create_observables(self, conf: Conf) -> list[Observable]:
+        self.obs_list = [H1(conf), V(conf), Charge(conf)]

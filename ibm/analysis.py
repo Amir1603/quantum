@@ -88,19 +88,19 @@ class Analyzer:
         print(text)
         self.report_content.append(f'<p>{text}</p>')
 
-    def create_histogram(self, counts_list, legend, colors, total_shots, p_dephase, obs: Observable):
+    def create_histogram(self, counts_list, legend, total_shots, p_dephase):
         if not counts_list:
             return
         
-        if not (len(counts_list) == len(legend) == len(colors)):
+        if not (len(counts_list) == len(legend)):
             return
 
         prob_list = [{k: v / total_shots for k, v in counts.items()} for counts in counts_list]
-        filename = self._build_filename(f'{obs.name}_hist', p_dephase)
-        plot_histogram(prob_list, legend=legend, color=colors,
-                       title=self._build_title(f'{obs.description()} Classical bits results', p_dephase),
+        filename = self._build_filename(f'counts_hist', p_dephase)
+        plot_histogram(prob_list, legend=legend,
+                       title=self._build_title(f'Classical bits results', p_dephase),
                        filename=filename)
-        self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="{obs.name} Histogram">')
+        self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="Counts Histogram">')
 
     def hist(self, counts, name, p_dephase):
         title = self._build_title(f'{name} Simulation results', p_dephase, 'qasm_simulator')
