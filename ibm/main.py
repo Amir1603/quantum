@@ -1,7 +1,7 @@
 import argparse
 from analysis import Analyzer
 from conf import Conf
-from observable import ObservableFactory
+from Observables import ObservableFactory
 from runner import Runner
 from results import Results
 res = Results(Analyzer.run_time)

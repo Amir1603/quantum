@@ -1,6 +1,6 @@
 from conf import Conf
 from constants import *
-from observable import Observable
+from Observables import Observable
 from datetime import datetime
 from qiskit.visualization import plot_histogram, circuit_drawer
 from qiskit.quantum_info import concurrence

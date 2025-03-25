@@ -1,4 +1,4 @@
-from observable import Observable, ObservableFactory
+from Observables import Observable, ObservableFactory
 import matplotlib.pyplot as plt
 
 class Results:

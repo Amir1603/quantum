@@ -1,6 +1,6 @@
 from analysis import Analyzer
 from conf import Conf
-from observable import Observable
+from Observables import Observable
 from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
