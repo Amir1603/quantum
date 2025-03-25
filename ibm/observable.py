@@ -23,11 +23,17 @@ class Observable:
     def get_bob_measurement_basis(self):
         raise NotImplementedError()
 
+    def get_value(self, bitstring: str):
+        raise NotImplementedError()
+
     def get_operator(self, site):
         raise NotImplementedError()
 
     def description(self):
         raise NotImplementedError()
+
+    def get_extra_info(self, counts):
+        return ""
 
 
 class Energy(Observable):
@@ -86,11 +92,11 @@ class H1(Energy):
     def get_bob_measurement_basis(self):
         return "Z"
 
-    def get_expectation(self, bitstring: str, count):
+    def get_value(self, bitstring: str):
         if bitstring[1] == '0': # Check the second bit for <H1>
-            return count
+            return 1
         else:
-            return -count
+            return -1
 
     def description(self):
         return "Z (H1)"
@@ -109,19 +115,21 @@ class V(Energy):
     def get_bob_measurement_basis(self):
         return "X"
 
-    def get_expectation(self, bitstring: str, count):
+    def get_value(self, bitstring: str):
         if bitstring in ('11', '00'):
-            return count
+            return 1
         else:
-            return -count
+            return -1
 
     def description(self):
         return "XX (V)"
 
 
 class Charge(Observable):
-    def __init__(self, conf: Conf):
-        super().__init__("charge", SparsePauliOp.from_list([
+    def __init__(self, conf: Conf, apply_protocol):
+        self.apply_protocol = apply_protocol
+        name = f'charge{'' if apply_protocol else '_no_protocol'}'
+        super().__init__(name, SparsePauliOp.from_list([
             ("II", 0.5),
             ("ZI", 0.5),
             ("IZ", 0.5),
@@ -150,13 +158,15 @@ class Charge(Observable):
 
     def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg):
         """
-        Bob's operation is a conditional Ry rotation: U(b) = exp(-b i Y) = Ry(-2b)
+        Bob's operation is a conditional Ry rotation: U(b) = exp(-i * b * pi * Z / 2) -> Ry(b * pi)
+        where 'b' is Alice's measurement result (+1 or -1).
+        Since Ry(pi) and Ry(-pi) are equivalent, we can simplify to a single conditional.
         """
-        phi = np.arcsin(
-            (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
-        ) / 2
-        qc.ry(0, bob_qubit).c_if(alice_creg, 0)  # b=0: Ry(0) = I (no rotation)
-        qc.ry(-2, bob_qubit).c_if(alice_creg, 1)  # b=1: Ry(-2)
+        if self.apply_protocol:
+            # Apply Ry(pi) if Alice measured '1'.
+            qc.ry(np.pi, bob_qubit).c_if(alice_creg, 1)
+        else:
+            pass  # No operation if protocol is not applied
 
     def get_bob_measurement_basis(self):
         """
@@ -174,19 +184,45 @@ class Charge(Observable):
         else:
             raise ValueError("Invalid site specified")
 
-    def get_expectation(self, bitstring: str, count):
+    def get_value(self, bitstring: str):
         """
         For a single site, the charge density operator is (I + Z) / 2.
         The eigenvalue is 1 if the measurement is 0, and 0 if the measurement is 1.
         We consider '0' as the positive outcome.
         """
         if bitstring[1] == '0':
-            return count
+            return 1
         else:
             return 0
 
     def description(self):
         return "I+Z (J_0)"
+
+    def get_bob_charge(self, bitstring: str):
+        """
+        Extracts Bob's charge from the measurement bitstring.
+        """
+        return int(bitstring[1])
+
+    def calculate_susceptibility(self, counts):
+        """
+        Calculates the charge susceptibility from the measurement counts.
+        Susceptibility is defined as variance.
+        """
+        charge_values = []
+        for bitstring, count in counts.items():
+            charge = self.get_bob_charge(bitstring)  # Assuming this returns 0 or 1 for Bob's charge
+            charge_values.extend([charge] * count)
+
+        mean_charge = np.mean(charge_values)
+        variance = np.var(charge_values)
+        # If there are other factors in your susceptibility formula, include them here.
+        susceptibility = variance  # Basic susceptibility is variance. Modify if needed.
+        return susceptibility
+
+    def get_extra_info(self, counts):
+        susceptibility = self.calculate_susceptibility(counts)
+        return f"Charge susceptibility: {susceptibility}"
 
 
 class Current(Observable):
@@ -244,14 +280,14 @@ class Current(Observable):
         else:
             raise ValueError("Invalid site specified")
 
-    def get_expectation(self, bitstring: str, count):
+    def get_value(self, bitstring: str):
         """
         The current operator is X(I-Z)/2. The eigenvalue of X is +1 or -1.
         We consider the +1 outcome as the positive outcome.
         """
         # TODO - fix the condition (currently same as Charge)
         if bitstring[1] == '0':
-            return count
+            return 1
         else:
             return 0
 
@@ -272,4 +308,4 @@ class ObservableFactory(metaclass=Singleton):
         self.obs_list = []
 
     def create_observables(self, conf: Conf) -> list[Observable]:
-        self.obs_list = [H1(conf), V(conf), Charge(conf)]
+        self.obs_list = [H1(conf), V(conf), Charge(conf, True), Charge(conf, False)]

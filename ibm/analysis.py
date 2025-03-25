@@ -4,6 +4,8 @@ from datetime import datetime
 from qiskit.visualization import plot_histogram, circuit_drawer
 from qiskit.quantum_info import concurrence
 import os
+import matplotlib.pyplot as plt
+import math
 
 
 class Analyzer:
@@ -46,16 +48,58 @@ class Analyzer:
         else:
             return f'{header}'
 
-    def calc_expectation(self, obs: Observable, counts, total_shots):
-        expectation = 0
+    def calc_expectation_and_sem(obs: Observable, counts, total_shots):
+        """
+        Calculates the expectation value and Standard Error of the Mean (SEM).
 
-        if counts:
-            for key, count in counts.items():
-                expectation += obs.get_expectation(key, count)
+        Args:
+            obs: An Observable object with a get_value(bitstring) method.
+            counts: A dictionary from the simulator/hardware {bitstring: count}.
+            total_shots: The total number of shots executed.
 
-            expectation /= total_shots
+        Returns:
+            A tuple: (expectation_value, standard_error_of_mean)
+                    Returns (0, 0) if counts is empty or total_shots is 0.
+        """
+        if not counts or total_shots == 0:
+            return 0.0, 0.0
 
-        return expectation
+        sum_val = 0.0
+        sum_val_sq = 0.0
+
+        for bitstring, count in counts.items():
+            try:
+                value = obs.get_value(bitstring)
+                sum_val += value * count
+                sum_val_sq += (value**2) * count
+            except ValueError as e:
+                print(f"Skipping bitstring '{bitstring}' due to error: {e}")
+                # Adjust total shots if we skip results? Or assume valid bitstrings.
+                # For now, we proceed, which might slightly bias results if errors are common.
+
+
+        # Calculate expectation value <O>
+        expectation = sum_val / total_shots
+
+        # Calculate <O^2>
+        expectation_sq = sum_val_sq / total_shots
+
+        # Calculate variance: Var(O) = <O^2> - <O>^2
+        # Use max(0, ...) to prevent small negative variance due to floating point errors
+        variance = max(0.0, expectation_sq - expectation**2)
+
+        # Calculate standard deviation
+        std_dev = math.sqrt(variance)
+
+        # Calculate Standard Error of the Mean (SEM) = std_dev / sqrt(N)
+        # Handle division by zero if total_shots is somehow 1 or less after filtering
+        if total_shots <= 1:
+            sem = std_dev # Or arguably undefined/NaN, but returning std_dev is safer
+        else:
+            sem = std_dev / math.sqrt(total_shots)
+
+
+        return expectation, sem
 
     def add_section(self, section_name, qc=None):
         self.report_content.append(f'<h2>{section_name}</h2>')
@@ -84,9 +128,17 @@ class Analyzer:
         print(text)
         self.report_content.append(f'<p>{text}</p>')
 
-        text = f'{obs.name} Expectation = {expectation}'
+        text = f'{obs.name} Expectation = {expectation[0]} ± {expectation[1]}'
         print(text)
         self.report_content.append(f'<p>{text}</p>')
+
+        corr = Analyzer.calculate_correlation(counts)
+        text = f'{obs.name} Correlation = {corr}'
+        print(text)
+        self.report_content.append(f'<p>{text}</p>')
+
+        print(obs.get_extra_info(counts))
+        self.report_content.append(f'<p>{obs.get_extra_info(counts)}</p>')
 
     def create_histogram(self, counts_list, legend, total_shots, p_dephase):
         if not counts_list:
@@ -98,8 +150,8 @@ class Analyzer:
         prob_list = [{k: v / total_shots for k, v in counts.items()} for counts in counts_list]
         filename = self._build_filename(f'counts_hist', p_dephase)
         plot_histogram(prob_list, legend=legend,
-                       title=self._build_title(f'Classical bits results', p_dephase),
-                       filename=filename)
+                       title=self._build_title(f'Classical bits results', p_dephase))
+        plt.savefig(filename, bbox_inches="tight")
         self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="Counts Histogram">')
 
     def hist(self, counts, name, p_dephase):
@@ -151,3 +203,31 @@ class Analyzer:
         with open(html_output, 'w') as f:
             f.write(html_content)
         print(f'Report saved as {html_output}')
+
+    def calculate_correlation(counts):
+        """
+        Calculates the correlation between Alice's and Bob's measurement results.
+
+        The correlation is calculated based on the expectation values of Alice's
+        and Bob's measurements. For simplicity, let's assume Alice and Bob both
+        measure in the Z-basis, so the outcomes are 0 and 1. We map these to +1
+        and -1, respectively.
+
+        Correlation = <Alice * Bob>
+
+        Args:
+            counts (dict): Counts of measurement outcomes.
+
+        Returns:
+            float: The calculated correlation between Alice's and Bob's results.
+        """
+
+        total_counts = sum(counts.values())  # Assuming same total for Bob
+
+        correlation = 0
+        for outcome, count in counts.items():
+            alice_outcome = 1 if outcome[0] == '0' else -1  # Map 0 to +1, 1 to -1
+            bob_outcome = 1 if outcome[1] == '0' else -1
+            correlation += alice_outcome * bob_outcome * count / total_counts
+
+        return correlation
