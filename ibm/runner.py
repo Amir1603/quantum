@@ -95,9 +95,6 @@ class Runner():
         qc.add_register(cr)
         qc_transpiled = transpile(qc, self.backend)
 
-        if self.conf.draw_circuit:
-            self.analyzer.draw_circuit(qc)
-
         return qc, qc_transpiled
 
 
@@ -189,10 +186,10 @@ class Runner():
             qc, qc_transpiled = self._qet_circuit(obs, observable.num_qubits)
 
             if conf.run_simulator:
-                self.analyzer.add_section('Simulator')
+                self.analyzer.add_section('Simulator', qc if self.conf.draw_circuit else None)
                 counts_sim = self._run_sim(qc, obs.name)
 
-                expectation_sim = self.analyzer.calc_expectation(obs, counts_sim, self.conf.total_shots)
+                expectation_sim = Analyzer.calc_expectation_and_sem(obs, counts_sim, self.conf.total_shots)
                 self.analyzer.print_expectation(expectation_sim, counts_sim, self.p_dephase, obs)
 
                 counts_list.append(counts_sim)
@@ -201,13 +198,13 @@ class Runner():
                 results.add_result('simulator', self.conf.h, self.conf.k, self.p_dephase, counts_sim, expectation_sim, obs)
 
             if conf.run_sampler:
-                self.analyzer.add_section(f'Sampler with backend {self.backend.name}')
+                self.analyzer.add_section(f'Sampler with backend {self.backend.name}', qc if self.conf.draw_circuit else None)
 
                 counts_hw, rho = self._run_sampler(qc_transpiled)
                 
                 self.analyzer.print_rho(rho, obs)
 
-                expectation_hw = self.analyzer.calc_expectation(obs, counts_hw, self.conf.total_shots)
+                expectation_hw = Analyzer.calc_expectation_and_sem(obs, counts_hw, self.conf.total_shots)
                 self.analyzer.print_expectation(expectation_hw, counts_hw, self.p_dephase, obs)
 
                 counts_list.append(counts_hw)
