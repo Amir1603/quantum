@@ -1,4 +1,5 @@
 from conf import Conf
+from constants import *
 from observable import Observable
 from datetime import datetime
 from qiskit.visualization import plot_histogram, circuit_drawer
@@ -217,8 +218,8 @@ class Analyzer:
 
         correlation = 0
         for outcome, count in counts.items():
-            alice_outcome = 1 if outcome[0] == '0' else -1  # Map 0 to +1, 1 to -1
-            bob_outcome = 1 if outcome[1] == '0' else -1
+            alice_outcome = 1 if outcome[ALICE_QUBIT_IDX] == '0' else -1  # Map 0 to +1, 1 to -1
+            bob_outcome = 1 if outcome[BOB_QUBIT_IDX] == '0' else -1
             correlation += alice_outcome * bob_outcome * count / total_counts
 
         return correlation

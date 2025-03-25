@@ -1,4 +1,5 @@
 from conf import Conf
+from constants import *
 import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
@@ -93,7 +94,7 @@ class H1(Energy):
         return "Z"
 
     def get_value(self, bitstring: str):
-        if bitstring[1] == '0': # Check the second bit for <H1>
+        if bitstring[BOB_QUBIT_IDX] == '0': # Check the second bit for <H1>
             return 1
         else:
             return -1
@@ -190,7 +191,7 @@ class Charge(Observable):
         The eigenvalue is 1 if the measurement is 0, and 0 if the measurement is 1.
         We consider '0' as the positive outcome.
         """
-        if bitstring[1] == '0':
+        if bitstring[BOB_QUBIT_IDX] == '0':
             return 1
         else:
             return 0
@@ -202,7 +203,7 @@ class Charge(Observable):
         """
         Extracts Bob's charge from the measurement bitstring.
         """
-        return int(bitstring[1])
+        return int(bitstring[BOB_QUBIT_IDX])
 
     def calculate_susceptibility(self, counts):
         """
@@ -286,7 +287,7 @@ class Current(Observable):
         We consider the +1 outcome as the positive outcome.
         """
         # TODO - fix the condition (currently same as Charge)
-        if bitstring[1] == '0':
+        if bitstring[BOB_QUBIT_IDX] == '0':
             return 1
         else:
             return 0
