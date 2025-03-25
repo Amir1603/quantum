@@ -57,9 +57,12 @@ class Analyzer:
 
         return expectation
 
-    def add_section(self, section_name):
+    def add_section(self, section_name, qc=None):
         self.report_content.append(f'<h2>{section_name}</h2>')
         print(f'\n{section_name}\n')
+
+        if qc:
+            self._draw_circuit(qc)
 
     def print_rho(self, rho, obs: Observable):
         rho = rho / rho.trace()
@@ -112,7 +115,7 @@ class Analyzer:
         self.report_content.append(f'<p>{title}</p>')
         self.report_content.append(f'<p>{probs}</p>')
 
-    def draw_circuit(self, qc):
+    def _draw_circuit(self, qc):
         filename = self._build_filename(qc.name)
         circuit_drawer(qc, output='mpl', filename=filename)
         self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="Circuit Diagram">')
