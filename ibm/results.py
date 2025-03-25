@@ -33,7 +33,10 @@ class Results:
         for obs, obs_data in self.data.items():
             for idx, ((h, k), data) in enumerate(obs_data.items()):
                 [i] = [index for index, element in enumerate(of.obs_list) if element.name == obs]
-                ax = axs[idx, i]
+                if num_plots == 1:
+                    ax = axs[i]
+                else:
+                    ax = axs[idx, i]
 
                 # Plot counts
                 for key in data['counts'][0].keys():
