@@ -4,6 +4,8 @@ from conf import Conf
 from Observables import ObservableFactory
 from runner import Runner
 from results import Results
+
+
 res = Results(Analyzer.run_time)
 
 def run_over_list(l, lambda_func):

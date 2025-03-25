@@ -6,22 +6,22 @@ class Results:
         self.data = {}
         self.run_time = run_time
 
-    def add_result(self, source, h, k, p_dephase, counts, expectation, obs: Observable):
-        if obs.name not in self.data:
-            self.data[obs.name] = {}
+    def add_result(self, source, h, k, p_dephase, counts, expectation, obs_name: str):
+        if obs_name not in self.data:
+            self.data[obs_name] = {}
 
         key = (h, k)
-        if key not in self.data[obs.name]:
-            self.data[obs.name][key] = {
+        if key not in self.data[obs_name]:
+            self.data[obs_name][key] = {
                 'counts': [],
                 'expectation': [],
                 'p_dephase': [],
                 'source': [],
             }
-        self.data[obs.name][key]['counts'].append(counts)
-        self.data[obs.name][key]['expectation'].append(expectation)
-        self.data[obs.name][key]['p_dephase'].append(p_dephase)
-        self.data[obs.name][key]['source'].append(source)
+        self.data[obs_name][key]['counts'].append(counts)
+        self.data[obs_name][key]['expectation'].append(expectation)
+        self.data[obs_name][key]['p_dephase'].append(p_dephase)
+        self.data[obs_name][key]['source'].append(source)
 
     def generate_counts_graphs(self):
         of = ObservableFactory()

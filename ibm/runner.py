@@ -195,7 +195,7 @@ class Runner():
                 counts_list.append(counts_sim)
                 legend.append(f'{obs.name} Simulator')
 
-                results.add_result('simulator', self.conf.h, self.conf.k, self.p_dephase, counts_sim, expectation_sim, obs)
+                results.add_result('simulator', self.conf.h, self.conf.k, self.p_dephase, counts_sim, expectation_sim, obs.name)
 
             if conf.run_sampler:
                 self.analyzer.add_section(f'Sampler with backend {self.backend.name}', qc if self.conf.draw_circuit else None)
@@ -210,7 +210,7 @@ class Runner():
                 counts_list.append(counts_hw)
                 legend.append(f'{obs.name} Raw Sampler')
 
-                results.add_result('sampler', self.conf.h, self.conf.k, self.p_dephase, counts_hw, expectation_hw, obs)
+                results.add_result('sampler', self.conf.h, self.conf.k, self.p_dephase, counts_hw, expectation_hw, obs.name)
 
         self.analyzer.add_section(f'Summary histograms')
         self.analyzer.create_histogram(counts_list, legend, self.conf.total_shots, self.p_dephase)
