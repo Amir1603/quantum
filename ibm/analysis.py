@@ -68,15 +68,9 @@ class Analyzer:
         sum_val_sq = 0.0
 
         for bitstring, count in counts.items():
-            try:
-                value = obs.get_value(bitstring)
-                sum_val += value * count
-                sum_val_sq += (value**2) * count
-            except ValueError as e:
-                print(f"Skipping bitstring '{bitstring}' due to error: {e}")
-                # Adjust total shots if we skip results? Or assume valid bitstrings.
-                # For now, we proceed, which might slightly bias results if errors are common.
-
+            value = obs.get_value(bitstring)
+            sum_val += value * count
+            sum_val_sq += (value**2) * count
 
         # Calculate expectation value <O>
         expectation = sum_val / total_shots
@@ -97,7 +91,6 @@ class Analyzer:
             sem = std_dev # Or arguably undefined/NaN, but returning std_dev is safer
         else:
             sem = std_dev / math.sqrt(total_shots)
-
 
         return expectation, sem
 
@@ -160,12 +153,10 @@ class Analyzer:
         probs = {k: v / sum(counts.values()) for k, v in counts.items()}
 
         print(title)
-        print(probs)
         plot_histogram(probs,
                        title=title,
                        filename=filename)
         self.report_content.append(f'<p>{title}</p>')
-        self.report_content.append(f'<p>{probs}</p>')
 
     def _draw_circuit(self, qc):
         filename = self._build_filename(qc.name)
