@@ -61,6 +61,7 @@ class Conf:
         self.backend = None
         self.draw_circuit = False
         self.delay_time = 10000
+        self.n_qubits = 2
 
 
     def load(self):
