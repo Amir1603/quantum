@@ -1,6 +1,7 @@
 from .h1 import H1
 from .v import V
 from .charge import Charge
+from .current import Current
 from .observable import Observable
 from conf import Conf
 
@@ -18,5 +19,5 @@ class ObservableFactory(metaclass=Singleton):
         self.obs_list = []
 
     def create_observables(self, conf: Conf) -> list[Observable]:
-        self.obs_list = [H1(conf), V(conf), Charge(conf, True), Charge(conf, False)]
+        self.obs_list = [H1(conf), V(conf), Charge(conf, True), Charge(conf, False), Current(conf, True), Current(conf, False)]
         return self.obs_list
