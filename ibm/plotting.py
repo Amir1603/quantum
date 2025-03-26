@@ -369,8 +369,10 @@ def plot_counts_histogram(counts, observable_name, output_dir, filename_prefix="
         return None
 
 
-def draw_circuit(qc, output_dir):
-    circuit_drawer(qc, output='mpl', filename=f"{output_dir}/{qc.name}.png")
+def draw_circuit(qc, output_dir, conf):
+    qcs_dir = os.path.join(output_dir, 'qcs', f'h_{conf.h}_k_{conf.k}')
+    os.makedirs(qcs_dir, exist_ok=True)
+    circuit_drawer(qc, output='mpl', filename=os.path.join(qcs_dir, f'{qc.name}.png'))
 
 # --- Add other plotting functions as needed ---
 # def plot_correlation_matrix(...)

@@ -133,7 +133,7 @@ class Runner():
 
         print(f"  Executing: {obs.name}")
         qc = self._qet_circuit(obs, conf)
-        plotting.draw_circuit(qc, results.output_dir)
+        plotting.draw_circuit(qc, results.output_dir, conf)
 
         counts = {}
         job_id = None
