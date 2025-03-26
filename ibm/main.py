@@ -152,13 +152,10 @@ def report_and_plot(results_obj: Results):
     try:
         # Define which observables to include in the tables
         # Include protocol and no-protocol versions, plus energy terms if desired
-        table_obs_report = ['charge', 'current', 'charge_no_protocol', 'current_no_protocol', 'h1', 'v', 'total_energy']
+        table_obs_report = ['charge', 'current', 'charge_no_protocol', 'current_no_protocol', 'total_energy']
         # Define the configurations (filters) for the tables
-        # Request: Table for p_dephase=0 across all (h,k)
         table_configs_report = [
-            {'conf_params.p_dephase': 0.0}, # Table specifically for p_dephase = 0
-            # Add other config filters if you want more tables, e.g., for a specific non-zero p_dephase:
-            # {'conf_params.p_dephase': 0.1},
+            {'conf_params.p_dephase': 0.0},
         ]
 
         reporting.generate_html_report(
