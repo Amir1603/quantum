@@ -1,8 +1,12 @@
 from conf import Conf
+from constants import *
+from Observables import Observable
 from datetime import datetime
 from qiskit.visualization import plot_histogram, circuit_drawer
 from qiskit.quantum_info import concurrence
 import os
+import matplotlib.pyplot as plt
+import math
 
 
 class Analyzer:
@@ -45,104 +49,104 @@ class Analyzer:
         else:
             return f'{header}'
 
-    def calc_expectations(self, h1_counts, v_counts, total_shots):
-        z_expectation = 0
-        xx_expectation = 0
+    def calc_expectation_and_sem(obs: Observable, counts, total_shots):
+        """
+        Calculates the expectation value and Standard Error of the Mean (SEM).
 
-        if h1_counts:
-            for key, count in h1_counts.items():
-                if key[1] == '0':  # Check the second bit for <H1>
-                    z_expectation += count
-                else:
-                    z_expectation -= count
+        Args:
+            obs: An Observable object with a get_value(bitstring) method.
+            counts: A dictionary from the simulator/hardware {bitstring: count}.
+            total_shots: The total number of shots executed.
 
-            z_expectation /= total_shots
+        Returns:
+            A tuple: (expectation_value, standard_error_of_mean)
+                    Returns (0, 0) if counts is empty or total_shots is 0.
+        """
+        if not counts or total_shots == 0:
+            return 0.0, 0.0
 
-        if v_counts:
-            for key, count in v_counts.items():
-                if key in ('11', '00'):
-                    xx_expectation += count
-                else:
-                    xx_expectation -= count
-            
-            xx_expectation /= total_shots
+        sum_val = 0.0
+        sum_val_sq = 0.0
 
-        E1 = z_expectation + xx_expectation
+        for bitstring, count in counts.items():
+            value = obs.get_value(bitstring)
+            sum_val += value * count
+            sum_val_sq += (value**2) * count
 
-        return (E1, z_expectation, xx_expectation)
+        # Calculate expectation value <O>
+        expectation = sum_val / total_shots
 
-    def add_section(self, section_name):
+        # Calculate <O^2>
+        expectation_sq = sum_val_sq / total_shots
+
+        # Calculate variance: Var(O) = <O^2> - <O>^2
+        # Use max(0, ...) to prevent small negative variance due to floating point errors
+        variance = max(0.0, expectation_sq - expectation**2)
+
+        # Calculate standard deviation
+        std_dev = math.sqrt(variance)
+
+        # Calculate Standard Error of the Mean (SEM) = std_dev / sqrt(N)
+        # Handle division by zero if total_shots is somehow 1 or less after filtering
+        if total_shots <= 1:
+            sem = std_dev # Or arguably undefined/NaN, but returning std_dev is safer
+        else:
+            sem = std_dev / math.sqrt(total_shots)
+
+        return expectation, sem
+
+    def add_section(self, section_name, qc=None):
         self.report_content.append(f'<h2>{section_name}</h2>')
         print(f'\n{section_name}\n')
 
-    def print_rho(self, h1_rho, v_rho):
-        h1_rho = h1_rho / h1_rho.trace()
-        text = f'Validity: h1 - {h1_rho.is_valid()} v - {v_rho.is_valid()}'
+        if qc:
+            self._draw_circuit(qc)
+
+    def print_rho(self, rho, obs: Observable):
+        rho = rho / rho.trace()
+        text = f'Validity: {obs.name} - {rho.is_valid()}'
         print(text)
         self.report_content.append(f'<p>{text}</p>')
 
-        if h1_rho.is_valid():
-            text = f'H1 concurrence {concurrence(h1_rho)}'
+        if rho.is_valid():
+            text = f'{obs.description()} concurrence {concurrence(rho)}'
             print(text)
             self.report_content.append(f'<p>{text}</p>')
 
-        if v_rho.is_valid():
-            text = f'V concurrence {concurrence(v_rho)}'
-            print(text)
-            self.report_content.append(f'<p>{text}</p>')
-
-    def print_expectations(self, E1, z_expectation, xx_expectation, h1_counts, v_counts, p_dephase):
+    def print_expectation(self, expectation, counts, p_dephase, obs: Observable):
         text = f'For p_dephase = {p_dephase}:'
         print(text)
         self.report_content.append(f'<p>{text}</p>')
         
-        text = f'H1 Counts: {h1_counts}'
+        text = f'{obs.name} Counts: {counts}'
         print(text)
         self.report_content.append(f'<p>{text}</p>')
 
-        text = f'V Counts: {v_counts}'
+        text = f'{obs.name} Expectation = {expectation[0]} ± {expectation[1]}'
         print(text)
         self.report_content.append(f'<p>{text}</p>')
 
-        text = f'H1 = {z_expectation} ; V = {xx_expectation} ; E1 = {E1}'
+        corr = Analyzer.calculate_correlation(counts)
+        text = f'{obs.name} Correlation = {corr}'
         print(text)
         self.report_content.append(f'<p>{text}</p>')
 
-    def create_histograms(self, h1_counts_list, v_counts_list, legend, colors, total_shots, p_dephase):
-        if not h1_counts_list:
+        print(obs.get_extra_info(counts))
+        self.report_content.append(f'<p>{obs.get_extra_info(counts)}</p>')
+
+    def create_histogram(self, counts_list, legend, total_shots, p_dephase):
+        if not counts_list:
             return
         
-        if not (len(h1_counts_list) == len(v_counts_list) == len(legend) == len(colors)):
+        if not (len(counts_list) == len(legend)):
             return
 
-        h1_prob_list = [{k: v / total_shots for k, v in h1_counts.items()} for h1_counts in h1_counts_list]
-        h1_filename = self._build_filename('h1_hist', p_dephase)
-        plot_histogram(h1_prob_list, legend=legend, color=colors,
-                       title=self._build_title('Z (H1) Classical bits results', p_dephase),
-                       filename=h1_filename)
-        self.report_content.append(f'<img src="{os.getcwd()}/{h1_filename}" alt="H1 Histogram">')
-
-        v_prob_list = [{k: v / total_shots for k, v in v_counts.items()} for v_counts in v_counts_list]
-        v_filename = self._build_filename('v_hist', p_dephase)
-        plot_histogram(v_prob_list, legend=legend, color=colors,
-                       title=self._build_title('XX (V) Classical bits results', p_dephase),
-                       filename=v_filename)
-        self.report_content.append(f'<img src="{os.getcwd()}/{v_filename}" alt="V Histogram">')
-
-    def print_results(self, result_h1, result_v):
-        text_h1 = f'H1 Results:\nH1 = {result_h1._pub_results[0].data["evs"][0]} +- {result_h1._pub_results[0].data["stds"][0]}'
-        text_v = f'V Results:\nV = {result_v._pub_results[0].data["evs"][0]} +- {result_v._pub_results[0].data["stds"][0]}'
-        print(text_h1)
-        print()
-        print(text_v)
-        self.report_content.append(f'<p>{text_h1}</p>')
-        self.report_content.append(f'<p>{text_v}</p>')
-
-    def draw_circuit(self, qc):
-        filename = self._build_filename(qc.name)
-        circuit_drawer(qc, output='mpl', filename=filename)
-        self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="Circuit Diagram">')
-        return filename
+        prob_list = [{k: v / total_shots for k, v in counts.items()} for counts in counts_list]
+        filename = self._build_filename(f'counts_hist', p_dephase)
+        plot_histogram(prob_list, legend=legend,
+                       title=self._build_title(f'Classical bits results', p_dephase))
+        plt.savefig(filename, bbox_inches="tight")
+        self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="Counts Histogram">')
 
     def hist(self, counts, name, p_dephase):
         title = self._build_title(f'{name} Simulation results', p_dephase, 'qasm_simulator')
@@ -150,12 +154,16 @@ class Analyzer:
         probs = {k: v / sum(counts.values()) for k, v in counts.items()}
 
         print(title)
-        print(probs)
         plot_histogram(probs,
                        title=title,
                        filename=filename)
         self.report_content.append(f'<p>{title}</p>')
-        self.report_content.append(f'<p>{probs}</p>')
+
+    def _draw_circuit(self, qc):
+        filename = self._build_filename(qc.name)
+        circuit_drawer(qc, output='mpl', filename=filename)
+        self.report_content.append(f'<img src="{os.getcwd()}/{filename}" alt="Circuit Diagram">')
+        return filename
 
     def generate_html_report(self):
         html_content = """
@@ -187,3 +195,31 @@ class Analyzer:
         with open(html_output, 'w') as f:
             f.write(html_content)
         print(f'Report saved as {html_output}')
+
+    def calculate_correlation(counts):
+        """
+        Calculates the correlation between Alice's and Bob's measurement results.
+
+        The correlation is calculated based on the expectation values of Alice's
+        and Bob's measurements. For simplicity, let's assume Alice and Bob both
+        measure in the Z-basis, so the outcomes are 0 and 1. We map these to +1
+        and -1, respectively.
+
+        Correlation = <Alice * Bob>
+
+        Args:
+            counts (dict): Counts of measurement outcomes.
+
+        Returns:
+            float: The calculated correlation between Alice's and Bob's results.
+        """
+
+        total_counts = sum(counts.values())  # Assuming same total for Bob
+
+        correlation = 0
+        for outcome, count in counts.items():
+            alice_outcome = 1 if outcome[ALICE_QUBIT_IDX] == '0' else -1  # Map 0 to +1, 1 to -1
+            bob_outcome = 1 if outcome[BOB_QUBIT_IDX] == '0' else -1
+            correlation += alice_outcome * bob_outcome * count / total_counts
+
+        return correlation

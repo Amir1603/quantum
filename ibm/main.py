@@ -1,8 +1,10 @@
 import argparse
+from analysis import Analyzer
 from conf import Conf
+from Observables import ObservableFactory
 from runner import Runner
 from results import Results
-from analysis import Analyzer
+
 
 res = Results(Analyzer.run_time)
 
@@ -66,7 +68,9 @@ if __name__ == "__main__":
         print(c)
         print('****************************************************')
         print()
-        runner = Runner(c)
+        of = ObservableFactory()
+        of.create_observables(c)
+        runner = Runner(c, of.obs_list)
         single_run(c, runner, p_dephase=c.p_dephase, backend_name=c.backend)
 
     Runner.wrap()

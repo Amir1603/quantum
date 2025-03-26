@@ -1,3 +1,4 @@
+from Observables import Observable, ObservableFactory
 import matplotlib.pyplot as plt
 
 class Results:
@@ -5,84 +6,67 @@ class Results:
         self.data = {}
         self.run_time = run_time
 
-    def add_result(self, source, h, k, p_dephase, h1_counts, v_counts, h1_expectation, v_expectation, e_expectation):
+    def add_result(self, source, h, k, p_dephase, counts, expectation, obs_name: str):
+        if obs_name not in self.data:
+            self.data[obs_name] = {}
+
         key = (h, k)
-        if key not in self.data:
-            self.data[key] = {
-                'h1_counts': [],
-                'v_counts': [],
-                'h1_expectations': [],
-                'v_expectations': [],
-                'e_expectations': [],
+        if key not in self.data[obs_name]:
+            self.data[obs_name][key] = {
+                'counts': [],
+                'expectation': [],
                 'p_dephase': [],
-                'source': []
+                'source': [],
             }
-        self.data[key]['h1_counts'].append(h1_counts)
-        self.data[key]['v_counts'].append(v_counts)
-        self.data[key]['h1_expectations'].append(h1_expectation)
-        self.data[key]['v_expectations'].append(v_expectation)
-        self.data[key]['e_expectations'].append(e_expectation)
-        self.data[key]['p_dephase'].append(p_dephase)
-        self.data[key]['source'].append(source)
+        self.data[obs_name][key]['counts'].append(counts)
+        self.data[obs_name][key]['expectation'].append(expectation)
+        self.data[obs_name][key]['p_dephase'].append(p_dephase)
+        self.data[obs_name][key]['source'].append(source)
 
     def generate_counts_graphs(self):
-        num_plots = len(self.data)
-        fig, axs = plt.subplots(num_plots, 2, figsize=(15, 5 * num_plots))
+        of = ObservableFactory()
+        num_plots = len(self.data[of.obs_list[0].name])
+
+        fig, axs = plt.subplots(num_plots, len(of.obs_list), figsize=(15, 5 * num_plots))
         fig.suptitle('Counts vs Dephasing Noise')
 
-        for idx, ((h, k), data) in enumerate(self.data.items()):
-            ax_h1 = axs[idx, 0]
-            ax_v = axs[idx, 1]
+        for obs, obs_data in self.data.items():
+            for idx, ((h, k), data) in enumerate(obs_data.items()):
+                [i] = [index for index, element in enumerate(of.obs_list) if element.name == obs]
+                if num_plots == 1:
+                    ax = axs[i]
+                else:
+                    ax = axs[idx, i]
 
-            # Plot h1_counts
-            for key in data['h1_counts'][0].keys():
-                counts = [h1_counts[key] for h1_counts in data['h1_counts']]
-                ax_h1.plot(data['p_dephase'], counts, marker='o', label=f'{key}')
-            ax_h1.set_title(f'H1 Counts for (h={h}, k={k})')
-            ax_h1.set_xlabel('Dephasing Noise')
-            ax_h1.set_ylabel('Counts')
-            ax_h1.legend()
-
-            # Plot v_counts
-            for key in data['v_counts'][0].keys():
-                counts = [v_counts[key] for v_counts in data['v_counts']]
-                ax_v.plot(data['p_dephase'], counts, marker='o', label=f'{key}')
-            ax_v.set_title(f'V Counts for (h={h}, k={k})')
-            ax_v.set_xlabel('Dephasing Noise')
-            ax_v.set_ylabel('Counts')
-            ax_v.legend()
+                # Plot counts
+                for key in data['counts'][0].keys():
+                    counts = [counts[key] for counts in data['counts']]
+                    ax.plot(data['p_dephase'], counts, marker='o', label=f'{key}')
+                ax.set_title(f'{obs} Counts for (h={h}, k={k})')
+                ax.set_xlabel('Dephasing Noise')
+                ax.set_ylabel('Counts')
+                ax.legend()
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])
         plt.savefig(f'artifacts/{self.run_time}/counts_vs_dephasing_noise.png')
         plt.show()
 
     def generate_expectation_graphs(self):
-        fig, axs = plt.subplots(3, 1, figsize=(10, 12))
+        of = ObservableFactory()
+        fig, axs = plt.subplots(len(of.obs_list), 1, figsize=(10, 12))
         fig.suptitle('Expectation Values vs Dephasing Noise')
 
-        for (h, k), data in self.data.items():
-            label = f'h={h}, k={k}'
+        for obs, obs_data in self.data.items():
+            for (h, k), data in obs_data.items():
+                label = f'h={h}, k={k}'
 
-            # Plot H1 expectation values
-            axs[0].plot(data['p_dephase'], data['h1_expectations'], marker='o', label=label)
-            axs[0].set_title('H1 Expectation vs Dephasing Noise')
-            axs[0].set_xlabel('Dephasing Noise')
-            axs[0].set_ylabel('H1 Expectation')
-            axs[0].legend()
-
-            # Plot V expectation values
-            axs[1].plot(data['p_dephase'], data['v_expectations'], marker='o', label=label)
-            axs[1].set_title('V Expectation vs Dephasing Noise')
-            axs[1].set_xlabel('Dephasing Noise')
-            axs[1].set_ylabel('V Expectation')
-            axs[1].legend()
-
-            # Plot E expectation values
-            axs[2].plot(data['p_dephase'], data['e_expectations'], marker='o', label=label)
-            axs[2].set_title('E Expectation vs Dephasing Noise')
-            axs[2].set_xlabel('Dephasing Noise')
-            axs[2].set_ylabel('E Expectation')
-            axs[2].legend()
+                # Plot expectation 
+                [i] = [index for index, element in enumerate(of.obs_list) if element.name == obs]
+                axs[i].plot(data['p_dephase'], data['expectation'], marker='o', label=label)
+                axs[i].set_title(f'{obs} Expectation vs Dephasing Noise')
+                axs[i].set_xlabel('Dephasing Noise')
+                axs[i].set_ylabel(f'{obs} Expectation')
+                axs[i].legend()
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])
         plt.savefig(f'artifacts/{self.run_time}/expectation_graphs.png')
