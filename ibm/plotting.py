@@ -72,7 +72,7 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
         if group_by:
             for group_param in group_by:
                 group_val = _get_nested_value(result_dict, group_param)
-                group_key_parts.append(f"{group_param.split('.')[-1]}={group_val}")
+                group_key_parts.append(f"{group_val}")
         group_key = ", ".join(group_key_parts) if group_key_parts else "All Data"
 
         # Get x, y, error values
