@@ -1,25 +1,71 @@
 import argparse
-from analysis import Analyzer
+import os
+from datetime import datetime
 from conf import Conf
 from Observables import ObservableFactory
 from runner import Runner
 from results import Results
+import plotting
+import reporting
 
 
-res = Results(Analyzer.run_time)
+run_time_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+output_dir = f'artifacts/{run_time_str}'
+os.makedirs(output_dir, exist_ok=True)
 
-def run_over_list(l, lambda_func):
-    if l:
-        for item in l:
-            lambda_func(item)
-    else:
-        lambda_func(None)
+# Create Results instance with output directory
+res = Results(run_time_str, output_dir)
 
+def print_run_plan():
+    print('#########################################################')
+    print(f'sim num: {len([i for i in confs if i.run_simulator])}')
+    print(f'sampler sim num: {len([i for i in confs if i.run_sampler and i.p_dephase is not None])}')
+    print(f'sampler num: {len([i for i in confs if i.run_sampler and i.p_dephase is None])}')
 
-def single_run(conf, runner, p_dephase=None, backend_name=None):
-    runner.init_run(p_dephase, backend_name)
-    runner.exec(conf, res)
-    runner.finalize_run()
+def report_and_plot(res):
+    # Generate desired plots using the plotting module
+    # Example: Plot expectation value vs p_dephase for h=1, k=1 runs
+    try:
+        plot_filename_exp = plotting.plot_expectation_vs_parameter(
+            results_list=res.processed_results,
+            x_param_path='noise_params.p_dephase', # Path to parameter in RunResult
+            y_param_path='expectation_value',
+            error_param_path='sem',
+            output_dir=res.output_dir,
+            filename_prefix="exp_vs_p_dephase",
+            title_prefix="Expectation Value vs Dephasing",
+            group_by=['observable_name'], # Separate lines for each observable
+            filter_criteria={'conf_params.h': 1.0, 'conf_params.k': 1.0} # Example filter
+        )
+        print(f"Generated plot: {plot_filename_exp}")
+
+        # Example: Plot susceptibility vs h for k=1, no noise runs
+        plot_filename_susceptibility = plotting.plot_expectation_vs_parameter(
+            results_list=res.processed_results,
+            x_param_path='conf_params.h',
+            y_param_path='susceptibility',
+            output_dir=res.output_dir,
+            filename_prefix="susceptibility_vs_h",
+            title_prefix="Susceptibility vs h (k=1, No Noise)",
+            group_by=['observable_name'],
+            filter_criteria={'conf_params.k': 1.0, 'noise_params': {}} # Filter for no noise
+        )
+        print(f"Generated plot: {plot_filename_susceptibility}")
+
+        # ... add calls to generate other plots (counts histograms, etc.) ...
+        plot_filenames = [f for f in [plot_filename_exp, plot_filename_susceptibility] if f] # Collect generated plot paths
+
+        # Generate HTML Report
+        reporting.generate_html_report(
+            results_list=res.processed_results,
+            plot_filenames=plot_filenames, # Pass paths to generated plots
+            output_dir=res.output_dir,
+            report_filename="final_report.html"
+        )
+        print(f"Generated report in {res.output_dir}")
+
+    except Exception as e:
+        print(f"Error during plotting/reporting: {e}")
 
 
 if __name__ == "__main__":
@@ -29,51 +75,67 @@ if __name__ == "__main__":
     parser.add_argument('--k-param', type=float)
     parser.add_argument('--total-shots', type=float)
     parser.add_argument('--run-all-conf', action=argparse.BooleanOptionalAction)
-
     args = parser.parse_args()
 
+    # --- Configuration Loading ---
     confs = []
-
     if args.run_all_conf:
         confs = Conf.generate_all_confs()
     else:
         conf = Conf()
         conf.load()
-
-        if args.h_param:
-            conf.h = args.h_param
-        if args.k_param:
-            conf.k = args.k_param
-        if args.total_shots:
-            conf.total_shots = args.total_shots
-
-        if conf.p_dephase and conf.run_estimator:
-            raise "Cannot run Estimator with dephasing noise!"
-
+        # Override specific params from command line
+        if args.h_param is not None: conf.h = args.h_param
+        if args.k_param is not None: conf.k = args.k_param
+        if args.total_shots is not None: conf.total_shots = int(args.total_shots)
         confs.append(conf)
 
-    print(len(confs))
-    print('#########################################################')
-    print()
-    print(f'sim num: {len([i for i in confs if i.run_simulator])}')
-    print(f'sampler sim num: {len([i for i in confs if i.run_sampler and i.p_dephase is not None])}')
-    print(f'sampler num: {len([i for i in confs if i.run_sampler and i.p_dephase is None])}')
-    print(f'estimator num: {len([i for i in confs if i.run_estimator])}')
-
+    print(f"Generated {len(confs)} configurations to run.")
+    print_run_plan()
     input("Press Enter to continue...")
 
-    for c in confs:
-        print()
-        print('****************************************************')
-        print(c)
-        print('****************************************************')
-        print()
-        of = ObservableFactory()
-        of.create_observables(c)
-        runner = Runner(c, of.obs_list)
-        single_run(c, runner, p_dephase=c.p_dephase, backend_name=c.backend)
+    # --- Observable Setup ---
+    # Create factory once
+    observable_factory = ObservableFactory()
 
-    Runner.wrap()
 
-    res.generate_expectation_graphs()
-    res.generate_counts_graphs()
+    # --- Execution Loop ---
+    # Group configurations by parameters that require backend re-initialization
+    # For simplicity here, assume re-init for each conf, but could optimize
+    current_runner = None
+
+    for i, conf in enumerate(confs):
+        print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
+        print(conf) # Print current config
+
+        # Create/get observables for this config (needed for runner)
+        # Note: Factory creates *all* observables, runner uses the list of simulatable ones
+        simulatable_obs_list = observable_factory.create_observables(conf)
+
+        # Initialize Runner (or re-init if backend/noise changes significantly)
+        # Pass only the list of observables to simulate
+        runner = Runner(simulatable_obs_list)
+        # Initialize backend, noise model etc. for this specific conf
+        runner.init_run_level(conf, conf.backend)
+
+        # Execute each observable for the current configuration
+        for obs in simulatable_obs_list:
+             runner.execute_observable(obs, conf, res)
+
+        print(f"--- Finished Configuration {i+1}/{len(confs)} ---")
+
+
+    # --- Post-Processing ---
+    print("\n--- Post-Processing Results ---")
+    res.process_results(observable_factory) # Calculate metrics, derive observables
+
+    # --- Save Processed Results ---
+    res.save_results("processed_results.json") # Save the list of RunResult objects
+
+    # --- Analysis & Reporting ---
+    print("\n--- Generating Plots and Report ---")
+    # Load results back if needed (e.g., if running analysis separately)
+    # res.load_results("processed_results.json")
+
+    report_and_plot(res)
+    print("\n--- Simulation and Analysis Complete ---")

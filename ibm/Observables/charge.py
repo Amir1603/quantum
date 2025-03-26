@@ -84,23 +84,3 @@ class Charge(Observable):
         Extracts Bob's charge from the measurement bitstring.
         """
         return int(bitstring[BOB_QUBIT_IDX])
-
-    def calculate_susceptibility(self, counts):
-        """
-        Calculates the charge susceptibility from the measurement counts.
-        Susceptibility is defined as variance.
-        """
-        charge_values = []
-        for bitstring, count in counts.items():
-            charge = self.get_bob_charge(bitstring)  # Assuming this returns 0 or 1 for Bob's charge
-            charge_values.extend([charge] * count)
-
-        mean_charge = np.mean(charge_values)
-        variance = np.var(charge_values)
-        # If there are other factors in your susceptibility formula, include them here.
-        susceptibility = variance  # Basic susceptibility is variance. Modify if needed.
-        return susceptibility
-
-    def get_extra_info(self, counts):
-        susceptibility = self.calculate_susceptibility(counts)
-        return f"Charge susceptibility: {susceptibility}"

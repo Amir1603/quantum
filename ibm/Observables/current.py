@@ -127,29 +127,3 @@ class Current(Observable):
              return 1 # Outcome corresponding to +1 eigenvalue
         else:
              return -1 # Outcome corresponding to -1 eigenvalue
-
-
-    def calculate_susceptibility(self, counts):
-        """
-        Calculates susceptibility (variance) for the measured 'current' (X operator).
-        """
-        measurement_values = []
-        total_shots = sum(counts.values())
-        if total_shots == 0: return 0.0
-
-        for bitstring, count in counts.items():
-             # Use get_value which returns +1 or -1
-            value = self.get_value(bitstring)
-            measurement_values.extend([value] * count)
-
-        # Variance = <O^2> - <O>^2. Since values are +/-1, O^2 is always 1.
-        # So <O^2> = 1.
-        mean_value = np.mean(measurement_values)
-        variance = 1.0 - (mean_value**2)
-        # Ensure non-negative due to potential floating point issues
-        susceptibility = max(0.0, variance)
-        return susceptibility
-
-    def get_extra_info(self, counts):
-        susceptibility = self.calculate_susceptibility(counts)
-        return f"Current (X) susceptibility: {susceptibility}"
