@@ -1,13 +1,17 @@
 import yaml
+import numpy as np
 
 
 class Conf:
     def generate_all_confs():
-        parameters = [(1, 0.2), (1, 0.5), (1, 1), (1.5, 1)] # (h, k) list
-        p_dephase_list = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        #parameters = [(1, 0.2), (1, 0.5), (1, 1), (1.5, 1)] # (h, k) list
+        step = 0.25
+        axis = np.arange(0, 2 + step, step)  # Include 2 by adding step to the stop value
+        parameters = [(h, k) for h in axis for k in axis]  # Generate all (h, k) combinations
+        p_dephase_list = [0] #[0, 0.25, 0.5, 0.75, 1.0]
         backends = []#'ibm_kyiv', 'ibm_sherbrooke', 'ibm_brisbane']
         delays = [0]
-        thetas = np.linspace(-np.pi, np.pi, 100)
+        thetas = [np.pi]#np.linspace(-np.pi, np.pi, 50)
 
         confs = []
 

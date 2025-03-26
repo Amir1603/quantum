@@ -9,8 +9,10 @@ from .observable import Observable
 class Charge(Observable):
     def __init__(self, conf: Conf, apply_protocol: bool, theta: float = np.pi):
         self.apply_protocol = apply_protocol
-        # Include theta in the name for clarity when running sweeps
-        protocol_tag = f'_theta{theta/np.pi:.2f}pi' if apply_protocol else '_no_protocol'
+        # TODO
+        ## Include theta in the name for clarity when running sweeps
+        #protocol_tag = f'_theta{theta/np.pi:.2f}pi' if apply_protocol else '_no_protocol'
+        protocol_tag = '' if apply_protocol else '_no_protocol'
         name = f'charge{protocol_tag}'
 
         self.theta = theta

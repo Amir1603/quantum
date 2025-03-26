@@ -61,18 +61,18 @@ def report_and_plot(results_obj: Results):
     # Expectation vs p_dephase (Filtered Observables)
     try:
         # Define observables of interest for this plot
-        selected_obs_plot = ['charge', 'current', 'total_energy']
+        selected_obs_plot = ['charge']#, 'current', 'total_energy']
         # Example: Filter for a specific h, k combination
         filter_criteria_plot1 = {'conf_params.h': 1.0, 'conf_params.k': 1.0}
 
         plot_exp_vs_p_filt = plotting.plot_expectation_vs_parameter(
             results_list=results_list,
-            x_param_path='conf_params.p_dephase', # Use correct path for p_dephase from Conf
+            x_param_path='conf_params.theta', # Use correct path for p_dephase from Conf
             y_param_path='expectation_value',
             error_param_path='sem',
             output_dir=output_dir,
-            filename_prefix="exp_vs_p_dephase_filtered_hk11",
-            title_prefix=f"Expectation Value vs Dephasing (h={filter_criteria_plot1['conf_params.h']}, k={filter_criteria_plot1['conf_params.k']})",
+            filename_prefix="exp_vs_theta",
+            title_prefix=f"Expectation Value vs theta (h={filter_criteria_plot1['conf_params.h']}, k={filter_criteria_plot1['conf_params.k']})",
             group_by=['observable_name'], # Separate lines for each selected observable
             filter_criteria=filter_criteria_plot1,
             observables_to_plot=selected_obs_plot # Apply observable filter
@@ -83,69 +83,86 @@ def report_and_plot(results_obj: Results):
     except Exception as e:
         print(f"Error during filtered expectation plot: {e}")
 
-    # Expectation vs p_dephase (Subplots for different h, k)
-    try:
-        plot_exp_vs_p_subplot = plotting.plot_expectation_vs_parameter_subplots(
-             results_list=results_list,
-             x_param_path='conf_params.p_dephase', # Path to p_dephase
-             y_param_path='expectation_value',
-             subplot_params=['conf_params.h', 'conf_params.k'], # Create subplots based on h and k
-             output_dir=output_dir,
-             error_param_path='sem',
-             line_group_by=['observable_name'], # Lines within each subplot correspond to observables
-             # filter_criteria={}, # Optional: Add global filters if needed, e.g., for specific run types
-             observables_to_plot=selected_obs_plot, # Filter observables globally for these subplots
-             filename_prefix="exp_vs_p_dephase_subplots_hk",
-             title_prefix="Expectation Value vs Dephasing"
-        )
-        if plot_exp_vs_p_subplot: plot_filenames.append(plot_exp_vs_p_subplot)
-        print(f"Generated plot (subplots): {plot_exp_vs_p_subplot}")
+    # # Expectation vs p_dephase (Subplots for different h, k)
+    # try:
+    #     plot_exp_vs_p_subplot = plotting.plot_expectation_vs_parameter_subplots(
+    #          results_list=results_list,
+    #          x_param_path='conf_params.p_dephase', # Path to p_dephase
+    #          y_param_path='expectation_value',
+    #          subplot_params=['conf_params.h', 'conf_params.k'], # Create subplots based on h and k
+    #          output_dir=output_dir,
+    #          error_param_path='sem',
+    #          line_group_by=['observable_name'], # Lines within each subplot correspond to observables
+    #          # filter_criteria={}, # Optional: Add global filters if needed, e.g., for specific run types
+    #          observables_to_plot=selected_obs_plot, # Filter observables globally for these subplots
+    #          filename_prefix="exp_vs_p_dephase_subplots_hk",
+    #          title_prefix="Expectation Value vs Dephasing"
+    #     )
+    #     if plot_exp_vs_p_subplot: plot_filenames.append(plot_exp_vs_p_subplot)
+    #     print(f"Generated plot (subplots): {plot_exp_vs_p_subplot}")
 
-    except Exception as e:
-        print(f"Error during subplot generation: {e}")
+    # except Exception as e:
+    #     print(f"Error during subplot generation: {e}")
 
-    # Counts Histograms
-    try:
-        print("\n--- Generating Example Histograms ---")
-        hist_count = 0
-        # Limit the number of histograms generated to avoid too many files
-        max_hists = 5
-        for result in results_list:
-             # Define criteria for which runs to generate histograms
-             # Example: Generate for 'charge' observable, specific (h, k), and p_dephase = 0
-             is_target_hist = (
-                 result.observable_name == 'charge' and
-                 _get_nested_value(result, 'conf_params.h') == 1.0 and
-                 _get_nested_value(result, 'conf_params.k') == 1.0 and
-                 _get_nested_value(result, 'conf_params.p_dephase') == 0.0 # Check p_dephase from conf_params
-             )
-             # Add more conditions or different examples as needed
+    # # Counts Histograms
+    # try:
+    #     print("\n--- Generating Example Histograms ---")
+    #     hist_count = 0
+    #     # Limit the number of histograms generated to avoid too many files
+    #     max_hists = 5
+    #     for result in results_list:
+    #          # Define criteria for which runs to generate histograms
+    #          # Example: Generate for 'charge' observable, specific (h, k), and p_dephase = 0
+    #          is_target_hist = (
+    #              result.observable_name == 'charge' and
+    #              _get_nested_value(result, 'conf_params.h') == 1.0 and
+    #              _get_nested_value(result, 'conf_params.k') == 1.0 and
+    #              _get_nested_value(result, 'conf_params.p_dephase') == 0.0 # Check p_dephase from conf_params
+    #          )
+    #          # Add more conditions or different examples as needed
 
-             # Check if counts data exists and if it matches the target criteria
-             if is_target_hist and result.counts and hist_count < max_hists:
-                  # Create descriptive info for the title and filename
-                  h_val = _get_nested_value(result, 'conf_params.h')
-                  k_val = _get_nested_value(result, 'conf_params.k')
-                  p_d_val = _get_nested_value(result, 'conf_params.p_dephase')
-                  title_info = f"h={h_val}, k={k_val}, p_d={p_d_val}"
+    #          # Check if counts data exists and if it matches the target criteria
+    #          if is_target_hist and result.counts and hist_count < max_hists:
+    #               # Create descriptive info for the title and filename
+    #               h_val = _get_nested_value(result, 'conf_params.h')
+    #               k_val = _get_nested_value(result, 'conf_params.k')
+    #               p_d_val = _get_nested_value(result, 'conf_params.p_dephase')
+    #               title_info = f"h={h_val}, k={k_val}, p_d={p_d_val}"
 
-                  hist_filename = plotting.plot_counts_histogram(
-                      counts=result.counts,
-                      observable_name=result.observable_name,
-                      output_dir=output_dir,
-                      filename_prefix="hist",
-                      title_info=title_info
-                  )
-                  if hist_filename:
-                      plot_filenames.append(hist_filename)
-                      print(f"Generated histogram: {hist_filename}")
-                      hist_count += 1 # Increment counter
+    #               hist_filename = plotting.plot_counts_histogram(
+    #                   counts=result.counts,
+    #                   observable_name=result.observable_name,
+    #                   output_dir=output_dir,
+    #                   filename_prefix="hist",
+    #                   title_info=title_info
+    #               )
+    #               if hist_filename:
+    #                   plot_filenames.append(hist_filename)
+    #                   print(f"Generated histogram: {hist_filename}")
+    #                   hist_count += 1 # Increment counter
 
-        if hist_count == 0:
-             print("No target results found matching criteria for example histograms.")
+    #     if hist_count == 0:
+    #          print("No target results found matching criteria for example histograms.")
 
-    except Exception as e:
-        print(f"Error during histogram generation: {e}")
+    # except Exception as e:
+    #     print(f"Error during histogram generation: {e}")
+
+
+    plot_heatmap = plotting.plot_heatmap_vs_hk(
+        results_list=results_list,
+        h_param_path='conf_params.h',
+        k_param_path='conf_params.k',
+        z_param_path='expectation_value', # Path to the value you want to plot
+        output_dir=output_dir,
+        observable_to_plot='charge',
+        filter_criteria={},
+        filename_prefix='heatmap_charge_expval',
+        title_prefix='Expectation Value vs (h, k)',
+        cmap='viridis',
+        z_label='Avg Charge <rho>'
+    )
+    if plot_heatmap: plot_filenames.append(plot_heatmap)
+    print(f"Generated heatmap plot: {plot_heatmap}")
 
 
     # --- Generate HTML Report (including tables - Request 3) ---
