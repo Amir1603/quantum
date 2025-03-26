@@ -7,44 +7,48 @@ class Conf:
         p_dephase_list = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         backends = []#'ibm_kyiv', 'ibm_sherbrooke', 'ibm_brisbane']
         delays = [0]
+        thetas = np.linspace(-np.pi, np.pi, 100)
 
         confs = []
 
         for p in parameters:
-            for delay in delays:
-                for p_dephase in p_dephase_list:
-                    conf = Conf()
-                    conf.h = p[0]
-                    conf.k = p[1]
-                    conf.total_shots = 10000
-                    conf.error_mitigation = False
-                    conf.run_simulator = True
-                    conf.run_sampler = False
-                    conf.run_estimator = False
-                    conf.run_all = False
-                    conf.p_dephase = p_dephase
-                    conf.backend = None
-                    conf.draw_circuit = True
-                    conf.delay_time = delay
+            for theta in thetas:
+                for delay in delays:
+                    for p_dephase in p_dephase_list:
+                        conf = Conf()
+                        conf.h = p[0]
+                        conf.k = p[1]
+                        conf.total_shots = 10000
+                        conf.error_mitigation = False
+                        conf.run_simulator = True
+                        conf.run_sampler = False
+                        conf.run_estimator = False
+                        conf.run_all = False
+                        conf.p_dephase = p_dephase
+                        conf.backend = None
+                        conf.draw_circuit = True
+                        conf.delay_time = delay
+                        conf.theta = theta
 
-                    confs.append(conf)
+                        confs.append(conf)
 
-                for backend in backends:
-                    conf = Conf()
-                    conf.h = p[0]
-                    conf.k = p[1]
-                    conf.total_shots = 10000
-                    conf.error_mitigation = False
-                    conf.run_simulator = True
-                    conf.run_sampler = True
-                    conf.run_estimator = False
-                    conf.run_all = False
-                    conf.p_dephase = None
-                    conf.backend = backend
-                    conf.draw_circuit = False
-                    conf.delay_time = delay
+                    for backend in backends:
+                        conf = Conf()
+                        conf.h = p[0]
+                        conf.k = p[1]
+                        conf.total_shots = 10000
+                        conf.error_mitigation = False
+                        conf.run_simulator = True
+                        conf.run_sampler = True
+                        conf.run_estimator = False
+                        conf.run_all = False
+                        conf.p_dephase = None
+                        conf.backend = backend
+                        conf.draw_circuit = False
+                        conf.delay_time = delay
+                        conf.theta = theta
 
-                    confs.append(conf)
+                        confs.append(conf)
 
         return confs
 
@@ -62,6 +66,7 @@ class Conf:
         self.draw_circuit = False
         self.delay_time = 10000
         self.n_qubits = 2
+        self.theta = np.pi
 
 
     def load(self):
