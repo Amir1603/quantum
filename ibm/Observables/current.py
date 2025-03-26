@@ -66,17 +66,6 @@ class Current(Observable):
         """
         return "Y"
 
-    def get_operator(self, site):
-        """
-        Returns the Pauli string for the measurement operator at the site.
-        """
-        if site == "bob":
-            return "Y"
-        elif site == "alice":
-            return "Z" # Alice measured Z
-        else:
-            raise ValueError("Invalid site specified")
-
     def get_value(self, bitstring: str):
         """
         Extracts the eigenvalue for Bob's intended Y-basis measurement

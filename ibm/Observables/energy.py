@@ -33,14 +33,3 @@ class Energy(Observable):
         ) / 2
         qc.ry(2 * phi, bob_qubit).c_if(alice_creg, 0)
         qc.ry(-2 * phi, bob_qubit).c_if(alice_creg, 1)
-
-    def get_operator(self, site):
-        """
-        Returns the operator string for Energy.
-        """
-        if site == "alice":
-            return "Z"  # Or "ZI" if needed
-        elif site == "bob":
-            return "Z"
-        else:
-            raise ValueError("Invalid site specified")

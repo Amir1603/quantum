@@ -79,10 +79,4 @@ class Charge(Observable):
             return 0.0 # Eigenvalue 0
 
     def description(self):
-        return "I+Z (J_0)"
-
-    def get_bob_charge(self, bitstring: str):
-        """
-        Extracts Bob's charge from the measurement bitstring.
-        """
-        return int(bitstring[COUNTS_BOB_QUBIT_IDX])
+        return "rho = (I+Z)/2"
