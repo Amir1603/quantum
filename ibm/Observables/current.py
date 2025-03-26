@@ -101,7 +101,7 @@ class Current(Observable):
         - If measured '0' (state |+>_X): Eigenvalue is +1
         - If measured '1' (state |->_X): Eigenvalue is -1
         """
-        bob_measurement_result = bitstring[BOB_QUBIT_IDX]
+        bob_measurement_result = bitstring[COUNTS_BOB_QUBIT_IDX]
 
         if bob_measurement_result == '0':
             return 1.0  # Eigenvalue +1 for |+>_X state
@@ -117,8 +117,7 @@ class Current(Observable):
         """
         Extracts Bob's measurement outcome (+1 or -1) from the bitstring.
         """
-        # Ensure BOB_QUBIT_IDX and bitstring order convention are correct!
-        if bitstring[BOB_QUBIT_IDX] == '0':
+        if bitstring[COUNTS_BOB_QUBIT_IDX] == '0':
              return 1 # Outcome corresponding to +1 eigenvalue
         else:
              return -1 # Outcome corresponding to -1 eigenvalue

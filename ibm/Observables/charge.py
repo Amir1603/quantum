@@ -71,7 +71,7 @@ class Charge(Observable):
         The eigenvalue is 1 if the measurement is 0, and 0 if the measurement is 1.
         We consider '0' as the positive outcome.
         """
-        if bitstring[BOB_QUBIT_IDX] == '0':
+        if bitstring[COUNTS_BOB_QUBIT_IDX] == '0':
             return 1
         else:
             return 0
@@ -83,4 +83,4 @@ class Charge(Observable):
         """
         Extracts Bob's charge from the measurement bitstring.
         """
-        return int(bitstring[BOB_QUBIT_IDX])
+        return int(bitstring[COUNTS_BOB_QUBIT_IDX])

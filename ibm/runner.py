@@ -5,7 +5,7 @@ from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2, EstimatorV2
 from results import Results
-from constants import ALICE_QUBIT_IDX, BOB_QUBIT_IDX
+from constants import *
 import plotting
 
 
@@ -60,32 +60,31 @@ class Runner():
         qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
-        qubit_indices = list(range(num_qubits))
-        obs.apply_ground_state(qc, qubit_indices)
+        obs.apply_ground_state(qc, list(range(num_qubits)))
 
         alice_creg_idx = ALICE_QUBIT_IDX
         bob_creg_idx = BOB_QUBIT_IDX
 
-        obs.apply_alice_measurement(qc, qubit_indices[ALICE_QUBIT_IDX], alice_creg_idx)
+        obs.apply_alice_measurement(qc, ALICE_QUBIT_IDX, alice_creg_idx)
 
         # Idle Bob’s qubit
         if conf.delay_time and conf.delay_time > 0:
              # Ensure delay_time is in appropriate units (dt, sec). Assume dt for Aer.
-             qc.delay(conf.delay_time, qubit_indices[BOB_QUBIT_IDX], unit='dt')
+             qc.delay(conf.delay_time, BOB_QUBIT_IDX, unit='dt')
 
         # Bob's conditional operation
         # Pass the classical register/bit index Alice measured into
-        obs.apply_bob_operation(qc, qubit_indices[BOB_QUBIT_IDX], alice_creg_idx)
+        obs.apply_bob_operation(qc, BOB_QUBIT_IDX, alice_creg_idx)
 
         # Bob's measurement basis
         bob_basis = obs.get_bob_measurement_basis()
         if bob_basis == "X":
-            qc.h(qubit_indices[BOB_QUBIT_IDX])
+            qc.h(BOB_QUBIT_IDX)
         elif bob_basis == "Y":
-             qc.sdg(qubit_indices[BOB_QUBIT_IDX]) # Apply S dagger
-             qc.h(qubit_indices[BOB_QUBIT_IDX])
+             qc.sdg(BOB_QUBIT_IDX) # Apply S dagger
+             qc.h(BOB_QUBIT_IDX)
 
-        qc.measure(qubit_indices[BOB_QUBIT_IDX], bob_creg_idx)
+        qc.measure(BOB_QUBIT_IDX, bob_creg_idx)
 
         return qc
 

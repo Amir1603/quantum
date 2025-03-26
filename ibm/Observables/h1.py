@@ -19,7 +19,7 @@ class H1(Energy):
         return "Z"
 
     def get_value(self, bitstring: str):
-        if bitstring[BOB_QUBIT_IDX] == '0':
+        if bitstring[COUNTS_BOB_QUBIT_IDX] == '0':
             return 1
         else:
             return -1
