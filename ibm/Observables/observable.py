@@ -41,15 +41,9 @@ class Observable:
         sum_val_sq = 0.0
 
         for bitstring, count in counts.items():
-            try:
-                # Ensure bitstring has correct length/format if needed
-                value = self.get_value(bitstring)
-                sum_val += value * count
-                sum_val_sq += (value**2) * count
-            except (KeyError, IndexError, ValueError) as e:
-                # Handle potential issues with bitstring format or get_value logic
-                print(f"Warning: Skipping bitstring '{bitstring}' for observable '{self.name}'. Error: {e}")
-                total_shots -= count # Adjust total shots if skipping
+            value = self.get_value(bitstring)
+            sum_val += value * count
+            sum_val_sq += (value**2) * count
 
 
         if total_shots <= 0:

@@ -101,12 +101,7 @@ class Current(Observable):
         - If measured '0' (state |+>_X): Eigenvalue is +1
         - If measured '1' (state |->_X): Eigenvalue is -1
         """
-        # Ensure BOB_QUBIT_IDX and bitstring order convention are correct!
-        try:
-             # Use corrected index based on previous findings
-             bob_measurement_result = bitstring[BOB_QUBIT_IDX] # CHECK YOUR INDEXING CONVENTION
-        except IndexError:
-             raise ValueError(f"Cannot access index {BOB_QUBIT_IDX} in bitstring '{bitstring}'")
+        bob_measurement_result = bitstring[BOB_QUBIT_IDX]
 
         if bob_measurement_result == '0':
             return 1.0  # Eigenvalue +1 for |+>_X state
