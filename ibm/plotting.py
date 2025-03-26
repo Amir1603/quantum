@@ -5,6 +5,7 @@ from collections import defaultdict
 import operator
 from functools import reduce
 import numpy as np
+import pandas as pd
 
 
 def _get_nested_value(data_dict, path_str):
@@ -365,6 +366,182 @@ def plot_counts_histogram(counts, observable_name, output_dir, filename_prefix="
         return filepath
     except Exception as e:
         print(f"Error saving histogram {filepath}: {e}")
+        plt.close(fig)
+        return None
+
+
+def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, output_dir,
+                       filter_criteria=None,
+                       observable_to_plot=None, # Use string for single observable heatmaps
+                       filename_prefix="heatmap", title_prefix="Heatmap",
+                       cmap='viridis', # Colormap
+                       z_label=None # Optional custom label for the colorbar
+                       ):
+    """
+    Generates a heatmap of a z-parameter vs h and k parameters.
+
+    Args:
+        results_list (list): List of RunResult objects (or dicts).
+        h_param_path (str): Dot notation path to the h parameter (y-axis).
+        k_param_path (str): Dot notation path to the k parameter (x-axis).
+        z_param_path (str): Dot notation path to the parameter for the color intensity (z-axis).
+        output_dir (str): Directory to save the plot.
+        filter_criteria (dict, optional): Dictionary for initial filtering of results. Defaults to None.
+        observable_to_plot (str, optional): Specific observable name (string) to filter by. Defaults to None.
+        filename_prefix (str, optional): Prefix for the output plot filename. Defaults to "heatmap".
+        title_prefix (str, optional): Prefix for the plot title. Defaults to "Heatmap".
+        cmap (str, optional): Matplotlib colormap name. Defaults to 'viridis'.
+        z_label (str, optional): Custom label for the colorbar. Defaults to z_param_path name.
+
+
+    Returns:
+        str: The path to the saved plot file, or None if no data plotted.
+    """
+    if not results_list:
+        print("Warning: No results provided for heatmap plotting.")
+        return None
+
+    # --- Data Filtering and Extraction ---
+    data_for_df = []
+    for result_data in results_list:
+        if not isinstance(result_data, dict):
+            from dataclasses import asdict
+            try: result_dict = asdict(result_data)
+            except TypeError: continue
+        else: result_dict = result_data
+
+        # Filter by observable name if specified
+        # Note: Heatmaps usually make sense for a single observable type at a time
+        obs_name = result_dict.get('observable_name', 'Unknown')
+        if observable_to_plot and obs_name != observable_to_plot:
+             # Allow partial match if observable name includes theta etc.
+             if not observable_to_plot in obs_name:
+                  continue
+
+        # Apply general filter_criteria
+        match = True
+        if filter_criteria:
+            for f_key, f_val in filter_criteria.items():
+                val = _get_nested_value(result_dict, f_key)
+                if isinstance(f_val, dict) and isinstance(val, dict):
+                    if val != f_val: match = False; break
+                # Special check for apply_protocol (might be bool or derived from name)
+                elif f_key == 'apply_protocol' and isinstance(f_val, bool):
+                     derived_ap = 'no_protocol' not in obs_name # Infer from name if direct key absent
+                     actual_ap = _get_nested_value(result_dict, 'apply_protocol')
+                     if actual_ap is None: actual_ap = derived_ap # Fallback
+                     if actual_ap != f_val: match=False; break
+                elif val != f_val:
+                     match = False; break
+            if not match: continue
+
+        # Extract h, k, z values
+        h_val = _get_nested_value(result_dict, h_param_path)
+        k_val = _get_nested_value(result_dict, k_param_path)
+        z_val = _get_nested_value(result_dict, z_param_path)
+
+        if h_val is not None and k_val is not None and z_val is not None:
+            data_for_df.append({'h': h_val, 'k': k_val, 'z': z_val})
+
+    if not data_for_df:
+        print(f"Warning: No data matched the criteria for heatmap '{title_prefix}'. Filter: {filter_criteria}, Observable: {observable_to_plot}")
+        return None
+
+    # --- Grid Preparation using Pandas ---
+    df = pd.DataFrame(data_for_df)
+
+    # Handle potential duplicate (h, k) pairs by averaging z value
+    df_grouped = df.groupby(['h', 'k']).mean().reset_index()
+
+    try:
+        # Pivot the data to create a grid: index=h, columns=k, values=z
+        heatmap_data = df_grouped.pivot(index='h', columns='k', values='z')
+    except Exception as e:
+        print(f"Error pivoting data for heatmap. Ensure h/k values form a grid. Error: {e}")
+        # Try to provide more debug info
+        print("Unique h values:", sorted(df_grouped['h'].unique()))
+        print("Unique k values:", sorted(df_grouped['k'].unique()))
+        print("Data count per (h,k) pair (should be 1 after grouping):")
+        print(df.groupby(['h', 'k']).size())
+        return None
+
+
+    # Get sorted h and k values for axis labels/extent
+    h_coords = sorted(heatmap_data.index)
+    k_coords = sorted(heatmap_data.columns)
+
+    # --- Plotting ---
+    fig, ax = plt.subplots(figsize=(8, 6.5)) # Adjust size as needed
+
+    # Use imshow. extent defines the boundaries [left, right, bottom, top]
+    # Adjust extent slightly to center pixels over coordinates if needed, or use pcolormesh
+    k_min, k_max = min(k_coords), max(k_coords)
+    h_min, h_max = min(h_coords), max(h_coords)
+    # imshow extent should align with the data grid boundaries
+    # If k_coords are centers, boundaries are midpoints. Similar for h.
+    # For simplicity if grid is uniform:
+    dk = (k_max - k_min) / (len(k_coords) - 1) if len(k_coords) > 1 else 0
+    dh = (h_max - h_min) / (len(h_coords) - 1) if len(h_coords) > 1 else 0
+    extent = [k_min - dk/2, k_max + dk/2, h_min - dh/2, h_max + dh/2]
+
+
+    # Display the heatmap data. Origin='lower' puts h=min at bottom.
+    im = ax.imshow(heatmap_data.values, interpolation='nearest', origin='lower',
+                   aspect='auto', extent=extent, cmap=cmap)
+
+    # Add colorbar
+    cbar_label = z_label if z_label else z_param_path.split('.')[-1]
+    cbar = fig.colorbar(im, ax=ax, label=cbar_label)
+
+    # Set title and labels
+    title = f"{title_prefix}: {cbar_label}"
+    if observable_to_plot:
+        title += f" for {observable_to_plot}"
+    filter_strs = []
+    if filter_criteria:
+        # Nicer filter display
+        for k, v in filter_criteria.items():
+             # Handle boolean apply_protocol display
+             if k == 'apply_protocol':
+                  filter_strs.append("Protocol ON" if v else "Protocol OFF")
+             else:
+                  filter_strs.append(f"{k.split('.')[-1]}={v}")
+    if filter_strs:
+        title += f"\n(Filtered by: {'; '.join(filter_strs)})"
+    ax.set_title(title)
+    ax.set_xlabel(k_param_path.split('.')[-1] + " (k)") # Match Fig 8 axes
+    ax.set_ylabel(h_param_path.split('.')[-1] + " (h)")
+
+    # Optional: Set ticks explicitly if needed, otherwise imshow uses extent
+    # ax.set_xticks(...)
+    # ax.set_yticks(...)
+
+    plt.tight_layout()
+
+    # --- Save Plot ---
+    filename_parts = [filename_prefix, z_param_path.replace('.', '_'), 'vs']
+    filename_parts.append(f"{k_param_path.replace('.', '_')}_{h_param_path.replace('.', '_')}")
+    if observable_to_plot:
+        # Make observable name filename-safe
+        safe_obs_name = "".join(c if c.isalnum() else "_" for c in observable_to_plot).strip('_')
+        filename_parts.append(safe_obs_name)
+    # Add simple filter info to filename
+    if filter_criteria:
+         if filter_criteria.get('apply_protocol') == True:
+             filename_parts.append("protocol_on")
+         elif filter_criteria.get('apply_protocol') == False:
+             filename_parts.append("protocol_off")
+
+    filename = f"{'_'.join(filename_parts)}.png"
+    filepath = os.path.join(output_dir, filename)
+
+    try:
+        plt.savefig(filepath)
+        plt.close(fig) # Close figure to free memory
+        print(f"Heatmap saved to: {filepath}")
+        return filepath
+    except Exception as e:
+        print(f"Error saving heatmap {filepath}: {e}")
         plt.close(fig)
         return None
 

@@ -6,4 +6,5 @@ qiskit-aer
 qiskit-ibm-provider
 qiskit-ibm-runtime
 setuptools
+pandas
 # nbconvert # For exporting notebook as pdf

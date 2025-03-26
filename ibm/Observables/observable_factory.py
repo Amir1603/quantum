@@ -25,7 +25,7 @@ class ObservableFactory(metaclass=Singleton):
         self.obs_list = [
             H1(conf),
             V(conf),
-            Charge(conf, True),
+            Charge(conf, True, conf.theta),
             Charge(conf, False),
             Current(conf, True),
             Current(conf, False)
