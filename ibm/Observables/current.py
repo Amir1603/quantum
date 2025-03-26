@@ -101,12 +101,7 @@ class Current(Observable):
         - If measured '0' (state |+>_X): Eigenvalue is +1
         - If measured '1' (state |->_X): Eigenvalue is -1
         """
-        # Ensure BOB_QUBIT_IDX and bitstring order convention are correct!
-        try:
-             # Use corrected index based on previous findings
-             bob_measurement_result = bitstring[BOB_QUBIT_IDX] # CHECK YOUR INDEXING CONVENTION
-        except IndexError:
-             raise ValueError(f"Cannot access index {BOB_QUBIT_IDX} in bitstring '{bitstring}'")
+        bob_measurement_result = bitstring[COUNTS_BOB_QUBIT_IDX]
 
         if bob_measurement_result == '0':
             return 1.0  # Eigenvalue +1 for |+>_X state
@@ -122,34 +117,7 @@ class Current(Observable):
         """
         Extracts Bob's measurement outcome (+1 or -1) from the bitstring.
         """
-        # Ensure BOB_QUBIT_IDX and bitstring order convention are correct!
-        if bitstring[BOB_QUBIT_IDX] == '0':
+        if bitstring[COUNTS_BOB_QUBIT_IDX] == '0':
              return 1 # Outcome corresponding to +1 eigenvalue
         else:
              return -1 # Outcome corresponding to -1 eigenvalue
-
-
-    def calculate_susceptibility(self, counts):
-        """
-        Calculates susceptibility (variance) for the measured 'current' (X operator).
-        """
-        measurement_values = []
-        total_shots = sum(counts.values())
-        if total_shots == 0: return 0.0
-
-        for bitstring, count in counts.items():
-             # Use get_value which returns +1 or -1
-            value = self.get_value(bitstring)
-            measurement_values.extend([value] * count)
-
-        # Variance = <O^2> - <O>^2. Since values are +/-1, O^2 is always 1.
-        # So <O^2> = 1.
-        mean_value = np.mean(measurement_values)
-        variance = 1.0 - (mean_value**2)
-        # Ensure non-negative due to potential floating point issues
-        susceptibility = max(0.0, variance)
-        return susceptibility
-
-    def get_extra_info(self, counts):
-        susceptibility = self.calculate_susceptibility(counts)
-        return f"Current (X) susceptibility: {susceptibility}"
