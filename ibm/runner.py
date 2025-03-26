@@ -6,6 +6,7 @@ from qiskit import QuantumCircuit, transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2, EstimatorV2
 from results import Results
 from constants import ALICE_QUBIT_IDX, BOB_QUBIT_IDX
+import plotting
 
 
 class Runner():
@@ -133,6 +134,7 @@ class Runner():
 
         print(f"  Executing: {obs.name}")
         qc = self._qet_circuit(obs, conf)
+        plotting.draw_circuit(qc, results.output_dir)
 
         counts = {}
         job_id = None

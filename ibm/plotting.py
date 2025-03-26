@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from qiskit.visualization import circuit_drawer
 import os
 from collections import defaultdict
 import operator
@@ -366,6 +367,10 @@ def plot_counts_histogram(counts, observable_name, output_dir, filename_prefix="
         print(f"Error saving histogram {filepath}: {e}")
         plt.close(fig)
         return None
+
+
+def draw_circuit(qc, output_dir):
+    circuit_drawer(qc, output='mpl', filename=f"{output_dir}/{qc.name}.png")
 
 # --- Add other plotting functions as needed ---
 # def plot_correlation_matrix(...)
