@@ -1,6 +1,15 @@
 import yaml
 import numpy as np
 
+# TODO: Cleanup conf class.
+#       1) Remove generate_all_confs method
+#       2) Create instead primitives to generate useful configurations
+#           2.1) Generate all (h, k) combinations
+#           2.2) Generate all p_dephase values
+#           2.3) Generate all backends
+#           2.4) Generate all delays
+#           2.5) Generate all thetas
+#           2.6) Generate all k values for a specific h
 
 class Conf:
     def generate_all_confs():
@@ -59,7 +68,7 @@ class Conf:
     def __init__(self):
         self.h = 1.0
         self.k = 1.0
-        self.total_shots = 1024
+        self.total_shots = 10000
         self.error_mitigation = False
         self.run_simulator = True
         self.run_sampler = True
@@ -68,7 +77,7 @@ class Conf:
         self.p_dephase = None
         self.backend = None
         self.draw_circuit = False
-        self.delay_time = 10000
+        self.delay_time = 0
         self.n_qubits = 2
         self.theta = np.pi
 

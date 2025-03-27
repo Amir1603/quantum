@@ -153,7 +153,7 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
     filepath = os.path.join(output_dir, filename)
     try:
         plt.savefig(filepath)
-        plt.close(fig) # Close figure to free memory
+        plt.close(fig)
         return filepath
     except Exception as e:
         print(f"Error saving plot {filepath}: {e}")
@@ -362,7 +362,7 @@ def plot_counts_histogram(counts, observable_name, output_dir, filename_prefix="
     filepath = os.path.join(output_dir, filename)
     try:
         plt.savefig(filepath)
-        plt.close(fig) # Close figure to free memory
+        plt.close(fig)
         return filepath
     except Exception as e:
         print(f"Error saving histogram {filepath}: {e}")
@@ -537,7 +537,7 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
 
     try:
         plt.savefig(filepath)
-        plt.close(fig) # Close figure to free memory
+        plt.close(fig)
         print(f"Heatmap saved to: {filepath}")
         return filepath
     except Exception as e:
@@ -547,9 +547,13 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
 
 
 def draw_circuit(qc, output_dir, conf):
+    if not conf.draw_circuit:
+        return
+
     qcs_dir = os.path.join(output_dir, 'qcs', f'h_{conf.h}_k_{conf.k}')
     os.makedirs(qcs_dir, exist_ok=True)
-    circuit_drawer(qc, output='mpl', filename=os.path.join(qcs_dir, f'{qc.name}.png'))
+    fig = circuit_drawer(qc, output='mpl', filename=os.path.join(qcs_dir, f'{qc.name}.png'))
+    plt.close(fig)
 
 # --- Add other plotting functions as needed ---
 # def plot_correlation_matrix(...)
