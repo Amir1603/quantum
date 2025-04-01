@@ -8,8 +8,7 @@ from .energy import Energy
 class V_AB(Energy):
     """Observable for the interaction energy term 2k*X0X1."""
     def __init__(self, conf: Conf):
-        op = SparsePauliOp("XX", coeffs=[2 * conf.k])
-        super().__init__("v", op, conf.h, conf.k)
+        super().__init__("v", conf.h, conf.k)
 
     def get_bob_measurement_basis(self):
         return "X"

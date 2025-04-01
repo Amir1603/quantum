@@ -3,9 +3,8 @@ import math
 
 
 class Observable:
-    def __init__(self, name, expression, h, k):
+    def __init__(self, name, h, k):
         self.name = name
-        self.expression = expression
         self.h = h
         self.k = k
 

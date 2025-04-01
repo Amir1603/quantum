@@ -4,8 +4,8 @@ from qiskit import QuantumCircuit
 from .observable import Observable
 
 class Energy(Observable):
-    def __init__(self, name, expression, h, k):
-        super().__init__(name, expression, h, k)
+    def __init__(self, name, h, k):
+        super().__init__(name, h, k)
 
     def apply_ground_state(self, qc: QuantumCircuit, qubits: list):
         """

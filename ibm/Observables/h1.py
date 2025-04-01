@@ -8,8 +8,7 @@ from .energy import Energy
 class H1_B(Energy):
     """Observable for Bob's local energy term h*Z1."""
     def __init__(self, conf: Conf):
-        op = SparsePauliOp("IZ", coeffs=[conf.h])
-        super().__init__("h1", op, conf.h, conf.k)
+        super().__init__("h1", conf.h, conf.k)
 
     def get_bob_measurement_basis(self):
         return "Z"

@@ -9,15 +9,12 @@ class Current(Observable):
     def __init__(self, conf: Conf, apply_protocol):
         self.apply_protocol = apply_protocol
         name = f'current{"" if apply_protocol else "_no_protocol"}'
-        # Define Bob's observable: Current J proportional to Sigma_Y
-        # The operator itself is Y, but measurement involves basis change + Z measure.
-        op_str = "I" * BOB_QUBIT_IDX + "Y" + "I" * (conf.n_qubits - BOB_QUBIT_IDX - 1)
-        op_list = [(op_str, 1.0)]
+
         # Store h, k for ground state preparation
         self.h = conf.h
         self.k = conf.k
         # Initialize Observable parent class
-        super().__init__(name, SparsePauliOp.from_list(op_list), self.h, self.k)
+        super().__init__(name, self.h, self.k)
 
 
     def apply_ground_state(self, qc: QuantumCircuit, qubits: list):

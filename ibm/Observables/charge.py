@@ -19,12 +19,8 @@ class Charge(Observable):
 
         if conf.n_qubits - BOB_QUBIT_IDX - 1 < 0:
              raise ValueError("BOB_QUBIT_IDX is out of bounds")
-        op_list = [
-            ("I" * conf.n_qubits, 0.5),
-            ("I" * BOB_QUBIT_IDX + "Z" + "I" * (conf.n_qubits - BOB_QUBIT_IDX - 1), 0.5)
-        ]
 
-        super().__init__(name, SparsePauliOp.from_list(op_list), conf.h, conf.k)
+        super().__init__(name, conf.h, conf.k)
 
     def apply_ground_state(self, qc: QuantumCircuit, qubits: list):
         """

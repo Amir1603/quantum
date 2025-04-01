@@ -8,8 +8,7 @@ class TotalEnergy(Observable):
     from the results of H1 and V.
     """
     def __init__(self, h, k):
-        # Expression is conceptual, not used for circuit building
-        super().__init__("total_energy", expression=None, h=h, k=k)
+        super().__init__("total_energy", h=h, k=k)
         self.component_observables = ["h1", "v"] # Names of observables it's derived from
 
     # --- No Circuit Methods Needed ---
