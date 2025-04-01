@@ -1,69 +1,41 @@
 import yaml
 import numpy as np
 
-# TODO: Cleanup conf class.
-#       1) Remove generate_all_confs method
-#       2) Create instead primitives to generate useful configurations
-#           2.1) Generate all (h, k) combinations
-#           2.2) Generate all p_dephase values
-#           2.3) Generate all backends
-#           2.4) Generate all delays
-#           2.5) Generate all thetas
-#           2.6) Generate all k values for a specific h
 
 class Conf:
-    def generate_all_confs():
-        #parameters = [(1, 0.2), (1, 0.5), (1, 1), (1.5, 1)] # (h, k) list
-        step = 0.25
-        axis = np.arange(0, 2 + step, step)  # Include 2 by adding step to the stop value
-        parameters = [(h, k) for h in axis for k in axis]  # Generate all (h, k) combinations
-        p_dephase_list = [0] #[0, 0.25, 0.5, 0.75, 1.0]
-        backends = []#'ibm_kyiv', 'ibm_sherbrooke', 'ibm_brisbane']
-        delays = [0]
-        thetas = [np.pi]#np.linspace(-np.pi, np.pi, 50)
+    @staticmethod
+    def generate_hk_combinations(conf, step=0.25, max_value=2):
+        axis = np.arange(0, max_value + step, step)
+        hks = [(h, k) for h in axis for k in axis]
 
-        confs = []
+        return [Conf(h=h, k=k, **conf.__dict__) for h, k in hks]
 
-        for p in parameters:
-            for theta in thetas:
-                for delay in delays:
-                    for p_dephase in p_dephase_list:
-                        conf = Conf()
-                        conf.h = p[0]
-                        conf.k = p[1]
-                        conf.total_shots = 10000
-                        conf.error_mitigation = False
-                        conf.run_simulator = True
-                        conf.run_sampler = False
-                        conf.run_estimator = False
-                        conf.run_all = False
-                        conf.p_dephase = p_dephase
-                        conf.backend = None
-                        conf.draw_circuit = True
-                        conf.delay_time = delay
-                        conf.theta = theta
+    @staticmethod
+    def generate_k_for_h(conf, step=0.25, max_value=2):
+        axis = np.arange(0, max_value + step, step)
+        hks =[(conf.h, k) for k in axis]
 
-                        confs.append(conf)
+        return [Conf(h=h, k=k, **conf.__dict__) for h, k in hks]
 
-                    for backend in backends:
-                        conf = Conf()
-                        conf.h = p[0]
-                        conf.k = p[1]
-                        conf.total_shots = 10000
-                        conf.error_mitigation = False
-                        conf.run_simulator = True
-                        conf.run_sampler = True
-                        conf.run_estimator = False
-                        conf.run_all = False
-                        conf.p_dephase = None
-                        conf.backend = backend
-                        conf.draw_circuit = False
-                        conf.delay_time = delay
-                        conf.theta = theta
+    @staticmethod
+    def generate_p_dephase_values(conf, num_points=1):
+        dephases = np.linspace(0, 1.0, num_points).tolist()
 
-                        confs.append(conf)
+        return [Conf(p_dephase=p, **conf.__dict__) for p in dephases]
 
-        return confs
+    @staticmethod
+    def generate_backends():
+        return ['ibm_kyiv', 'ibm_sherbrooke', 'ibm_brisbane']
+
+    @staticmethod
+    def generate_delays():
+        return [0]
+
+    @staticmethod
+    def generate_thetas(conf, num_points=50):
+        thetas = np.linspace(-np.pi, np.pi, num_points).tolist()
+
+        return [Conf(theta=theta, **conf.__dict__) for theta in thetas]
 
     def __init__(self):
         self.h = 1.0
@@ -72,7 +44,7 @@ class Conf:
         self.error_mitigation = False
         self.run_simulator = True
         self.run_sampler = True
-        self.run_estimator = True
+        self.run_estimator = False
         self.run_all = False
         self.p_dephase = None
         self.backend = None
@@ -97,4 +69,4 @@ class Conf:
 
 
     def __repr__(self):
-        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_estimator:{self.run_estimator} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}>"
+        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_estimator:{self.run_estimator} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <n_qubits:{self.n_qubits}>"
