@@ -5,24 +5,21 @@ from qiskit.quantum_info import SparsePauliOp
 from .energy import Energy
 
 
-class H1(Energy):
+class H1_B(Energy):
+    """Observable for Bob's local energy term h*Z1."""
     def __init__(self, conf: Conf):
-        super().__init__("h1",
-                         SparsePauliOp.from_list([
-                             ("ZI", conf.h),
-                             ("II", conf.h**2 / np.sqrt(conf.h**2 + conf.k**2))
-                            ]),
-                         conf.h,
-                         conf.k)
+        op = SparsePauliOp("IZ", coeffs=[conf.h])
+        super().__init__("h1", op, conf.h, conf.k)
 
     def get_bob_measurement_basis(self):
         return "Z"
 
     def get_value(self, bitstring: str):
-        if bitstring[COUNTS_BOB_QUBIT_IDX] == '0':
-            return 1
+        bob_bit = bitstring[COUNTS_BOB_QUBIT_IDX]
+        if bob_bit == '0':
+            return 1 # Z eigenvalue for |0>
         else:
-            return -1
+            return -1 # Z eigenvalue for |1>
 
     def description(self):
-        return "Z (H1)"
+        return "h*Z_1 (Bob's local Z term)"
