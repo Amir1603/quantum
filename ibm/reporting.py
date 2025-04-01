@@ -1,19 +1,8 @@
 import os
 from collections import defaultdict
-import operator
-from functools import reduce
 from dataclasses import asdict, is_dataclass
+from utils import get_nested_value
 
-
-def _get_nested_value(data_dict, path_str):
-    """Helper function reused from plotting.py (consider moving to a utils file)"""
-    try:
-        # Ensure we start with a dict before reducing
-        if not isinstance(data_dict, dict):
-            return None
-        return reduce(operator.getitem, path_str.split('.'), data_dict)
-    except (KeyError, TypeError, IndexError):
-        return None
 
 def _format_value(value, precision=4):
     """Formats numbers for the table, handling None."""
@@ -110,7 +99,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
         else:
             def get_val_safe(item, key):
                  item_dict = item if isinstance(item, dict) else (asdict(item) if is_dataclass(item) and not isinstance(item, type) else {})
-                 return _get_nested_value(item_dict, key)
+                 return get_nested_value(item_dict, key)
 
             has_p_dephase_zero = any(get_val_safe(res, 'noise_params.p_dephase') == 0.0 for res in results_list)
             if has_p_dephase_zero:
@@ -141,7 +130,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
                  # Apply config filter
                  match = True
                  for f_key, f_val in config_filter.items():
-                     val = _get_nested_value(res_dict, f_key)
+                     val = get_nested_value(res_dict, f_key)
                      if isinstance(f_val, dict) and isinstance(val, dict):
                          if val != f_val: match = False; break
                      elif val != f_val:
@@ -158,8 +147,8 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
             # Group by (h, k)
             grouped_by_hk = defaultdict(list)
             for res in table_data:
-                 h_val = _get_nested_value(res, 'conf_params.h')
-                 k_val = _get_nested_value(res, 'conf_params.k')
+                 h_val = get_nested_value(res, 'conf_params.h')
+                 k_val = get_nested_value(res, 'conf_params.k')
                  hk_key = (h_val, k_val)
                  grouped_by_hk[hk_key].append(res)
 
@@ -259,14 +248,34 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
     #     html_content += f"<p>Error converting results to JSON: {e}</p>"
 
 
-    html_content += """
-    </body>
-    </html>
-    """
+    def generate_report(results_list, plot_filenames, output_dir, table_obs_report=['charge', 'charge_no_protocol', 'total_energy']):
+        html_content += """
+        </body>
+        </html>
+        """
 
-    try:
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        print(f"HTML report saved to {filepath}")
-    except Exception as e:
-        print(f"Error writing HTML report {filepath}: {e}")
+        try:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            print(f"HTML report saved to {filepath}")
+        except Exception as e:
+            print(f"Error writing HTML report {filepath}: {e}")
+
+
+        try:
+            table_configs_report = [
+                {'conf_params.p_dephase': 0.0},
+            ]
+
+            generate_html_report(
+                results_list=results_list,
+                plot_filenames=plot_filenames,
+                output_dir=output_dir,
+                report_filename="final_report.html",
+                table_observables=table_obs_report,
+                table_configs=table_configs_report
+            )
+            print(f"Generated HTML report in {output_dir}")
+
+        except Exception as e:
+            print(f"Error during HTML reporting: {e}")

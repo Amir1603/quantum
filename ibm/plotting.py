@@ -2,18 +2,10 @@ import matplotlib.pyplot as plt
 from qiskit.visualization import circuit_drawer
 import os
 from collections import defaultdict
-import operator
-from functools import reduce
 import numpy as np
 import pandas as pd
+from utils import get_nested_value
 
-
-def _get_nested_value(data_dict, path_str):
-    """Helper to get value from nested dict using dot notation path."""
-    try:
-        return reduce(operator.getitem, path_str.split('.'), data_dict)
-    except (KeyError, TypeError, IndexError):
-        return None
 
 def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, output_dir,
                                 error_param_path=None, group_by=None, filter_criteria=None,
@@ -64,7 +56,7 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
         if filter_criteria:
             match = True
             for filter_key, filter_val in filter_criteria.items():
-                val = _get_nested_value(result_dict, filter_key)
+                val = get_nested_value(result_dict, filter_key)
                 # Handle potential dict comparison in noise_params
                 if isinstance(filter_val, dict) and isinstance(val, dict):
                     if val != filter_val:
@@ -80,18 +72,18 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
         group_key_parts = []
         if group_by:
             for group_param in group_by:
-                group_val = _get_nested_value(result_dict, group_param)
+                group_val = get_nested_value(result_dict, group_param)
                 # Include observable name if not grouping by it explicitly
-                group_key_parts.append(f"{_get_nested_value(result_dict, 'observable_name')}: {group_param.split('.')[-1]}={group_val}" if 'observable_name' not in group_by else f"{group_val}")
+                group_key_parts.append(f"{get_nested_value(result_dict, 'observable_name')}: {group_param.split('.')[-1]}={group_val}" if 'observable_name' not in group_by else f"{group_val}")
         else:
              # Default group by observable name if no group_by specified
              group_key_parts.append(result_dict.get('observable_name', 'Unknown Obs'))
         group_key = ", ".join(group_key_parts) if group_key_parts else "All Data"
 
         # Get x, y, error values
-        x_val = _get_nested_value(result_dict, x_param_path)
-        y_val = _get_nested_value(result_dict, y_param_path)
-        e_val = _get_nested_value(result_dict, error_param_path) if error_param_path else None
+        x_val = get_nested_value(result_dict, x_param_path)
+        y_val = get_nested_value(result_dict, y_param_path)
+        e_val = get_nested_value(result_dict, error_param_path) if error_param_path else None
 
         if x_val is not None and y_val is not None:
             grouped_data[group_key]['x'].append(x_val)
@@ -204,7 +196,7 @@ def plot_expectation_vs_parameter_subplots(results_list, x_param_path, y_param_p
         if filter_criteria:
             match = True
             for f_key, f_val in filter_criteria.items():
-                val = _get_nested_value(result_dict, f_key)
+                val = get_nested_value(result_dict, f_key)
                 if isinstance(f_val, dict) and isinstance(val, dict):
                     if val != f_val: match = False; break
                 elif val != f_val: match = False; break
@@ -222,7 +214,7 @@ def plot_expectation_vs_parameter_subplots(results_list, x_param_path, y_param_p
         subplot_key_parts = []
         valid_key = True
         for param in subplot_params:
-            val = _get_nested_value(res, param)
+            val = get_nested_value(res, param)
             if val is None:
                 valid_key = False; break
             subplot_key_parts.append(f"{param.split('.')[-1]}={val}")
@@ -259,7 +251,7 @@ def plot_expectation_vs_parameter_subplots(results_list, x_param_path, y_param_p
             line_key_parts = []
             if line_group_by:
                 for param in line_group_by:
-                     val = _get_nested_value(res, param)
+                     val = get_nested_value(res, param)
                      # Use just the value for the legend label if grouping by it
                      line_key_parts.append(f"{val}")
             else:
@@ -267,9 +259,9 @@ def plot_expectation_vs_parameter_subplots(results_list, x_param_path, y_param_p
                  line_key_parts.append(res.get('observable_name', 'Unknown'))
             line_key = ", ".join(line_key_parts)
 
-            x_val = _get_nested_value(res, x_param_path)
-            y_val = _get_nested_value(res, y_param_path)
-            e_val = _get_nested_value(res, error_param_path) if error_param_path else None
+            x_val = get_nested_value(res, x_param_path)
+            y_val = get_nested_value(res, y_param_path)
+            e_val = get_nested_value(res, error_param_path) if error_param_path else None
 
             if x_val is not None and y_val is not None:
                 lines_data[line_key]['x'].append(x_val)
@@ -422,13 +414,13 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         match = True
         if filter_criteria:
             for f_key, f_val in filter_criteria.items():
-                val = _get_nested_value(result_dict, f_key)
+                val = get_nested_value(result_dict, f_key)
                 if isinstance(f_val, dict) and isinstance(val, dict):
                     if val != f_val: match = False; break
                 # Special check for apply_protocol (might be bool or derived from name)
                 elif f_key == 'apply_protocol' and isinstance(f_val, bool):
                      derived_ap = 'no_protocol' not in obs_name # Infer from name if direct key absent
-                     actual_ap = _get_nested_value(result_dict, 'apply_protocol')
+                     actual_ap = get_nested_value(result_dict, 'apply_protocol')
                      if actual_ap is None: actual_ap = derived_ap # Fallback
                      if actual_ap != f_val: match=False; break
                 elif val != f_val:
@@ -436,9 +428,9 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
             if not match: continue
 
         # Extract h, k, z values
-        h_val = _get_nested_value(result_dict, h_param_path)
-        k_val = _get_nested_value(result_dict, k_param_path)
-        z_val = _get_nested_value(result_dict, z_param_path)
+        h_val = get_nested_value(result_dict, h_param_path)
+        k_val = get_nested_value(result_dict, k_param_path)
+        z_val = get_nested_value(result_dict, z_param_path)
 
         if h_val is not None and k_val is not None and z_val is not None:
             data_for_df.append({'h': h_val, 'k': k_val, 'z': z_val})
@@ -544,6 +536,118 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         print(f"Error saving heatmap {filepath}: {e}")
         plt.close(fig)
         return None
+
+
+def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, obs=['charge', 'total_energy']):
+    try:
+        # Define observables of interest for this plot
+        selected_obs_plot = obs
+        # Example: Filter for a specific h, k combination
+        filter_criteria_plot = {'conf_params.h': 1.0, 'conf_params.k': 1.0}
+
+        plot_exp_vs_p_filt = plot_expectation_vs_parameter(
+            results_list=results_list,
+            x_param_path=f'conf_params.{parameter_name}',
+            y_param_path='expectation_value',
+            error_param_path='sem',
+            output_dir=output_dir,
+            filename_prefix=f"exp_vs_{parameter_name}",
+            title_prefix=f"Expectation Value vs {parameter_name} (h={filter_criteria_plot['conf_params.h']}, k={filter_criteria_plot['conf_params.k']})",
+            group_by=['observable_name'], # Separate lines for each selected observable
+            filter_criteria=filter_criteria_plot,
+            observables_to_plot=selected_obs_plot # Apply observable filter
+        )
+
+        print(f"Generated plot (filtered obs): {plot_exp_vs_p_filt}")
+        return plot_exp_vs_p_filt
+
+    except Exception as e:
+        print(f"Error during filtered expectation plot: {e}")
+
+
+    def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, parameter_name, obs=['charge', 'total_energy']):
+        try:
+            plot_exp_vs_p_subplot = plot_expectation_vs_parameter_subplots(
+                results_list=results_list,
+                x_param_path=f'conf_params.{parameter_name}',
+                y_param_path='expectation_value',
+                subplot_params=['conf_params.h', 'conf_params.k'], # Create subplots based on h and k
+                output_dir=output_dir,
+                error_param_path='sem',
+                line_group_by=['observable_name'], # Lines within each subplot correspond to observables
+                # filter_criteria={}, # Optional: Add global filters if needed, e.g., for specific run types
+                observables_to_plot=obs,
+                filename_prefix=f"exp_vs_{parameter_name}_subplots_hk",
+                title_prefix=f"Expectation Value vs {parameter_name}"
+            )
+            print(f"Generated plot (subplots): {plot_exp_vs_p_subplot}")
+            return plot_exp_vs_p_subplot
+
+        except Exception as e:
+            print(f"Error during subplot generation: {e}")
+
+
+    def plot_counts_hist(obs='charge'):
+        try:
+            print("\n--- Generating Example Histograms ---")
+            hist_count = 0
+            # Limit the number of histograms generated to avoid too many files
+            max_hists = 5
+            plot_filenames = []
+            for result in results_list:
+                 # Define criteria for which runs to generate histograms
+                 is_target_hist = (
+                     result.observable_name == obs and
+                     get_nested_value(result, 'conf_params.h') == 1.0 and
+                     get_nested_value(result, 'conf_params.k') == 1.0 and
+                     get_nested_value(result, 'conf_params.p_dephase') == 0.0
+                 )
+
+                 # Check if counts data exists and if it matches the target criteria
+                 if is_target_hist and result.counts and hist_count < max_hists:
+                      # Create descriptive info for the title and filename
+                      h_val = get_nested_value(result, 'conf_params.h')
+                      k_val = get_nested_value(result, 'conf_params.k')
+                      p_d_val = get_nested_value(result, 'conf_params.p_dephase')
+                      title_info = f"h={h_val}, k={k_val}, p_d={p_d_val}"
+
+                      hist_filename = plot_counts_histogram(
+                          counts=result.counts,
+                          observable_name=result.observable_name,
+                          output_dir=output_dir,
+                          filename_prefix="hist",
+                          title_info=title_info
+                      )
+                      if hist_filename:
+                          plot_filenames.append(hist_filename)
+                          print(f"Generated histogram: {hist_filename}")
+                          hist_count += 1
+
+            if hist_count == 0:
+                 print("No target results found matching criteria for example histograms.")
+
+            return plot_filenames
+
+        except Exception as e:
+            print(f"Error during histogram generation: {e}")
+
+
+    def plot_heatmap(results_list, output_dir, obs='charge'):
+        plot_heatmap = plot_heatmap_vs_hk(
+            results_list=results_list,
+            h_param_path='conf_params.h',
+            k_param_path='conf_params.k',
+            z_param_path='expectation_value',
+            output_dir=output_dir,
+            observable_to_plot=obs,
+            filter_criteria={},
+            filename_prefix=f'heatmap_{obs}_expval',
+            title_prefix='Expectation Value vs (h, k)',
+            cmap='viridis',
+            z_label=f'{obs} exp value'
+        )
+        print(f"Generated heatmap plot: {plot_heatmap}")
+        return plot_heatmap
 
 
 def draw_circuit(qc, output_dir, conf):
