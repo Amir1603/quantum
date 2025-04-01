@@ -15,7 +15,7 @@ class TotalEnergy(Observable):
     # --- No Circuit Methods Needed ---
     def apply_ground_state(self, qc, qubits): pass
     def apply_alice_measurement(self, qc, alice_qubit, alice_creg): pass
-    def apply_bob_operation(self, qc, bob_qubit, alice_creg): pass
+    def apply_bob_operation(self, qc, bob_qubit, alice_creg, xor_alice_res): pass
     def get_bob_measurement_basis(self): return None # Not directly measured
 
     # --- Value Extraction (Not Applicable from Bitstring) ---

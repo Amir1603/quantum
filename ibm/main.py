@@ -40,17 +40,23 @@ def report_and_plot(results_obj: Results):
         return
 
     # --- Plotting ---
-    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'theta')
-    plot_filenames.append(file_name)
+    filter = {'conf_params.xor_alice_res': 0}
+    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'])
+    if file_name: plot_filenames.append(file_name)
 
+    filter = {'conf_params.xor_alice_res': 1}
+    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'])
+    if file_name: plot_filenames.append(file_name)
+
+    # filter = {'conf_params.h': 1.0, 'conf_params.k': 1.0}
     # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_dephase')
     # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'p_dephase')
 
-    files = plotting.plot_counts_hist()
-    plot_filenames.extend(files)
+    # files = plotting.plot_counts_hist()
+    # plot_filenames.extend(files)
 
-    file_name = plotting.plot_heatmap(results_list, output_dir)
-    plot_filenames.append(file_name)
+    # file_name = plotting.plot_heatmap(results_list, output_dir)
+    # plot_filenames.append(file_name)
 
     reporting.generate_report(results_list, plot_filenames, output_dir)
 
@@ -58,15 +64,11 @@ def report_and_plot(results_obj: Results):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Quantum Teleportation Simulation")
 
-    # Allow overriding specific Conf parameters via command line
-    parser.add_argument('--h-param', type=float, help="Override 'h' parameter in conf.yaml")
-    parser.add_argument('--k-param', type=float, help="Override 'k' parameter in conf.yaml")
-    parser.add_argument('--total-shots', type=int, help="Override 'total_shots' in conf.yaml")
-
     parser.add_argument('--all-hk', action='store_true', help="Run all hk configurations")
     parser.add_argument('--all-k-for-h', action='store_true', help="Run all k configurations for a specific h value")
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
+    parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
 
     args = parser.parse_args()
 
@@ -82,6 +84,9 @@ if __name__ == "__main__":
 
     if args.all_theta:
         confs = [conf for c in confs for conf in Conf.generate_thetas(c)]
+
+    if args.both_alice_values:
+        confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]
 
 
     print(f"Generated {len(confs)} configurations to run.")

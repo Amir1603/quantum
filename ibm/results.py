@@ -52,7 +52,7 @@ class Results:
             conf_params = {
                 'h': conf.h, 'k': conf.k, 'total_shots': conf.total_shots,
                 'delay_time': conf.delay_time, 'n_qubits': conf.n_qubits,
-                'p_dephase': conf.p_dephase, 'theta': conf.theta
+                'p_dephase': conf.p_dephase, 'theta': conf.theta, 'xor_alice_res': conf.xor_alice_res
             }
 
             run_result = RunResult(

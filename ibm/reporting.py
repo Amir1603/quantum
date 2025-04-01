@@ -246,36 +246,30 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
     #     html_content += f"<pre>{json_data}</pre>"
     # except Exception as e:
     #     html_content += f"<p>Error converting results to JSON: {e}</p>"
+    html_content += """
+    </body>
+    </html>
+    """
+
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        print(f"HTML report saved to {filepath}")
+    except Exception as e:
+        print(f"Error writing HTML report {filepath}: {e}")
 
 
-    def generate_report(results_list, plot_filenames, output_dir, table_obs_report=['charge', 'charge_no_protocol', 'total_energy']):
-        html_content += """
-        </body>
-        </html>
-        """
+def generate_report(results_list, plot_filenames, output_dir, table_obs_report=['charge', 'charge_no_protocol', 'total_energy']):
+    table_configs_report = [
+        {'conf_params.p_dephase': 0.0},
+    ]
 
-        try:
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(html_content)
-            print(f"HTML report saved to {filepath}")
-        except Exception as e:
-            print(f"Error writing HTML report {filepath}: {e}")
-
-
-        try:
-            table_configs_report = [
-                {'conf_params.p_dephase': 0.0},
-            ]
-
-            generate_html_report(
-                results_list=results_list,
-                plot_filenames=plot_filenames,
-                output_dir=output_dir,
-                report_filename="final_report.html",
-                table_observables=table_obs_report,
-                table_configs=table_configs_report
-            )
-            print(f"Generated HTML report in {output_dir}")
-
-        except Exception as e:
-            print(f"Error during HTML reporting: {e}")
+    generate_html_report(
+        results_list=results_list,
+        plot_filenames=plot_filenames,
+        output_dir=output_dir,
+        report_filename="final_report.html",
+        table_observables=table_obs_report,
+        table_configs=table_configs_report
+    )
+    print(f"Generated HTML report in {output_dir}")
