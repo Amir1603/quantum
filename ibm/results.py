@@ -118,8 +118,14 @@ class Results:
                     print(f"Warning: Missing data for TotalEnergy calculation for key {key}. Skipping.")
                     continue
 
+                assert h1_res.conf_params['h'] == v_res.conf_params['h'] and h1_res.conf_params['k'] == v_res.conf_params['k']
+                h = h1_res.conf_params['h']
+                k = v_res.conf_params['k']
+
+                gs_energy = -(h**2 + 2*k**2)/math.sqrt(h**2 + k**2)
                 # Calculate derived values
-                total_exp_val = h1_res.expectation_value + v_res.expectation_value
+                total_exp_val = h * h1_res.expectation_value + 2 * k * v_res.expectation_value
+                exp_val_diff = total_exp_val - gs_energy
                 # Combine SEM: sqrt(sem1^2 + sem2^2)
                 total_sem = math.sqrt(h1_res.sem**2 + v_res.sem**2)
 
@@ -134,7 +140,7 @@ class Results:
                     counts={}, # No direct counts for derived observable
                     total_shots=h1_res.total_shots, # Or average/sum? Use one for reference.
                     job_id=f"derived_from_{h1_res.job_id or 'sim'}_{v_res.job_id or 'sim'}",
-                    expectation_value=total_exp_val,
+                    expectation_value=exp_val_diff,
                     sem=total_sem,
                     susceptibility=None, # Susceptibility needs dedicated calculation
                     correlation=None,
