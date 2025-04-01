@@ -32,7 +32,7 @@ class ObservableFactory(metaclass=Singleton):
         ]
         # Create instances of derived observables (don't add to obs_list used for running sims)
         derived_obs = [
-            TotalEnergy(conf.h, conf.k)
+            TotalEnergy(conf.h, conf.k, conf.theta)
         ]
 
         # Create a dictionary for easy lookup by name

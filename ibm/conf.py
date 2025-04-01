@@ -50,7 +50,7 @@ class Conf:
         return [0]
 
     @staticmethod
-    def generate_thetas(conf, num_points=50):
+    def generate_thetas(conf, num_points=20):
         thetas = np.linspace(-np.pi, np.pi, num_points).tolist()
 
         confs = []
@@ -87,7 +87,7 @@ class Conf:
         self.draw_circuit = False
         self.delay_time = 0
         self.n_qubits = 2
-        self.theta = np.pi
+        self.theta = None
         self.xor_alice_res = 0
 
 

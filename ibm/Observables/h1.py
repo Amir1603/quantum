@@ -8,7 +8,7 @@ from .energy import Energy
 class H1_B(Energy):
     """Observable for Bob's local energy term h*Z1."""
     def __init__(self, conf: Conf):
-        super().__init__("h1", conf.h, conf.k)
+        super().__init__("h1", conf.h, conf.k, conf.theta)
 
     def get_bob_measurement_basis(self):
         return "Z"

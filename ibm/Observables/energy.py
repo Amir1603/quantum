@@ -4,18 +4,8 @@ from qiskit import QuantumCircuit
 from .observable import Observable
 
 class Energy(Observable):
-    def __init__(self, name, h, k):
-        super().__init__(name, h, k)
-
-    def apply_ground_state(self, qc: QuantumCircuit, qubits: list):
-        """
-        Prepares the ground state for Energy.
-        """
-        theta = -np.arccos(
-            (1 / np.sqrt(2)) * np.sqrt(1 - self.h / np.sqrt(self.h**2 + self.k**2))
-        )
-        qc.ry(2 * theta, qubits[0])
-        qc.cx(qubits[0], qubits[1])
+    def __init__(self, name, h, k, theta):
+        super().__init__(name, h, k, theta)
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """
@@ -28,8 +18,9 @@ class Energy(Observable):
         """
         Bob's conditional operation for Energy.
         """
-        phi = np.arcsin(
-            (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
-        ) / 2
-        qc.ry(2 * phi, bob_qubit).c_if(alice_creg, 0^xor_alice_res)
-        qc.ry(-2 * phi, bob_qubit).c_if(alice_creg, 1^xor_alice_res)
+        theta = np.arcsin(
+                (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
+            ) / 2 if not self.theta else self.theta
+
+        qc.ry(2 * theta, bob_qubit).c_if(alice_creg, 0^xor_alice_res)
+        qc.ry(-2 * theta, bob_qubit).c_if(alice_creg, 1^xor_alice_res)

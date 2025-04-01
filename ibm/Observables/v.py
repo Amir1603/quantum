@@ -8,7 +8,7 @@ from .energy import Energy
 class V_AB(Energy):
     """Observable for the interaction energy term 2k*X0X1."""
     def __init__(self, conf: Conf):
-        super().__init__("v", conf.h, conf.k)
+        super().__init__("v", conf.h, conf.k, conf.theta)
 
     def get_bob_measurement_basis(self):
         return "X"

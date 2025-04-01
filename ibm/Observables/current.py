@@ -10,33 +10,8 @@ class Current(Observable):
         self.apply_protocol = apply_protocol
         name = f'current{"" if apply_protocol else "_no_protocol"}'
 
-        # Store h, k for ground state preparation
-        self.h = conf.h
-        self.k = conf.k
         # Initialize Observable parent class
-        super().__init__(name, self.h, self.k)
-
-
-    def apply_ground_state(self, qc: QuantumCircuit, qubits: list):
-        """
-        Prepares the ground state of the 2-qubit TFIM.
-        Angle depends on h, k. Uses -3pi/4 for critical point h=k.
-        """
-        denominator = np.sqrt(self.h**2 + self.k**2)
-        if denominator == 0:
-            # Default to critical angle if h=k=0 (or handle as error/warning)
-            theta = -3 * np.pi / 8
-            print("Warning: h=k=0, using fixed theta for critical TFIM g.s.")
-        else:
-            # Calculate theta for general h, k based on ground state formula
-            # cos(theta)|00> + sin(theta)|11> state needs Ry(2*theta) gate
-            theta = -np.arccos(
-                (1 / np.sqrt(2)) * np.sqrt(1 - self.h / denominator)
-            )
-
-        # Apply state preparation gates
-        qc.ry(2 * theta, qubits[ALICE_QUBIT_IDX]) # Apply Ry to Alice's qubit
-        qc.cx(qubits[ALICE_QUBIT_IDX], qubits[BOB_QUBIT_IDX]) # CNOT Alice -> Bob
+        super().__init__(name, conf.h, conf.k, conf.theta)
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """

@@ -15,29 +15,10 @@ class Charge(Observable):
         protocol_tag = '' if apply_protocol else '_no_protocol'
         name = f'charge{protocol_tag}'
 
-        self.theta = theta
-
         if conf.n_qubits - BOB_QUBIT_IDX - 1 < 0:
              raise ValueError("BOB_QUBIT_IDX is out of bounds")
 
-        super().__init__(name, conf.h, conf.k)
-
-    def apply_ground_state(self, qc: QuantumCircuit, qubits: list):
-        """
-        Prepares the ground state for Charge.
-        """
-        denominator = np.sqrt(self.h**2 + self.k**2)
-        if denominator == 0:
-            gs_theta = -3 * np.pi / 8 # Ground state angle calculation parameter
-            print("Warning: h=k=0, using fixed theta for critical TFIM g.s.")
-        else:
-            # Ground state angle calculation parameter
-            gs_theta = -np.arccos(
-                (1 / np.sqrt(2)) * np.sqrt(1 - self.h / denominator)
-            )
-        # Apply Ry(2*gs_theta) for state preparation
-        qc.ry(2 * gs_theta, qubits[ALICE_QUBIT_IDX])
-        qc.cx(qubits[ALICE_QUBIT_IDX], qubits[BOB_QUBIT_IDX])
+        super().__init__(name, conf.h, conf.k, conf.theta)
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """
@@ -54,8 +35,12 @@ class Charge(Observable):
         We implement by applying Ry(-theta) if Alice measured '1' (a=-1).
         """
         if self.apply_protocol:
+            theta = np.arcsin(
+                (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
+            ) / 2 if not self.theta else self.theta
+
             # Apply Ry(-theta) if Alice measured '1'.
-            qc.ry(-self.theta, bob_qubit).c_if(alice_creg, 1^xor_alice_res)
+            qc.ry(-2 * theta, bob_qubit).c_if(alice_creg, 1^xor_alice_res)
 
     def get_bob_measurement_basis(self):
         """
@@ -75,6 +60,9 @@ class Charge(Observable):
             return 1.0 # Eigenvalue 1
         else:
             return 0.0 # Eigenvalue 0
+
+    def get_gs_expectation_value(self):
+        return 0.5 * self.h / np.sqrt(self.h**2 + self.k**2)
 
     def description(self):
         return "rho = (I+Z)/2"
