@@ -4,18 +4,24 @@ import numpy as np
 
 class Conf:
     @staticmethod
-    def generate_hk_combinations(step=0.25, max_value=2):
+    def generate_hk_combinations(conf, step=0.25, max_value=2):
         axis = np.arange(0, max_value + step, step)
-        return [(h, k) for h in axis for k in axis]
+        hks = [(h, k) for h in axis for k in axis]
+
+        return [Conf(h=h, k=k, **conf.__dict__) for h, k in hks]
 
     @staticmethod
-    def generate_k_for_h(h, step=0.25, max_value=2):
+    def generate_k_for_h(conf, step=0.25, max_value=2):
         axis = np.arange(0, max_value + step, step)
-        return [(h, k) for k in axis]
+        hks =[(conf.h, k) for k in axis]
+
+        return [Conf(h=h, k=k, **conf.__dict__) for h, k in hks]
 
     @staticmethod
-    def generate_p_dephase_values(num_points=1):
-        return np.linspace(0, 1.0, num_points).tolist()
+    def generate_p_dephase_values(conf, num_points=1):
+        dephases = np.linspace(0, 1.0, num_points).tolist()
+
+        return [Conf(p_dephase=p, **conf.__dict__) for p in dephases]
 
     @staticmethod
     def generate_backends():
@@ -26,8 +32,10 @@ class Conf:
         return [0]
 
     @staticmethod
-    def generate_thetas(num_points=50):
-        return np.linspace(-np.pi, np.pi, num_points).tolist()
+    def generate_thetas(conf, num_points=50):
+        thetas = np.linspace(-np.pi, np.pi, num_points).tolist()
+
+        return [Conf(theta=theta, **conf.__dict__) for theta in thetas]
 
     def __init__(self):
         self.h = 1.0
