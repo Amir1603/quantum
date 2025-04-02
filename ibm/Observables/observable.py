@@ -23,16 +23,16 @@ class Observable:
         H = J*(X0X1 + X1X2) + Z0 + Z1 + Z2
         Caches the result based on J.
         """
-        cache_key = self.J_param
+        cache_key = self.k
         if cache_key in self._gs_vector_cache:
             return self._gs_vector_cache[cache_key]
 
-        print(f"Calculating N=3 ground state for J={self.J_param}...")
+        print(f"Calculating N=3 ground state for J={self.k}...")
         # Define Pauli strings for the N=3 Hamiltonian
         # Remember Qiskit orders qubits right-to-left (q2, q1, q0)
         paulis = [
-            ("XXI", self.J_param), # X0*X1
-            ("IXX", self.J_param), # X1*X2
+            ("XXI", self.k), # X0*X1
+            ("IXX", self.k), # X1*X2
             ("ZII", 1.0),         # Z0
             ("IZI", 1.0),         # Z1
             ("IIZ", 1.0)          # Z2

@@ -251,7 +251,7 @@ class Results:
                  # Retrieve E_B_gs (pre-calculated in QKD_Energy_N3)
                  # Need the observable instance to get it - assumes factory holds the relevant one
                  # This might require getting the observable based on conf (J value)
-                 j_val = res_x.conf_params.get('J', None) # Get J from the results config
+                 j_val = res_x.conf_params.get('k', None) # Get J from the results config
                  e_b_gs = 0.0
                  temp_conf_for_j = Conf() # Create dummy conf
                  temp_conf_for_j.J = j_val
@@ -260,7 +260,7 @@ class Results:
                  try:
                       # Get *either* X or Y observable instance, E_B_gs should be the same
                       qkd_obs_instance = observable_factory.get_observable(f"qkd_energy_n3_alice_x")
-                      if qkd_obs_instance and hasattr(qkd_obs_instance, 'J_param') and qkd_obs_instance.J_param == j_val:
+                      if qkd_obs_instance and hasattr(qkd_obs_instance, 'k') and qkd_obs_instance.k == j_val:
                           e_b_gs = qkd_obs_instance.E_B_gs
                       else: # Try to reconstruct if factory doesn't hold right J value
                           dummy_obs = Energy_N3(temp_conf_for_j, 'X')
@@ -278,7 +278,7 @@ class Results:
                  conf_params = dict(conf_tuple) # Convert back to dict
 
                  eb_result = RunResult(
-                      observable_name=f"qkd_E_B_n3_xor{xor_res}", # Name for the derived value
+                      observable_name=f"E_B_n3_xor{xor_res}", # Name for the derived value
                       timestamp=max(res_x.timestamp, res_y.timestamp),
                       conf_params=conf_params,
                       backend_name=backend_name,

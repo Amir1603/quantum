@@ -24,7 +24,7 @@ class Energy_N3(Observable):
         # Qiskit orders qubits right-to-left (q2, q1, q0)
         # X1*X2 -> 'IXX', Z2 -> 'IIZ'
         self.H_B_op = SparsePauliOp.from_list([
-            ("IXX", self.J_param), # J * X1*X2
+            ("IXX", self.k), # J * X1*X2
             ("IIZ", 1.0)          # 1 * Z2
         ])
 
@@ -36,7 +36,7 @@ class Energy_N3(Observable):
         try:
              from qiskit.quantum_info import Statevector
              self.E_B_gs = Statevector(gs_vector).expectation_value(self.H_B_op).real
-             print(f"Calculated E_B_gs = {self.E_B_gs} for J={self.J_param}")
+             print(f"Calculated E_B_gs = {self.E_B_gs} for J={self.k}")
         except Exception as e:
              print(f"Could not calculate E_B_gs analytically: {e}. Setting to 0.")
              self.E_B_gs = 0.0
