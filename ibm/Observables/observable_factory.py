@@ -19,6 +19,9 @@ class Singleton(type):
 
 
 class ObservableFactory(metaclass=Singleton):
+    def __init__(self):
+        self.derived_observables = []
+
     def create_observables(self, conf: Conf) -> list[Observable]:
         derived_obs = []
         obs_list: list[Observable] = []
@@ -38,5 +41,7 @@ class ObservableFactory(metaclass=Singleton):
             derived_obs.append(TotalEnergy(conf))
         else:
             raise ValueError(f"Unsupported N={conf.N}")
+
+        self.derived_observables.extend(derived_obs)
 
         return obs_list

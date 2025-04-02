@@ -29,7 +29,7 @@ class Results:
             (conf, obs, backend_name, noise_params, counts, total_shots, job_id)
         )
 
-    def process_results(self, observable_factory: ObservableFactory):
+    def process_results(self):
         """Processes raw results, calculates values, and handles derived observables."""
         print("Processing raw results...")
         self.processed_results = []
@@ -73,13 +73,13 @@ class Results:
             self.processed_results.append(run_result)
 
         # --- Calculate Derived Observables ---
-        self._calculate_all_derived_observables(observable_factory, self.processed_results)
+        self._calculate_all_derived_observables(self.processed_results)
 
         # Clear buffer after processing
         self._raw_results_buffer = []
         print(f"Processing complete. {len(self.processed_results)} results generated.")
 
-    def _calculate_all_derived_observables(self, observable_factory: ObservableFactory, current_results: list):
+    def _calculate_all_derived_observables(self, current_results: list):
         """
         Iterates through all known derived observables and calculates their values.
         """
@@ -98,53 +98,53 @@ class Results:
              )
              grouped_results[key][res.observable.name] = res
 
-        observables = [res[1] for res in self._raw_results_buffer]
-        for observable in observables:
+        derived_obs = ObservableFactory().derived_observables
+        for observable in derived_obs:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue
 
             print(f"  Attempting to calculate derived: {observable.name}")
             # Iterate through configurations where components might exist
             for key, component_dict in grouped_results.items():
-                 conf_params_tuple, backend_name, run_type, noise_params_tuple = key
-                 conf_params = dict(conf_params_tuple)
+                conf_params_tuple, backend_name, run_type, noise_params_tuple = key
+                conf_params = dict(conf_params_tuple)
 
-                 # Check if this derived observable applies to this N value
-                 if conf_params.get('N') != observable.N:
-                      continue
+                # Check if this derived observable applies to this N value
+                if conf_params.get('N') != observable.N:
+                     continue
 
-                 # --- Get components needed by this derived observable ---
-                 required_components = observable.get_component_names()
-                 available_components = {name: component_dict.get(name) for name in required_components}
+                # --- Get components needed by this derived observable ---
+                required_components = observable.get_component_names()
+                available_components = {name: component_dict.get(name) for name in required_components}
 
-                 # Check if all components are available for this config
-                 if all(comp is not None for comp in available_components.values()):
-                      # Calculate the derived value using the observable's method
-                      if hasattr(observable, 'calculate_derived_value_and_sem'):
-                           derived_value, derived_sem = observable.calculate_derived_value_and_sem(available_components)
+                # Check if all components are available for this config
+                if all(comp is not None for comp in available_components.values()):
+                     # Calculate the derived value using the observable's method
+                     if hasattr(observable, 'calculate_derived_value_and_sem'):
+                          derived_value, derived_sem = observable.calculate_derived_value_and_sem(available_components)
 
-                           if derived_value is not None and derived_sem is not None:
-                               # Create RunResult for the derived observable
-                               # Use data from one of the components for common fields
-                                ref_res = next(iter(available_components.values()))
-                                derived_run_result = RunResult(
-                                     observable=observable,
-                                     timestamp=ref_res.timestamp, # Or max timestamp
-                                     conf_params=conf_params,
-                                     backend_name=backend_name,
-                                     run_type=run_type,
-                                     noise_params=dict(noise_params_tuple),
-                                     counts={}, # No direct counts
-                                     total_shots=ref_res.total_shots,
-                                     job_id=f"derived_{observable.name}", # Simple derived ID
-                                     expectation_value=derived_value,
-                                     sem=derived_sem,
-                                     is_derived=True
-                                )
-                                newly_derived_results.append(derived_run_result)
-                      else:
-                           print(f"Warning: Derived observable {observable.name} missing calculation method.")
-                 # else: (Optional print) Components missing for this config
+                          if derived_value is not None and derived_sem is not None:
+                              # Create RunResult for the derived observable
+                              # Use data from one of the components for common fields
+                               ref_res = next(iter(available_components.values()))
+                               derived_run_result = RunResult(
+                                    observable=observable,
+                                    timestamp=ref_res.timestamp, # Or max timestamp
+                                    conf_params=conf_params,
+                                    backend_name=backend_name,
+                                    run_type=run_type,
+                                    noise_params=dict(noise_params_tuple),
+                                    counts={}, # No direct counts
+                                    total_shots=ref_res.total_shots,
+                                    job_id=f"derived_{observable.name}", # Simple derived ID
+                                    expectation_value=derived_value,
+                                    sem=derived_sem,
+                                    is_derived=True
+                               )
+                               newly_derived_results.append(derived_run_result)
+                     else:
+                          print(f"Warning: Derived observable {observable.name} missing calculation method.")
+                # else: (Optional print) Components missing for this config
 
 
         # Add all newly calculated derived results to the main list

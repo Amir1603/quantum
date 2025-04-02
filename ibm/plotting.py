@@ -49,7 +49,7 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
             result_dict = result_data
 
         # Filter by observable name if specified
-        if observables_to_plot and result_dict.get('observable_name') not in observables_to_plot:
+        if observables_to_plot and result_dict.get('observable').name not in observables_to_plot:
             continue
 
         # Apply filter_criteria
@@ -74,10 +74,10 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
             for group_param in group_by:
                 group_val = get_nested_value(result_dict, group_param)
                 # Include observable name if not grouping by it explicitly
-                group_key_parts.append(f"{get_nested_value(result_dict, 'observable_name')}: {group_param.split('.')[-1]}={group_val}" if 'observable_name' not in group_by else f"{group_val}")
+                group_key_parts.append(f"{get_nested_value(result_dict, 'observable').name}: {group_param.split('.')[-1]}={group_val}" if 'observable' not in group_by else f"{group_val}")
         else:
              # Default group by observable name if no group_by specified
-             group_key_parts.append(result_dict.get('observable_name', 'Unknown Obs'))
+             group_key_parts.append(result_dict.get('observable', 'Unknown Obs').name)
         group_key = ", ".join(group_key_parts) if group_key_parts else "All Data"
 
         # Get x, y, error values
@@ -192,7 +192,7 @@ def plot_expectation_vs_parameter_subplots(results_list, x_param_path, y_param_p
         else: result_dict = result_data
 
         # Filter by observable name
-        if observables_to_plot and result_dict.get('observable_name') not in observables_to_plot: continue
+        if observables_to_plot and result_dict.get('observable').name not in observables_to_plot: continue
 
         # Apply general filter_criteria
         if filter_criteria:
@@ -258,7 +258,7 @@ def plot_expectation_vs_parameter_subplots(results_list, x_param_path, y_param_p
                      line_key_parts.append(f"{val}")
             else:
                  # Default to grouping by observable if not specified
-                 line_key_parts.append(res.get('observable_name', 'Unknown'))
+                 line_key_parts.append(res.get('observable', 'Unknown').name)
             line_key = ", ".join(line_key_parts)
 
             x_val = get_nested_value(res, x_param_path)
@@ -406,7 +406,7 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
 
         # Filter by observable name if specified
         # Note: Heatmaps usually make sense for a single observable type at a time
-        obs_name = result_dict.get('observable_name', 'Unknown')
+        obs_name = result_dict.get('observable', 'Unknown').name
         if observable_to_plot and obs_name != observable_to_plot:
              # Allow partial match if observable name includes theta etc.
              if not observable_to_plot in obs_name:
@@ -552,7 +552,7 @@ def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_n
         output_dir=output_dir,
         filename_prefix=f"exp_vs_{parameter_name}",
         title_prefix=f"Expectation Value vs {parameter_name} ({filter_criteria_plot})",
-        group_by=['observable_name'], # Separate lines for each selected observable
+        group_by=['observable_name'], # TODO!! # Separate lines for each selected observable
         filter_criteria=filter_criteria_plot,
         observables_to_plot=selected_obs_plot # Apply observable filter
     )
@@ -570,7 +570,7 @@ def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, pa
             subplot_params=['conf_params.h', 'conf_params.k'], # Create subplots based on h and k
             output_dir=output_dir,
             error_param_path='sem',
-            line_group_by=['observable_name'], # Lines within each subplot correspond to observables
+            line_group_by=['observable_name'], # TODO # Lines within each subplot correspond to observables
             # filter_criteria={}, # Optional: Add global filters if needed, e.g., for specific run types
             observables_to_plot=obs,
             filename_prefix=f"exp_vs_{parameter_name}_subplots_hk",
@@ -593,7 +593,7 @@ def plot_counts_hist(results_list, output_dir, obs='charge'):
         for result in results_list:
                 # Define criteria for which runs to generate histograms
                 is_target_hist = (
-                    result.observable_name == obs and
+                    result.observable.name == obs and
                     get_nested_value(result, 'conf_params.h') == 1.0 and
                     get_nested_value(result, 'conf_params.k') == 1.0 and
                     get_nested_value(result, 'conf_params.p_dephase') == 0.0
@@ -609,7 +609,7 @@ def plot_counts_hist(results_list, output_dir, obs='charge'):
 
                     hist_filename = plot_counts_histogram(
                         counts=result.counts,
-                        observable_name=result.observable_name,
+                        observable_name=result.observable.name,
                         output_dir=output_dir,
                         filename_prefix="hist",
                         title_info=title_info

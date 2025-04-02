@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     # --- Post-Processing ---
     print("\n--- Post-Processing Results ---")
-    res.process_results(observable_factory) # Calculate metrics, derive observables
+    res.process_results() # Calculate metrics, derive observables
 
     # --- Save Processed Results ---
     res.save_results("processed_results.json")

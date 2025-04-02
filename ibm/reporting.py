@@ -81,10 +81,10 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
                  is_derived = False
                  # Handle dict or object access robustly
                  if isinstance(res, dict):
-                     obs_name = res.get('observable_name')
+                     obs_name = res.get('observable').name
                      is_derived = res.get('is_derived', False)
-                 elif hasattr(res, 'observable_name'): # Check for attribute
-                     obs_name = getattr(res, 'observable_name')
+                 elif hasattr(res, 'observable'): # Check for attribute
+                     obs_name = getattr(res, 'observable').name
                      is_derived = getattr(res, 'is_derived', False)
 
                  if obs_name and not is_derived:
@@ -125,7 +125,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
                  else: res_dict = res_data
 
                  # Check observable
-                 if res_dict.get('observable_name') not in obs_to_include: continue
+                 if res_dict.get('observable').name not in obs_to_include: continue
 
                  # Apply config filter
                  match = True
@@ -156,7 +156,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
             sorted_hk_keys = sorted(grouped_by_hk.keys(), key=lambda x: (x[0] if x[0] is not None else float('inf'), x[1] if x[1] is not None else float('inf')))
 
             # Get unique observables for rows
-            all_obs_in_table = sorted(list(set(res['observable_name'] for hk_key in sorted_hk_keys for res in grouped_by_hk[hk_key])))
+            all_obs_in_table = sorted(list(set(res['observable'].name for hk_key in sorted_hk_keys for res in grouped_by_hk[hk_key])))
 
 
             # --- Generate Expectation Value Table ---
@@ -170,7 +170,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
             for obs_name in all_obs_in_table:
                  html_content += f"<tr><td>{obs_name}</td>"
                  for hk_key in sorted_hk_keys:
-                     found_res = next((res for res in grouped_by_hk[hk_key] if res['observable_name'] == obs_name), None)
+                     found_res = next((res for res in grouped_by_hk[hk_key] if res['observable'].name == obs_name), None)
                      if found_res:
                          exp_val_str = _format_value(found_res.get('expectation_value'))
                          sem_str = _format_value(found_res.get('sem'))
@@ -200,7 +200,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
                  for hk_key in sorted_hk_keys:
                      # Find the result dictionary corresponding to this observable and (h,k)
                      # Reusing the same 'found_res' logic pattern
-                     found_res = next((res for res in grouped_by_hk[hk_key] if res['observable_name'] == obs_name), None)
+                     found_res = next((res for res in grouped_by_hk[hk_key] if res['observable'].name == obs_name), None)
 
                      if found_res:
                          sus_val = found_res.get('susceptibility')
