@@ -6,8 +6,9 @@ from .v_n3 import V_N3
 from .h1 import H1_B
 from .v import V_AB
 from .charge import Charge
+from .charge_n3 import Charge_N3
 from .current import Current
 from .observable_factory import ObservableFactory
 from .total_energy import TotalEnergy
 
-__all__ = ["Observable", "Energy_N2", "Energy_N3", "H1_B", "V_AB", "H1_N3", "V_N3", "Charge", "Current", "ObservableFactory", "TotalEnergy"]
+__all__ = ["Observable", "Energy_N2", "Energy_N3", "H1_B", "V_AB", "H1_N3", "V_N3", "Charge", "Charge_N3", "Current", "ObservableFactory", "TotalEnergy"]

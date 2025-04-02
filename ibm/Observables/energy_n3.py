@@ -25,7 +25,6 @@ class Energy_N3(Observable):
         # Placeholder: Initialize to None, calculate in results processing
         self.exp_val_v_n3_gs = None
         self.exp_val_h1_n3_gs = None
-        self.exp_val_hb_gs = None
 
     # --- No Circuit Methods Needed ---
     def apply_ground_state(self, qc, qubits): pass
@@ -55,26 +54,21 @@ class Energy_N3(Observable):
 
     def calculate_derived_value_and_sem(self, component_results: dict):
         """
-        Calculates E_B and its SEM from component RunResult objects.
-        Args:
-            component_results (dict): {'v_n3_name': RunResult for V_N3, 'h1_n3_name': RunResult for H1_N3}
-                                       (Names must match self.component_observables)
-        Returns:
-            tuple: (final_eb_value, final_eb_sem) or (None, None) if calculation fails.
+        Calculates E_B = <H_B> - <H_B>_gs and its SEM.
         """
         v_res = component_results.get(self._v_n3_comp_name)
         h1_res = component_results.get(self._h1_n3_comp_name)
 
         if not v_res or not h1_res or \
-           v_res.expectation_value is None or h1_res.expectation_value is None or \
-           v_res.sem is None or h1_res.sem is None:
+        v_res.expectation_value is None or h1_res.expectation_value is None or \
+        v_res.sem is None or h1_res.sem is None:
             print(f"Warning: Missing component data for derived observable {self.name}")
             return None, None
 
-        j_val = self.k # Get J from self (inherited from Observable via Conf)
+        j_val = self.k
         if j_val is None:
-             print(f"Warning: J value is None for {self.name}. Cannot calculate derived value.")
-             return None, None
+            print(f"Warning: J value is None for {self.name}. Cannot calculate derived value.")
+            return None, None
 
         # Calculate <H_B> = J * <X1X2> + <Z2>
         exp_val_v = v_res.expectation_value
@@ -86,16 +80,21 @@ class Energy_N3(Observable):
         sem_h1 = h1_res.sem
         sem_hb = np.sqrt((j_val * sem_v)**2 + sem_h1**2)
 
-        # --- Calculate or retrieve <H_B>_gs ---
-        # This still needs to be addressed. For now, assume 0.
-        if self.exp_val_hb_gs is None:
-            print(f"Warning: <H_B>_gs for J={j_val} not available for {self.name}. Assuming 0.")
-            self.exp_val_hb_gs = 0.0
-            # *** Add logic here to calculate/fetch <H_B>_gs based on j_val ***
-            # Requires <X1X2>_gs and <Z2>_gs
+        # --- Calculate <H_B>_gs = J<X1X2>_gs + <Z2>_gs ---
+        exp_X1X2_gs = self.calculate_gs_expectation("IXX") # Pauli string for X1*X2
+        exp_Z2_gs = self.calculate_gs_expectation("IIZ") # Pauli string for Z2
+
+        if exp_X1X2_gs is None or exp_Z2_gs is None:
+            print(f"Warning: Failed to calculate ground state expectation values for H_B_gs (J={j_val}). Assuming 0.")
+            hb_gs = 0.0
+        else:
+            hb_gs = j_val * exp_X1X2_gs + exp_Z2_gs
+            print(f"Calculated <H_B>_gs for J={j_val}: {hb_gs:.4f} (J*{exp_X1X2_gs:.4f} + {exp_Z2_gs:.4f})")
+
 
         # Calculate final E_B = <H_B> - <H_B>_gs
-        final_eb_value = exp_val_hb - self.exp_val_hb_gs
-        final_eb_sem = sem_hb # SEM of GS term assumed 0 if calculated theoretically/numerically?
+        final_eb_value = exp_val_hb - hb_gs
+        # SEM of the difference: SEM(<HB>) assuming SEM(<HB>_gs) is negligible (from numerical calc)
+        final_eb_sem = sem_hb
 
         return final_eb_value, final_eb_sem

@@ -17,22 +17,19 @@ class Observable:
         # Cache for ground state vector to avoid recomputing
         self._gs_vector_cache = {}
 
-    def _get_n3_tfim_ground_state(self):
+    @staticmethod
+    def _get_n3_tfim_ground_state(k):
         """
         Numerically calculates the ground state vector for the N=3 TFIM.
         H = J*(X0X1 + X1X2) + Z0 + Z1 + Z2
         Caches the result based on J.
         """
-        cache_key = self.k
-        if cache_key in self._gs_vector_cache:
-            return self._gs_vector_cache[cache_key]
-
-        print(f"Calculating N=3 ground state for J={self.k}...")
+        print(f"Calculating N=3 ground state for J={k}...")
         # Define Pauli strings for the N=3 Hamiltonian
         # Remember Qiskit orders qubits right-to-left (q2, q1, q0)
         paulis = [
-            ("XXI", self.k), # X0*X1
-            ("IXX", self.k), # X1*X2
+            ("XXI", k), # X0*X1
+            ("IXX", k), # X1*X2
             ("ZII", 1.0),         # Z0
             ("IZI", 1.0),         # Z1
             ("IIZ", 1.0)          # Z2
@@ -47,7 +44,6 @@ class Observable:
             gs_vector = eigenvectors[:, 0]
             # Ensure normalization (eigsh should provide normalized vectors)
             gs_vector /= np.linalg.norm(gs_vector)
-            self._gs_vector_cache[cache_key] = gs_vector
             print(f"Ground state calculated. Energy: {eigenvalues[0]}")
             return gs_vector
         except Exception as e:
@@ -79,7 +75,7 @@ class Observable:
             qc.cx(qubits[utils.get_alice_qubit_idx(self.N)], qubits[utils.get_bob_qubit_idx(self.N)])
         elif self.N == 3:
             print(f"Preparing N=3 ground state for J={self.k} using numerical diagonalization.")
-            gs_vector = self._get_n3_tfim_ground_state()
+            gs_vector = Observable._get_n3_tfim_ground_state(self.k)
 
             # Qubits list [q0, q1, q2] corresponds to indices used in SparsePauliOp ('ZII' = Z on q0)
             qc.initialize(gs_vector, [qubits[i] for i in range(self.N)])
@@ -151,6 +147,113 @@ class Observable:
         expectation_sq = sum_val_sq / total_shots
         variance = max(0.0, expectation_sq - expectation**2)
         return variance # Default susceptibility definition as variance
+
+    def _get_operator_matrix(self, pauli_string: str) -> np.ndarray | None:
+        """Helper to get sparse matrix for a given Pauli string."""
+        if len(pauli_string) != self.N:
+            raise ValueError(f"Pauli string '{pauli_string}' length mismatch N={self.N}")
+        try:
+            op = SparsePauliOp(pauli_string)
+            return op.to_matrix(sparse=True)
+        except Exception as e:
+            print(f"Error creating matrix for {pauli_string}: {e}")
+            return None
+
+    def calculate_gs_expectation(self, pauli_string: str) -> float | None:
+        """Calculates the ground state expectation value for a given Pauli string."""
+        if self.N == 2:
+            # --- Add N=2 Analytical Calculation if needed ---
+            # Example: <Z1>_gs = -h / sqrt(h^2+k^2)
+            # Example: <X0X1>_gs = -k / sqrt(h^2+k^2)
+            print("Warning: N=2 analytical GS expectation calculation not fully implemented in calculate_gs_expectation.")
+            if pauli_string == "ZI": # <Z0> = <Z1>
+                denominator = np.sqrt(self.h**2 + self.k**2)
+                return -self.h / denominator if denominator != 0 else 0.0
+            elif pauli_string == "IZ": # <Z1>
+                denominator = np.sqrt(self.h**2 + self.k**2)
+                return -self.h / denominator if denominator != 0 else 0.0
+            elif pauli_string == "XX": # <X0X1>
+                denominator = np.sqrt(self.h**2 + self.k**2)
+                return -self.k / denominator if denominator != 0 else 0.0
+            else:
+                return 0.0 # Placeholder for other N=2 operators
+
+        elif self.N == 3:
+            try:
+                gs_vector = Observable._get_n3_tfim_ground_state(self.k)
+                if gs_vector is None: return None
+
+                op_matrix = self._get_operator_matrix(pauli_string)
+                if op_matrix is None: return None
+
+                val = gs_vector.conj().T @ (op_matrix @ gs_vector)
+                return np.real(val)
+            except Exception as e:
+                print(f"Error calculating N=3 GS expectation for {pauli_string}: {e}")
+                return None
+        else:
+            print(f"GS expectation calculation not supported for N={self.N}")
+            return None
+
+    @staticmethod
+    def calculate_n3_theta_params(conf: Conf):
+        """
+        Calculates xi, eta, and theta for N=3 based on ground state properties.
+        Requires J (conf.k) to be set.
+        Returns: tuple (xi, eta, theta) or (None, None, None) if N != 3 or error.
+        """
+        if conf.N != 3:
+            return None, None, None
+        if not hasattr(conf, 'k') or conf.k is None:
+            print("Warning: Cannot calculate N=3 theta, J (conf.k) is not defined.")
+            return None, None, None
+
+        J = conf.k
+        try:
+            gs_vector = Observable._get_n3_tfim_ground_state(conf.k)
+            if gs_vector is None: return None, None, None
+
+            # --- Define Operators (N=3, Qiskit order q2, q1, q0) ---
+            op_X0 = SparsePauliOp("XII")
+            op_X1 = SparsePauliOp("IXI")
+            op_X2 = SparsePauliOp("IIX")
+            op_Z0 = SparsePauliOp("ZII")
+            op_Z1 = SparsePauliOp("IZI")
+            op_Z2 = SparsePauliOp("IIZ")
+
+            # --- Calculate Expectation Values ---
+            def expect(op: SparsePauliOp, vec: np.ndarray):
+                # Calculate <vec| Op |vec> = vec.conj().T @ Op_matrix @ vec
+                op_matrix = op.to_matrix(sparse=True)
+                val = vec.conj().T @ (op_matrix @ vec)
+                return np.real(val) # Expectation values should be real
+
+            exp_Z0 = expect(op_Z0, gs_vector)
+            exp_Z1 = expect(op_Z1, gs_vector)
+            # exp_Z2 = expect(op_Z2, gs_vector) # Not needed for xi, eta directly but for H_B_gs
+
+            # <X0*X2>
+            op_X0X2 = op_X0.compose(op_X2) # Qiskit composition order
+            exp_X0X2 = expect(op_X0X2, gs_vector)
+
+            # <X0*X1*Z2>
+            op_X0X1Z2 = op_X0.compose(op_X1).compose(op_Z2)
+            exp_X0X1Z2 = expect(op_X0X1Z2, gs_vector)
+
+            # --- Calculate xi and eta ---
+            xi = exp_Z1 + 2 * exp_Z0
+            eta = 2 * exp_X0X2 - 2 * J * exp_X0X1Z2
+
+            # --- Calculate theta ---
+            # atan2(y, x) handles quadrants correctly and x=0 case
+            theta = 0.5 * np.arctan2(eta, xi)
+
+            print(f"Calculated N=3 Params for J={J}: xi={xi:.4f}, eta={eta:.4f}, theta={theta:.4f}")
+            return xi, eta, theta
+
+        except Exception as e:
+            print(f"Error calculating N=3 theta parameters: {e}")
+            return None, None, None
 
     # --- Metadata ---
     def description(self):

@@ -2,7 +2,7 @@ import argparse
 import os
 from datetime import datetime
 from conf import Conf
-from Observables import ObservableFactory
+from Observables import ObservableFactory, Observable
 from runner import Runner
 from results import Results
 import plotting
@@ -40,20 +40,28 @@ def report_and_plot(results_obj: Results):
         return
 
     # --- Plotting ---
+    # filter = {'conf_params.xor_alice_res': 0}
+    # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'])
+    # if file_name: plot_filenames.append(file_name)
+
+    # filter = {'conf_params.xor_alice_res': 1}
+    # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'])
+    # if file_name: plot_filenames.append(file_name)
+
     filter = {'conf_params.xor_alice_res': 0}
-    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'])
+    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge_n3'])
     if file_name: plot_filenames.append(file_name)
 
     filter = {'conf_params.xor_alice_res': 1}
-    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'])
+    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge_n3'])
     if file_name: plot_filenames.append(file_name)
 
     filter = {'conf_params.xor_alice_res': 0}
-    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'])
+    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['E_B_n3_alicex', 'E_B_n3_alicey'])
     if file_name: plot_filenames.append(file_name)
 
     filter = {'conf_params.xor_alice_res': 1}
-    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'])
+    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['E_B_n3_alicex', 'E_B_n3_alicey'])
     if file_name: plot_filenames.append(file_name)
 
     # filter = {'conf_params.h': 1.0, 'conf_params.k': 1.0}
@@ -66,7 +74,7 @@ def report_and_plot(results_obj: Results):
     # file_name = plotting.plot_heatmap(results_list, output_dir)
     # plot_filenames.append(file_name)
 
-    reporting.generate_report(results_list, plot_filenames, output_dir, ['total_energy', 'charge'])
+    reporting.generate_report(results_list, plot_filenames, output_dir, [])
 
 
 if __name__ == "__main__":
@@ -111,6 +119,14 @@ if __name__ == "__main__":
 
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
+
+        if conf.N == 3 and conf.theta is None:
+            _, _, calculated_theta = Observable.calculate_n3_theta_params(conf)
+            if calculated_theta is not None:
+                print(f"  Setting calculated theta for N=3, J={conf.k}: {calculated_theta:.4f}")
+                conf.theta = calculated_theta
+            else:
+                raise f"WARNING: Failed to calculate theta for N=3, J={conf.k}. Using default/None."
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones
