@@ -1,111 +1,102 @@
-import numpy as np
-from qiskit import QuantumCircuit, ClassicalRegister
 from .observable import Observable
-import utils
 from conf import Conf
-from qiskit.quantum_info import SparsePauliOp # Import needed
+import numpy as np
 
 class Energy_N3(Observable):
     """
-    Observable for simulating the N=3 QKD protocol from the paper.
-    It sets up the circuit according to Alice's basis choice.
-    The final E_B calculation requires post-processing of expectation values.
+    A DERIVED observable representing Bob's Hamiltonian H_B = J*X1*X2 + Z2 for N=3.
+    It also calculates the final teleported energy E_B = <H_B> - <H_B>_gs.
+    Calculated from results of V_N3 (<X1X2>) and H1_N3 (<Z2>).
     """
-    def __init__(self, conf: Conf, alice_basis: str):
-        # Name distinguishes between Alice's X or Y measurement choice
-        super().__init__(f"energy_n3_alice_{alice_basis.lower()}", conf)
-        self.alice_basis = alice_basis.upper() # Store as 'X' or 'Y'
-        if self.N != 3:
-            raise ValueError("Energy_N3 only supports N=3")
-        if self.alice_basis not in ['X', 'Y']:
-            raise ValueError("Alice basis must be 'X' or 'Y'")
+    def __init__(self, conf: Conf, alice_basis: str, xor_alice_res: int):
+        # Name reflects the final calculated value E_B and its parameters
+        name = f"qkd_E_B_n3_alice{alice_basis.lower()}_xor{xor_alice_res}"
+        super().__init__(name, conf) # Pass full conf
+        self.alice_basis = alice_basis.upper()
+        self.xor_alice_res = xor_alice_res
+        if self.N != 3: raise ValueError("Energy_N3 only supports N=3")
 
-        # Define Bob's Hamiltonian H_B = J*X1*X2 + Z2 as SparsePauliOp
-        # Qiskit orders qubits right-to-left (q2, q1, q0)
-        # X1*X2 -> 'IXX', Z2 -> 'IIZ'
-        self.H_B_op = SparsePauliOp.from_list([
-            ("IXX", self.k), # J * X1*X2
-            ("IIZ", 1.0)          # 1 * Z2
-        ])
+        # Define component names based on the naming convention used above
+        self._v_n3_comp_name = f"qkd_v_n3_alice_{alice_basis.lower()}"
+        self._h1_n3_comp_name = f"qkd_h1_n3_alice_{alice_basis.lower()}"
+        self.component_observables = [self._v_n3_comp_name, self._h1_n3_comp_name]
 
-        # Pre-calculate ground state expectation E_B_gs = <gs|H_B|gs>
-        gs_vector = self._get_n3_tfim_ground_state() # Use method from base class
-        # Need the operator matrix for <psi|Op|psi> calculation
-        # Note: Using statevector simulation here for simplicity.
-        # In a real experiment, E_B_gs would also be estimated via measurements.
-        try:
-             from qiskit.quantum_info import Statevector
-             self.E_B_gs = Statevector(gs_vector).expectation_value(self.H_B_op).real
-             print(f"Calculated E_B_gs = {self.E_B_gs} for J={self.k}")
-        except Exception as e:
-             print(f"Could not calculate E_B_gs analytically: {e}. Setting to 0.")
-             self.E_B_gs = 0.0
+        # --- Ground State Expectation Values ---
+        # These MUST be calculated somehow (theoretically or separate runs)
+        # Placeholder: Initialize to None, calculate in results processing
+        self.exp_val_v_n3_gs = None
+        self.exp_val_h1_n3_gs = None
+        self.exp_val_hb_gs = None
 
+    # --- No Circuit Methods Needed ---
+    def apply_ground_state(self, qc, qubits): pass
+    def apply_alice_measurement(self, qc, alice_qubit, alice_creg): pass
+    def apply_bob_operation(self, qc, bob_qubit, alice_creg, xor_alice_res): pass
+    def get_bob_measurement_basis(self): return None # Not directly measured
 
-    def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit_idx: int, alice_creg):
-        """Alice measures site 0 in X or Y basis. Adds measurement."""
-        if self.alice_basis == 'X':
-            qc.h(alice_qubit_idx)
-        elif self.alice_basis == 'Y':
-            # qc.sdg(alice_qubit_idx) # Measure Y = H.Sdg.Z.H = Rz(-pi/2).H.Z.H
-            # To measure in Y basis: Apply Sdg, then H, then measure Z
-            qc.sdg(alice_qubit_idx)
-            qc.h(alice_qubit_idx)
-        qc.measure(alice_qubit_idx, alice_creg) # Measure Z after basis change
-
-    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit_idx: int, alice_creg, xor_alice_res: int):
-        """
-        Bob's conditional rotation on site 2 (index N-1 = 2).
-        U_B = exp(-i*theta*(-1)^c * sigma_B) where c = measured_bit XOR xor_alice_res.
-        sigma_B = Y2 if Alice measured X0.
-        sigma_B = X2 if Alice measured Y0.
-        """
-        # Theta calculation (Eq 10, 11) is complex, depends on <gs|...|gs>.
-        # For simplicity, using a fixed or configurable theta here.
-        # Let's assume theta is optimal (e.g., pi/4 or a value found numerically)
-        # Or use the self.theta from conf if provided.
-        protocol_theta = self.theta if self.theta is not None else np.pi / 4 # Example placeholder
-
-        bob_op_basis = 'Y' if self.alice_basis == 'X' else 'X'
-
-        # Apply operation based on Alice's classical register bit `alice_creg`
-        # If (alice_creg XOR xor_alice_res) == 0 -> apply Rotation(2*theta)
-        # If (alice_creg XOR xor_alice_res) == 1 -> apply Rotation(-2*theta)
-        angle_if_0 = 2 * protocol_theta
-        angle_if_1 = -2 * protocol_theta
-
-        print(f"Applying Bob Op: Basis={bob_op_basis}, Theta={protocol_theta:.3f}, XOR={xor_alice_res}")
-
-        if bob_op_basis == 'Y':
-            with qc.if_test((alice_creg, 0 ^ xor_alice_res)): # Condition if bit is 0 after XOR
-                 qc.ry(angle_if_0, bob_qubit_idx)
-            with qc.if_test((alice_creg, 1 ^ xor_alice_res)): # Condition if bit is 1 after XOR
-                 qc.ry(angle_if_1, bob_qubit_idx)
-        elif bob_op_basis == 'X':
-            with qc.if_test((alice_creg, 0 ^ xor_alice_res)):
-                 qc.rx(angle_if_0, bob_qubit_idx)
-            with qc.if_test((alice_creg, 1 ^ xor_alice_res)):
-                 qc.rx(angle_if_1, bob_qubit_idx)
-
-    def get_bob_measurement_basis(self):
-        """
-        Returns the observable (H_B) to be measured by the Estimator.
-        """
-        return self.H_B_op # Return the SparsePauliOp for H_B
-
+    # --- Value Extraction (Not Applicable from Bitstring) ---
     def get_value(self, bitstring: str):
-        """Not directly used if using Estimator for H_B expectation."""
-        raise NotImplementedError("Energy_N3 uses Estimator for <H_B>")
+        raise NotImplementedError(f"{self.name} is derived, not calculated from single bitstring.")
 
+    # --- Post-Processing Calculations (Not Applicable Directly) ---
     def calculate_expectation_and_sem(self, counts: dict, total_shots: int):
-        """
-        This observable relies on the Estimator output and post-processing
-        in results.py to get the final E_B. This method shouldn't be called directly
-        for the final E_B value.
-        """
-        print("Warning: calculate_expectation_and_sem called on Energy_N3. Final E_B is calculated in Results.process_results.")
-        # Return dummy value or maybe expectation of a single term if needed elsewhere
-        return 0.0, 0.0
+        raise NotImplementedError(f"{self.name} is derived from component results.")
 
+    # --- Metadata ---
     def description(self):
-        return f"Energy for N=3 (Alice Basis: {self.alice_basis}, J={self.k})"
+        return f"Derived E_B = <J*X1X2 + Z2> - <H_B>_gs for N=3 QKD (Alice: {self.alice_basis}, XOR: {self.xor_alice_res})"
+
+    @staticmethod
+    def is_derived_observable():
+        return True
+
+    def get_component_names(self):
+        # Return names matching the V_N3 and H1_N3 instances for the specific Alice basis
+        return self.component_observables
+
+    def calculate_derived_value_and_sem(self, component_results: dict):
+        """
+        Calculates E_B and its SEM from component RunResult objects.
+        Args:
+            component_results (dict): {'v_n3_name': RunResult for V_N3, 'h1_n3_name': RunResult for H1_N3}
+                                       (Names must match self.component_observables)
+        Returns:
+            tuple: (final_eb_value, final_eb_sem) or (None, None) if calculation fails.
+        """
+        v_res = component_results.get(self._v_n3_comp_name)
+        h1_res = component_results.get(self._h1_n3_comp_name)
+
+        if not v_res or not h1_res or \
+           v_res.expectation_value is None or h1_res.expectation_value is None or \
+           v_res.sem is None or h1_res.sem is None:
+            print(f"Warning: Missing component data for derived observable {self.name}")
+            return None, None
+
+        j_val = self.J_param # Get J from self (inherited from Observable via Conf)
+        if j_val is None:
+             print(f"Warning: J value is None for {self.name}. Cannot calculate derived value.")
+             return None, None
+
+        # Calculate <H_B> = J * <X1X2> + <Z2>
+        exp_val_v = v_res.expectation_value
+        exp_val_h1 = h1_res.expectation_value
+        exp_val_hb = j_val * exp_val_v + exp_val_h1
+
+        # Calculate SEM for <H_B>
+        sem_v = v_res.sem
+        sem_h1 = h1_res.sem
+        sem_hb = np.sqrt((j_val * sem_v)**2 + sem_h1**2)
+
+        # --- Calculate or retrieve <H_B>_gs ---
+        # This still needs to be addressed. For now, assume 0.
+        if self.exp_val_hb_gs is None:
+            print(f"Warning: <H_B>_gs for J={j_val} not available for {self.name}. Assuming 0.")
+            self.exp_val_hb_gs = 0.0
+            # *** Add logic here to calculate/fetch <H_B>_gs based on j_val ***
+            # Requires <X1X2>_gs and <Z2>_gs
+
+        # Calculate final E_B = <H_B> - <H_B>_gs
+        final_eb_value = exp_val_hb - self.exp_val_hb_gs
+        final_eb_sem = sem_hb # SEM of GS term assumed 0 if calculated theoretically/numerically?
+
+        return final_eb_value, final_eb_sem
