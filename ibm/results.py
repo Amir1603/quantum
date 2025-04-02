@@ -233,68 +233,78 @@ class Results:
         # 3. Calculate final E_B for each group where both X and Y results exist
         new_eb_results = []
         for key, results_dict in grouped_for_eb.items():
-             if 'X' in results_dict and 'Y' in results_dict:
-                 res_x = results_dict['X']
-                 res_y = results_dict['Y']
+            if 'X' in results_dict and 'Y' in results_dict:
+                res_x = results_dict['X']
+                res_y = results_dict['Y']
 
-                 # Ensure required values exist
-                 if res_x.expectation_value is None or res_y.expectation_value is None or \
-                    res_x.sem is None or res_y.sem is None:
-                      print(f"Warning: Missing <H_B> data for E_B calculation for key {key}. Skipping.")
-                      continue
+                # Ensure required values exist AND are dictionaries containing the needed key
+                if not isinstance(res_x.expectation_value, dict) or 'evs' not in res_x.expectation_value or \
+                    not isinstance(res_y.expectation_value, dict) or 'evs' not in res_y.expectation_value or \
+                    res_x.sem is None or res_y.sem is None: # Keep SEM check as before for now
+                    print(f"Warning: Missing <H_B> data (expected dict with 'evs') or SEM for E_B calculation for key {key}. Skipping.")
+                    continue
 
-                 # Average expectation values over Alice's bases
-                 avg_exp_val_h_b = 0.5 * (res_x.expectation_value + res_y.expectation_value)
-                 # Combine SEMs (assuming independence of X/Y runs): sqrt( (0.5*semX)^2 + (0.5*semY)^2 )
-                 avg_sem_h_b = 0.5 * np.sqrt(res_x.sem**2 + res_y.sem**2)
+                # Access the numerical value using the key 'evs'
+                exp_val_x = res_x.expectation_value['evs']
+                exp_val_y = res_y.expectation_value['evs']
 
-                 # Retrieve E_B_gs (pre-calculated in QKD_Energy_N3)
-                 # Need the observable instance to get it - assumes factory holds the relevant one
-                 # This might require getting the observable based on conf (J value)
-                 j_val = res_x.conf_params.get('k', None) # Get J from the results config
-                 e_b_gs = 0.0
-                 temp_conf_for_j = Conf() # Create dummy conf
-                 temp_conf_for_j.J = j_val
-                 temp_conf_for_j.N = 3
-                 # Need to handle potential error if observable not found or J is None
-                 try:
-                      # Get *either* X or Y observable instance, E_B_gs should be the same
-                      qkd_obs_instance = observable_factory.get_observable(f"qkd_energy_n3_alice_x")
-                      if qkd_obs_instance and hasattr(qkd_obs_instance, 'k') and qkd_obs_instance.k == j_val:
-                          e_b_gs = qkd_obs_instance.E_B_gs
-                      else: # Try to reconstruct if factory doesn't hold right J value
-                          dummy_obs = Energy_N3(temp_conf_for_j, 'X')
-                          e_b_gs = dummy_obs.E_B_gs
-                 except Exception as e:
-                      print(f"Could not retrieve E_B_gs for J={j_val}: {e}")
+                # Average expectation values over Alice's bases
+                avg_exp_val_h_b = 0.5 * (exp_val_x + exp_val_y)
+
+                # Combine SEMs (assuming res_x.sem and res_y.sem correctly hold the float SEM value)
+                # If res_x.sem also holds a dict (e.g., with variance), you'll need similar extraction logic for it.
+                # Example: sem_val_x = res_x.sem['standard_error']
+                sem_val_x = res_x.sem
+                sem_val_y = res_y.sem
+                avg_sem_h_b = 0.5 * np.sqrt(sem_val_x**2 + sem_val_y**2)
+
+                # Retrieve E_B_gs (pre-calculated in QKD_Energy_N3)
+                # Need the observable instance to get it - assumes factory holds the relevant one
+                # This might require getting the observable based on conf (J value)
+                j_val = res_x.conf_params.get('k', None) # Get J from the results config
+                e_b_gs = 0.0
+                temp_conf_for_j = Conf() # Create dummy conf
+                temp_conf_for_j.J = j_val
+                temp_conf_for_j.N = 3
+                # Need to handle potential error if observable not found or J is None
+                try:
+                     # Get *either* X or Y observable instance, E_B_gs should be the same
+                     qkd_obs_instance = observable_factory.get_observable(f"qkd_energy_n3_alice_x")
+                     if qkd_obs_instance and hasattr(qkd_obs_instance, 'k') and qkd_obs_instance.k == j_val:
+                         e_b_gs = qkd_obs_instance.E_B_gs
+                     else: # Try to reconstruct if factory doesn't hold right J value
+                         dummy_obs = Energy_N3(temp_conf_for_j, 'X')
+                         e_b_gs = dummy_obs.E_B_gs
+                except Exception as e:
+                     print(f"Could not retrieve E_B_gs for J={j_val}: {e}")
 
 
-                 # Calculate final E_B
-                 final_eb_value = avg_exp_val_h_b - e_b_gs
-                 final_eb_sem = avg_sem_h_b # SEM of E_B_gs is assumed 0 if calculated analytically
+                # Calculate final E_B
+                final_eb_value = avg_exp_val_h_b - e_b_gs
+                final_eb_sem = avg_sem_h_b # SEM of E_B_gs is assumed 0 if calculated analytically
 
-                 # Create the final RunResult for E_B
-                 conf_tuple, xor_res, backend_name, run_type, noise_tuple = key
-                 conf_params = dict(conf_tuple) # Convert back to dict
+                # Create the final RunResult for E_B
+                conf_tuple, xor_res, backend_name, run_type, noise_tuple = key
+                conf_params = dict(conf_tuple) # Convert back to dict
 
-                 eb_result = RunResult(
-                      observable_name=f"E_B_n3_xor{xor_res}", # Name for the derived value
-                      timestamp=max(res_x.timestamp, res_y.timestamp),
-                      conf_params=conf_params,
-                      backend_name=backend_name,
-                      run_type=run_type,
-                      noise_params=dict(noise_tuple),
-                      counts={}, # No direct counts
-                      total_shots=res_x.total_shots, # Reference shots from one run
-                      job_id=f"derived_eb_{res_x.job_id}_{res_y.job_id}",
-                      expectation_value=final_eb_value,
-                      sem=final_eb_sem,
-                      susceptibility=None, correlation=None,
-                      is_derived=True # Mark as derived
-                 )
-                 new_eb_results.append(eb_result)
-             else:
-                 print(f"Debug: Missing Alice X or Y basis result for key {key}")
+                eb_result = RunResult(
+                     observable_name=f"E_B_n3_xor{xor_res}", # Name for the derived value
+                     timestamp=max(res_x.timestamp, res_y.timestamp),
+                     conf_params=conf_params,
+                     backend_name=backend_name,
+                     run_type=run_type,
+                     noise_params=dict(noise_tuple),
+                     counts={}, # No direct counts
+                     total_shots=res_x.total_shots, # Reference shots from one run
+                     job_id=f"derived_eb_{res_x.job_id}_{res_y.job_id}",
+                     expectation_value=final_eb_value,
+                     sem=final_eb_sem,
+                     susceptibility=None, correlation=None,
+                     is_derived=True # Mark as derived
+                )
+                new_eb_results.append(eb_result)
+            else:
+                print(f"Debug: Missing Alice X or Y basis result for key {key}")
 
         self.processed_results.extend(new_eb_results)
         print(f"Added {len(new_eb_results)} derived QKD E_B (N=3) results.")
