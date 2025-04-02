@@ -156,3 +156,7 @@ class Observable:
     def description(self):
         """Return a string description of the observable."""
         raise NotImplementedError()
+
+    def __str__(self):
+     return self.description()
+

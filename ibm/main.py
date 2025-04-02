@@ -66,7 +66,7 @@ def report_and_plot(results_obj: Results):
     # file_name = plotting.plot_heatmap(results_list, output_dir)
     # plot_filenames.append(file_name)
 
-    reporting.generate_report(results_list, plot_filenames, output_dir)
+    reporting.generate_report(results_list, plot_filenames, output_dir, ['total_energy', 'charge'])
 
 
 if __name__ == "__main__":

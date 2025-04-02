@@ -79,6 +79,24 @@ class Results:
         self._raw_results_buffer = []
         print(f"Processing complete. {len(self.processed_results)} results generated.")
 
+    def _get_unique_derived_observables(unique_properties: List[str]):
+        """
+        Filters observables to ensure uniqueness based on a combination of properties.
+
+        :param unique_properties: List of property names to use for uniqueness (e.g., ['name', 'N']).
+        :return: List of unique observables.
+        """
+        seen = set()
+        unique_observables = []
+        for obs in ObservableFactory().derived_observables:
+            # Create a tuple of the specified properties
+            property_values = tuple(getattr(obs, prop, None) for prop in unique_properties)
+            if property_values not in seen:
+                seen.add(property_values)
+                unique_observables.append(obs)
+        return unique_observables
+
+
     def _calculate_all_derived_observables(self, current_results: list):
         """
         Iterates through all known derived observables and calculates their values.
@@ -98,7 +116,7 @@ class Results:
              )
              grouped_results[key][res.observable.name] = res
 
-        derived_obs = ObservableFactory().derived_observables
+        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'k', 'theta'])
         for observable in derived_obs:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue
