@@ -1,10 +1,8 @@
 from conf import Conf
-from constants import *
 import numpy as np
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import SparsePauliOp
 from .observable import Observable
-
+import utils
 
 class Charge(Observable):
     def __init__(self, conf: Conf, apply_protocol: bool, theta: float = np.pi):
@@ -15,10 +13,7 @@ class Charge(Observable):
         protocol_tag = '' if apply_protocol else '_no_protocol'
         name = f'charge{protocol_tag}'
 
-        if conf.N - BOB_QUBIT_IDX - 1 < 0:
-             raise ValueError("BOB_QUBIT_IDX is out of bounds")
-
-        super().__init__(name, conf.h, conf.k, conf.theta)
+        super().__init__(name, conf)
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """
@@ -54,7 +49,7 @@ class Charge(Observable):
         rho|+> = 1|+> (Eigenvalue 1, measurement '0')
         rho|-> = 0|-> (Eigenvalue 0, measurement '1')
         """
-        bob_measurement_result = bitstring[COUNTS_BOB_QUBIT_IDX]
+        bob_measurement_result = bitstring[utils.get_counts_bob_qubit_idx(self.N)]
 
         if bob_measurement_result == '0':
             return 1.0 # Eigenvalue 1

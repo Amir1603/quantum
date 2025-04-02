@@ -22,3 +22,17 @@ def get_nested_value(data, path_str):
         return current_val
     except (KeyError, AttributeError, TypeError, IndexError):
         return None
+
+def get_alice_qubit_idx(N):
+    return 0
+
+def get_bob_qubit_idx(N):
+    return N - 1
+
+def get_counts_alice_qubit_idx(N):
+    # Because we have only two measurements, for Alice & Bob,
+    # the index for the counts result is still 1
+    return 1
+
+def get_counts_bob_qubit_idx(N):
+    return 0

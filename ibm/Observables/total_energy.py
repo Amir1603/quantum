@@ -7,8 +7,8 @@ class TotalEnergy(Observable):
     It does not correspond to a direct circuit execution but is calculated
     from the results of H1 and V.
     """
-    def __init__(self, h, k, theta):
-        super().__init__("total_energy", h=h, k=k, theta=theta)
+    def __init__(self, conf):
+        super().__init__("total_energy", conf)
         self.component_observables = ["h1", "v"] # Names of observables it's derived from
 
     # --- No Circuit Methods Needed ---

@@ -1,9 +1,8 @@
 from conf import Conf
-from constants import *
 import numpy as np
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import SparsePauliOp
 from .observable import Observable
+import utils
 
 class Current(Observable):
     def __init__(self, conf: Conf, apply_protocol):
@@ -11,7 +10,7 @@ class Current(Observable):
         name = f'current{"" if apply_protocol else "_no_protocol"}'
 
         # Initialize Observable parent class
-        super().__init__(name, conf.h, conf.k, conf.theta)
+        super().__init__(name, conf)
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """
@@ -48,7 +47,7 @@ class Current(Observable):
         - Intended state |+i>_Y -> (Sdg, H) -> |0> -> Measured '0' -> Eigenvalue +1
         - Intended state |-i>_Y -> (Sdg, H) -> |1> -> Measured '1' -> Eigenvalue -1
         """
-        bob_measurement_result = bitstring[COUNTS_BOB_QUBIT_IDX]
+        bob_measurement_result = bitstring[utils.get_counts_bob_qubit_idx(self.N)]
 
         if bob_measurement_result == '0':
             return 1.0  # Corresponds to eigenvalue +1 of Y operator

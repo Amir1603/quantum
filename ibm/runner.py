@@ -5,8 +5,8 @@ from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2, EstimatorV2
 from results import Results
-from constants import *
 import plotting
+import utils
 
 
 class Runner():
@@ -62,29 +62,29 @@ class Runner():
         # Prepare the ground state
         obs.apply_ground_state(qc, list(range(num_qubits)))
 
-        alice_creg_idx = ALICE_QUBIT_IDX
-        bob_creg_idx = BOB_QUBIT_IDX
+        alice_creg_idx = utils.get_alice_qubit_idx(num_qubits)
+        bob_creg_idx = utils.get_bob_qubit_idx(num_qubits)
 
-        obs.apply_alice_measurement(qc, ALICE_QUBIT_IDX, alice_creg_idx)
+        obs.apply_alice_measurement(qc, utils.get_alice_qubit_idx(num_qubits), alice_creg_idx)
 
         # Idle Bob’s qubit
         if conf.delay_time and conf.delay_time > 0:
              # Ensure delay_time is in appropriate units (dt, sec). Assume dt for Aer.
-             qc.delay(conf.delay_time, BOB_QUBIT_IDX, unit='dt')
+             qc.delay(conf.delay_time, utils.get_bob_qubit_idx(num_qubits), unit='dt')
 
         # Bob's conditional operation
         # Pass the classical register/bit index Alice measured into
-        obs.apply_bob_operation(qc, BOB_QUBIT_IDX, alice_creg_idx, conf.xor_alice_res)
+        obs.apply_bob_operation(qc, utils.get_bob_qubit_idx(num_qubits), alice_creg_idx, conf.xor_alice_res)
 
         # Bob's measurement basis
         bob_basis = obs.get_bob_measurement_basis()
         if bob_basis == "X":
-            qc.h(BOB_QUBIT_IDX)
+            qc.h(utils.get_bob_qubit_idx(num_qubits))
         elif bob_basis == "Y":
-             qc.sdg(BOB_QUBIT_IDX) # Apply S dagger
-             qc.h(BOB_QUBIT_IDX)
+             qc.sdg(utils.get_bob_qubit_idx(num_qubits)) # Apply S dagger
+             qc.h(utils.get_bob_qubit_idx(num_qubits))
 
-        qc.measure(BOB_QUBIT_IDX, bob_creg_idx)
+        qc.measure(utils.get_bob_qubit_idx(num_qubits), bob_creg_idx)
 
         return qc
 

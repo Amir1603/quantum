@@ -1,20 +1,17 @@
 from conf import Conf
-from constants import *
-import numpy as np
-from qiskit.quantum_info import SparsePauliOp
 from .energy import Energy
-
+import utils
 
 class H1_B(Energy):
     """Observable for Bob's local energy term h*Z1."""
     def __init__(self, conf: Conf):
-        super().__init__("h1", conf.h, conf.k, conf.theta)
+        super().__init__("h1", conf)
 
     def get_bob_measurement_basis(self):
         return "Z"
 
     def get_value(self, bitstring: str):
-        bob_bit = bitstring[COUNTS_BOB_QUBIT_IDX]
+        bob_bit = bitstring[utils.get_counts_bob_qubit_idx(self.N)]
         if bob_bit == '0':
             return 1 # Z eigenvalue for |0>
         else:

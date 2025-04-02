@@ -2,12 +2,11 @@ from dataclasses import asdict
 import json
 import math
 import os
+import utils
 from typing import List, Dict, Tuple, Any
 from run_result import RunResult
 from Observables import ObservableFactory, TotalEnergy
 from conf import Conf
-from constants import *
-
 
 class Results:
     def __init__(self, run_time, output_dir):
@@ -185,10 +184,6 @@ class Results:
 
     @staticmethod
     def calculate_correlation(counts: dict, num_qubits: int):
-        """
-        Calculates the Z0Z1 correlation. Assumes bitstring format 'b1b0'.
-        Adjust COUNTS_ALICE_QUBIT_IDX and COUNTS_BOB_QUBIT_IDX if format is different.
-        """
         if not counts: return 0.0
 
         total_counts = sum(counts.values())
@@ -206,8 +201,8 @@ class Results:
             # Map '0' -> +1, '1' -> -1 for Z measurement eigenvalue
             try:
                 # Use indices based on 'b1b0' format
-                outcome_q0 = 1.0 if bitstring[COUNTS_BOB_QUBIT_IDX] == '0' else -1.0 # Bob's value
-                outcome_q1 = 1.0 if bitstring[COUNTS_ALICE_QUBIT_IDX] == '0' else -1.0 # Alice's value
+                outcome_q0 = 1.0 if bitstring[utils.get_counts_bob_qubit_idx(num_qubits)] == '0' else -1.0 # Bob's value
+                outcome_q1 = 1.0 if bitstring[utils.get_counts_alice_qubit_idx(num_qubits)] == '0' else -1.0 # Alice's value
                 correlation += outcome_q1 * outcome_q0 * count
             except IndexError:
                 print(f"Warning: Skipping bitstring '{bitstring}' in correlation calc due to index error.")

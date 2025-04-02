@@ -1,11 +1,10 @@
-from constants import *
 import numpy as np
 from qiskit import QuantumCircuit
 from .observable import Observable
 
 class Energy(Observable):
-    def __init__(self, name, h, k, theta):
-        super().__init__(name, h, k, theta)
+    def __init__(self, name, conf):
+        super().__init__(name, conf)
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """

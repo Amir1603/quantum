@@ -1,14 +1,16 @@
 from qiskit import QuantumCircuit
 import math
 import numpy as np
-from constants import ALICE_QUBIT_IDX, BOB_QUBIT_IDX, COUNTS_BOB_QUBIT_IDX
+import utils
+from conf import Conf
 
 class Observable:
-    def __init__(self, name, h, k, theta):
+    def __init__(self, name, conf: Conf):
         self.name = name
-        self.h = h
-        self.k = k
-        self.theta = theta
+        self.h = conf.h
+        self.k = conf.k
+        self.theta = conf.theta
+        self.N = conf.N
 
     # --- Circuit Construction Methods (Keep as abstract or implement common logic) ---
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
@@ -39,8 +41,8 @@ class Observable:
             (1 / np.sqrt(2)) * np.sqrt(1 - self.h / denominator)
         )
         # Apply Ry(2*gs_theta) for state preparation
-        qc.ry(2 * gs_theta, qubits[ALICE_QUBIT_IDX])
-        qc.cx(qubits[ALICE_QUBIT_IDX], qubits[BOB_QUBIT_IDX])
+        qc.ry(2 * gs_theta, qubits[utils.get_alice_qubit_idx(self.N)])
+        qc.cx(qubits[utils.get_alice_qubit_idx(self.N)], qubits[utils.get_bob_qubit_idx(self.N)])
 
 
     def get_gs_expectation_value(self):
