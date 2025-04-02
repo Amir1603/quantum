@@ -97,13 +97,13 @@ class TotalEnergy(Observable):
         # SEM = sqrt( h^2*SEM(O1)^2 + (2k)^2*SEM(O2)^2 )
         sem_h1 = h1_res.sem
         sem_v = v_res.sem
-        total_sem = np.sqrt((h * sem_h1)**2 + (2 * k * sem_v)**2)
+        total_sem = math.sqrt((h * sem_h1)**2 + (2 * k * sem_v)**2)
 
         return final_value, total_sem
 
     # --- Metadata ---
     def description(self):
-        return "Derived Total Energy H_B = h*Z1 + 2k*X0X1 for N=2"
+        return "E_B = h*Z1 + 2k*X0X1 for N=2"
 
     @staticmethod
     def is_derived_observable():

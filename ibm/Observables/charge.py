@@ -60,4 +60,4 @@ class Charge(Observable):
         return 0.5 * self.h / np.sqrt(self.h**2 + self.k**2)
 
     def description(self):
-        return "rho = (I+Z)/2"
+        return "charge = (I+Z)/2"

@@ -13,14 +13,15 @@ class Runner():
     def __init__(self, observables: list[Observable]):
         self.noise_model = None
         self.observables = observables
-        self.service = QiskitRuntimeService()
 
     def __choose_backend(self, backend_name, conf: Conf):
         if self.noise_model or (not conf.run_sampler):
             return AerSimulator(noise_model=self.noise_model)
         elif backend_name:
+            self.service = QiskitRuntimeService()
             return self.service.backend(backend_name)
         else:
+            self.service = QiskitRuntimeService()
             return self.service.least_busy(operational=True, simulator=False)
 
     def _create_noise_model(self, p_dephase):
