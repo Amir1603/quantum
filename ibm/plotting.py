@@ -552,7 +552,7 @@ def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_n
         output_dir=output_dir,
         filename_prefix=f"exp_vs_{parameter_name}",
         title_prefix=f"Expectation Value vs {parameter_name} ({filter_criteria_plot})",
-        group_by=['observable_name'], # TODO!! # Separate lines for each selected observable
+        group_by=['observable'], # Separate lines for each selected observable
         filter_criteria=filter_criteria_plot,
         observables_to_plot=selected_obs_plot # Apply observable filter
     )
@@ -570,7 +570,7 @@ def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, pa
             subplot_params=['conf_params.h', 'conf_params.k'], # Create subplots based on h and k
             output_dir=output_dir,
             error_param_path='sem',
-            line_group_by=['observable_name'], # TODO # Lines within each subplot correspond to observables
+            line_group_by=['observable'], # Lines within each subplot correspond to observables
             # filter_criteria={}, # Optional: Add global filters if needed, e.g., for specific run types
             observables_to_plot=obs,
             filename_prefix=f"exp_vs_{parameter_name}_subplots_hk",
