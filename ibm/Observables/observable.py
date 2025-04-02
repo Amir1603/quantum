@@ -1,32 +1,51 @@
 from qiskit import QuantumCircuit
 import math
-
+import numpy as np
+from constants import ALICE_QUBIT_IDX, BOB_QUBIT_IDX, COUNTS_BOB_QUBIT_IDX
 
 class Observable:
-    def __init__(self, name, expression, h, k):
+    def __init__(self, name, h, k, theta):
         self.name = name
-        self.expression = expression
         self.h = h
         self.k = k
+        self.theta = theta
 
     # --- Circuit Construction Methods (Keep as abstract or implement common logic) ---
-    def apply_ground_state(self, qc: QuantumCircuit, qubits: list):
-        raise NotImplementedError()
-
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         raise NotImplementedError()
 
-    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg):
+    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg, xor_alice_res):
         raise NotImplementedError()
 
     def get_bob_measurement_basis(self):
         """Return 'X', 'Y', or 'Z' (or list for multi-qubit)"""
         raise NotImplementedError()
 
-    # --- Value Extraction ---
     def get_value(self, bitstring: str):
         """Calculate the observable's value for a given measurement bitstring."""
         raise NotImplementedError()
+
+    def apply_ground_state(self, qc: QuantumCircuit, qubits: list):
+        """
+        Prepares the ground state for Charge.
+        """
+        denominator = np.sqrt(self.h**2 + self.k**2)
+
+        if denominator == 0:
+            raise ZeroDivisionError("h=k=0 - cannot calculate TFIM g.s.")
+
+        # Ground state angle calculation parameter
+        gs_theta = -np.arccos(
+            (1 / np.sqrt(2)) * np.sqrt(1 - self.h / denominator)
+        )
+        # Apply Ry(2*gs_theta) for state preparation
+        qc.ry(2 * gs_theta, qubits[ALICE_QUBIT_IDX])
+        qc.cx(qubits[ALICE_QUBIT_IDX], qubits[BOB_QUBIT_IDX])
+
+
+    def get_gs_expectation_value(self):
+        # TODO: For simplicity currently this is the easiest way to add this functionality
+        return 0
 
     # --- Post-Processing Calculations ---
     def calculate_expectation_and_sem(self, counts: dict, total_shots: int):
@@ -51,6 +70,7 @@ class Observable:
 
         # Calculate expectation value <O>
         expectation = sum_val / total_shots
+        expectation = expectation - self.get_gs_expectation_value()
 
         # Calculate <O^2>
         expectation_sq = sum_val_sq / total_shots

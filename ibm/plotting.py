@@ -139,6 +139,8 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
 
     # Save plot
     filename_parts = [filename_prefix, "vs", x_param_path.replace('.', '_')]
+    if filter_criteria:
+        filename_parts.append(f'_{filter_criteria}')
     if observables_to_plot:
         filename_parts.append("_".join(observables_to_plot))
     filename = f"{'_'.join(filename_parts)}.png"
@@ -538,116 +540,110 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         return None
 
 
-def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, obs=['charge', 'total_energy']):
-    try:
-        # Define observables of interest for this plot
-        selected_obs_plot = obs
-        # Example: Filter for a specific h, k combination
-        filter_criteria_plot = {'conf_params.h': 1.0, 'conf_params.k': 1.0}
+def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, filter_criteria_plot, obs=['charge', 'total_energy']):
+    # Define observables of interest for this plot
+    selected_obs_plot = obs
 
-        plot_exp_vs_p_filt = plot_expectation_vs_parameter(
+    plot_exp_vs_p_filt = plot_expectation_vs_parameter(
+        results_list=results_list,
+        x_param_path=f'conf_params.{parameter_name}',
+        y_param_path='expectation_value',
+        error_param_path='sem',
+        output_dir=output_dir,
+        filename_prefix=f"exp_vs_{parameter_name}",
+        title_prefix=f"Expectation Value vs {parameter_name} ({filter_criteria_plot})",
+        group_by=['observable_name'], # Separate lines for each selected observable
+        filter_criteria=filter_criteria_plot,
+        observables_to_plot=selected_obs_plot # Apply observable filter
+    )
+
+    print(f"Generated plot (filtered obs): {plot_exp_vs_p_filt}")
+    return plot_exp_vs_p_filt
+
+
+def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, parameter_name, obs=['charge', 'total_energy']):
+    try:
+        plot_exp_vs_p_subplot = plot_expectation_vs_parameter_subplots(
             results_list=results_list,
             x_param_path=f'conf_params.{parameter_name}',
             y_param_path='expectation_value',
-            error_param_path='sem',
+            subplot_params=['conf_params.h', 'conf_params.k'], # Create subplots based on h and k
             output_dir=output_dir,
-            filename_prefix=f"exp_vs_{parameter_name}",
-            title_prefix=f"Expectation Value vs {parameter_name} (h={filter_criteria_plot['conf_params.h']}, k={filter_criteria_plot['conf_params.k']})",
-            group_by=['observable_name'], # Separate lines for each selected observable
-            filter_criteria=filter_criteria_plot,
-            observables_to_plot=selected_obs_plot # Apply observable filter
+            error_param_path='sem',
+            line_group_by=['observable_name'], # Lines within each subplot correspond to observables
+            # filter_criteria={}, # Optional: Add global filters if needed, e.g., for specific run types
+            observables_to_plot=obs,
+            filename_prefix=f"exp_vs_{parameter_name}_subplots_hk",
+            title_prefix=f"Expectation Value vs {parameter_name}"
         )
-
-        print(f"Generated plot (filtered obs): {plot_exp_vs_p_filt}")
-        return plot_exp_vs_p_filt
+        print(f"Generated plot (subplots): {plot_exp_vs_p_subplot}")
+        return plot_exp_vs_p_subplot
 
     except Exception as e:
-        print(f"Error during filtered expectation plot: {e}")
+        print(f"Error during subplot generation: {e}")
 
 
-    def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, parameter_name, obs=['charge', 'total_energy']):
-        try:
-            plot_exp_vs_p_subplot = plot_expectation_vs_parameter_subplots(
-                results_list=results_list,
-                x_param_path=f'conf_params.{parameter_name}',
-                y_param_path='expectation_value',
-                subplot_params=['conf_params.h', 'conf_params.k'], # Create subplots based on h and k
-                output_dir=output_dir,
-                error_param_path='sem',
-                line_group_by=['observable_name'], # Lines within each subplot correspond to observables
-                # filter_criteria={}, # Optional: Add global filters if needed, e.g., for specific run types
-                observables_to_plot=obs,
-                filename_prefix=f"exp_vs_{parameter_name}_subplots_hk",
-                title_prefix=f"Expectation Value vs {parameter_name}"
-            )
-            print(f"Generated plot (subplots): {plot_exp_vs_p_subplot}")
-            return plot_exp_vs_p_subplot
+def plot_counts_hist(results_list, output_dir, obs='charge'):
+    try:
+        print("\n--- Generating Example Histograms ---")
+        hist_count = 0
+        # Limit the number of histograms generated to avoid too many files
+        max_hists = 5
+        plot_filenames = []
+        for result in results_list:
+                # Define criteria for which runs to generate histograms
+                is_target_hist = (
+                    result.observable_name == obs and
+                    get_nested_value(result, 'conf_params.h') == 1.0 and
+                    get_nested_value(result, 'conf_params.k') == 1.0 and
+                    get_nested_value(result, 'conf_params.p_dephase') == 0.0
+                )
 
-        except Exception as e:
-            print(f"Error during subplot generation: {e}")
+                # Check if counts data exists and if it matches the target criteria
+                if is_target_hist and result.counts and hist_count < max_hists:
+                    # Create descriptive info for the title and filename
+                    h_val = get_nested_value(result, 'conf_params.h')
+                    k_val = get_nested_value(result, 'conf_params.k')
+                    p_d_val = get_nested_value(result, 'conf_params.p_dephase')
+                    title_info = f"h={h_val}, k={k_val}, p_d={p_d_val}"
 
+                    hist_filename = plot_counts_histogram(
+                        counts=result.counts,
+                        observable_name=result.observable_name,
+                        output_dir=output_dir,
+                        filename_prefix="hist",
+                        title_info=title_info
+                    )
+                    if hist_filename:
+                        plot_filenames.append(hist_filename)
+                        print(f"Generated histogram: {hist_filename}")
+                        hist_count += 1
 
-    def plot_counts_hist(obs='charge'):
-        try:
-            print("\n--- Generating Example Histograms ---")
-            hist_count = 0
-            # Limit the number of histograms generated to avoid too many files
-            max_hists = 5
-            plot_filenames = []
-            for result in results_list:
-                 # Define criteria for which runs to generate histograms
-                 is_target_hist = (
-                     result.observable_name == obs and
-                     get_nested_value(result, 'conf_params.h') == 1.0 and
-                     get_nested_value(result, 'conf_params.k') == 1.0 and
-                     get_nested_value(result, 'conf_params.p_dephase') == 0.0
-                 )
+        if hist_count == 0:
+                print("No target results found matching criteria for example histograms.")
 
-                 # Check if counts data exists and if it matches the target criteria
-                 if is_target_hist and result.counts and hist_count < max_hists:
-                      # Create descriptive info for the title and filename
-                      h_val = get_nested_value(result, 'conf_params.h')
-                      k_val = get_nested_value(result, 'conf_params.k')
-                      p_d_val = get_nested_value(result, 'conf_params.p_dephase')
-                      title_info = f"h={h_val}, k={k_val}, p_d={p_d_val}"
+        return plot_filenames
 
-                      hist_filename = plot_counts_histogram(
-                          counts=result.counts,
-                          observable_name=result.observable_name,
-                          output_dir=output_dir,
-                          filename_prefix="hist",
-                          title_info=title_info
-                      )
-                      if hist_filename:
-                          plot_filenames.append(hist_filename)
-                          print(f"Generated histogram: {hist_filename}")
-                          hist_count += 1
-
-            if hist_count == 0:
-                 print("No target results found matching criteria for example histograms.")
-
-            return plot_filenames
-
-        except Exception as e:
-            print(f"Error during histogram generation: {e}")
+    except Exception as e:
+        print(f"Error during histogram generation: {e}")
 
 
-    def plot_heatmap(results_list, output_dir, obs='charge'):
-        plot_heatmap = plot_heatmap_vs_hk(
-            results_list=results_list,
-            h_param_path='conf_params.h',
-            k_param_path='conf_params.k',
-            z_param_path='expectation_value',
-            output_dir=output_dir,
-            observable_to_plot=obs,
-            filter_criteria={},
-            filename_prefix=f'heatmap_{obs}_expval',
-            title_prefix='Expectation Value vs (h, k)',
-            cmap='viridis',
-            z_label=f'{obs} exp value'
-        )
-        print(f"Generated heatmap plot: {plot_heatmap}")
-        return plot_heatmap
+def plot_heatmap(results_list, output_dir, obs='charge'):
+    plot_heatmap = plot_heatmap_vs_hk(
+        results_list=results_list,
+        h_param_path='conf_params.h',
+        k_param_path='conf_params.k',
+        z_param_path='expectation_value',
+        output_dir=output_dir,
+        observable_to_plot=obs,
+        filter_criteria={},
+        filename_prefix=f'heatmap_{obs}_expval',
+        title_prefix='Expectation Value vs (h, k)',
+        cmap='viridis',
+        z_label=f'{obs} exp value'
+    )
+    print(f"Generated heatmap plot: {plot_heatmap}")
+    return plot_heatmap
 
 
 def draw_circuit(qc, output_dir, conf):

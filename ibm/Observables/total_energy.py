@@ -7,15 +7,14 @@ class TotalEnergy(Observable):
     It does not correspond to a direct circuit execution but is calculated
     from the results of H1 and V.
     """
-    def __init__(self, h, k):
-        # Expression is conceptual, not used for circuit building
-        super().__init__("total_energy", expression=None, h=h, k=k)
+    def __init__(self, h, k, theta):
+        super().__init__("total_energy", h=h, k=k, theta=theta)
         self.component_observables = ["h1", "v"] # Names of observables it's derived from
 
     # --- No Circuit Methods Needed ---
     def apply_ground_state(self, qc, qubits): pass
     def apply_alice_measurement(self, qc, alice_qubit, alice_creg): pass
-    def apply_bob_operation(self, qc, bob_qubit, alice_creg): pass
+    def apply_bob_operation(self, qc, bob_qubit, alice_creg, xor_alice_res): pass
     def get_bob_measurement_basis(self): return None # Not directly measured
 
     # --- Value Extraction (Not Applicable from Bitstring) ---

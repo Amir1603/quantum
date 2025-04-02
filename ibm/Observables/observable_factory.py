@@ -1,5 +1,5 @@
-from .h1 import H1
-from .v import V
+from .h1 import H1_B
+from .v import V_AB
 from .charge import Charge
 from .current import Current
 from .total_energy import TotalEnergy # Import the new class
@@ -23,16 +23,16 @@ class ObservableFactory(metaclass=Singleton):
     def create_observables(self, conf: Conf) -> list[Observable]:
         # Create instances of directly simulated observables
         self.obs_list = [
-            H1(conf),
-            V(conf),
+            H1_B(conf),
+            V_AB(conf),
             Charge(conf, True, conf.theta),
-            Charge(conf, False),
-            Current(conf, True),
-            Current(conf, False)
+            # Charge(conf, False),
+            # Current(conf, True),
+            # Current(conf, False)
         ]
         # Create instances of derived observables (don't add to obs_list used for running sims)
         derived_obs = [
-            TotalEnergy(conf.h, conf.k)
+            TotalEnergy(conf.h, conf.k, conf.theta)
         ]
 
         # Create a dictionary for easy lookup by name

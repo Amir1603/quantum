@@ -74,7 +74,7 @@ class Runner():
 
         # Bob's conditional operation
         # Pass the classical register/bit index Alice measured into
-        obs.apply_bob_operation(qc, BOB_QUBIT_IDX, alice_creg_idx)
+        obs.apply_bob_operation(qc, BOB_QUBIT_IDX, alice_creg_idx, conf.xor_alice_res)
 
         # Bob's measurement basis
         bob_basis = obs.get_bob_measurement_basis()

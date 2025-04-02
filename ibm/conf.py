@@ -8,20 +8,38 @@ class Conf:
         axis = np.arange(0, max_value + step, step)
         hks = [(h, k) for h in axis for k in axis]
 
-        return [Conf(h=h, k=k, **conf.__dict__) for h, k in hks]
+        confs = []
+        for h, k in hks:
+            new_conf = Conf()
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.h = h
+            new_conf.k = k
+            confs.append(new_conf)
+        return confs
 
     @staticmethod
-    def generate_k_for_h(conf, step=0.25, max_value=2):
-        axis = np.arange(0, max_value + step, step)
-        hks =[(conf.h, k) for k in axis]
+    def generate_k_for_h(conf, step=0.1, max_value=2):
+        ks = np.arange(0, max_value + step, step).tolist()
 
-        return [Conf(h=h, k=k, **conf.__dict__) for h, k in hks]
+        confs = []
+        for k in ks:
+            new_conf = Conf()
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.k = k
+            confs.append(new_conf)
+        return confs
 
     @staticmethod
     def generate_p_dephase_values(conf, num_points=1):
         dephases = np.linspace(0, 1.0, num_points).tolist()
 
-        return [Conf(p_dephase=p, **conf.__dict__) for p in dephases]
+        confs = []
+        for p in dephases:
+            new_conf = Conf()
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.p_dephase = p
+            confs.append(new_conf)
+        return confs
 
     @staticmethod
     def generate_backends():
@@ -32,10 +50,28 @@ class Conf:
         return [0]
 
     @staticmethod
-    def generate_thetas(conf, num_points=50):
+    def generate_thetas(conf, num_points=20):
         thetas = np.linspace(-np.pi, np.pi, num_points).tolist()
 
-        return [Conf(theta=theta, **conf.__dict__) for theta in thetas]
+        confs = []
+        for theta in thetas:
+            new_conf = Conf()
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.theta = theta
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
+    def generate_alice_xor(conf):
+        confs = []
+
+        for xor_val in [0, 1]:
+            new_conf = Conf()
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.xor_alice_res = xor_val
+            confs.append(new_conf)
+
+        return confs
 
     def __init__(self):
         self.h = 1.0
@@ -43,7 +79,7 @@ class Conf:
         self.total_shots = 10000
         self.error_mitigation = False
         self.run_simulator = True
-        self.run_sampler = True
+        self.run_sampler = False
         self.run_estimator = False
         self.run_all = False
         self.p_dephase = None
@@ -51,7 +87,8 @@ class Conf:
         self.draw_circuit = False
         self.delay_time = 0
         self.n_qubits = 2
-        self.theta = np.pi
+        self.theta = None
+        self.xor_alice_res = 0
 
 
     def load(self):
@@ -69,4 +106,4 @@ class Conf:
 
 
     def __repr__(self):
-        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_estimator:{self.run_estimator} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <n_qubits:{self.n_qubits}>"
+        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_estimator:{self.run_estimator} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <n_qubits:{self.n_qubits}> <xor_alice_res:{self.xor_alice_res}>"
