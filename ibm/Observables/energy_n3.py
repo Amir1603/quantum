@@ -10,7 +10,7 @@ class Energy_N3(Observable):
     """
     def __init__(self, conf: Conf, alice_basis: str, xor_alice_res: int):
         # Name reflects the final calculated value E_B and its parameters
-        name = f"qkd_E_B_n3_alice{alice_basis.lower()}_xor{xor_alice_res}"
+        name = f"E_B_n3_alice{alice_basis.lower()}"
         super().__init__(name, conf) # Pass full conf
         self.alice_basis = alice_basis.upper()
         self.xor_alice_res = xor_alice_res
@@ -72,7 +72,7 @@ class Energy_N3(Observable):
             print(f"Warning: Missing component data for derived observable {self.name}")
             return None, None
 
-        j_val = self.J_param # Get J from self (inherited from Observable via Conf)
+        j_val = self.k # Get J from self (inherited from Observable via Conf)
         if j_val is None:
              print(f"Warning: J value is None for {self.name}. Cannot calculate derived value.")
              return None, None

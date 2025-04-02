@@ -13,17 +13,19 @@ class H1_N3(QKDBaseN3):
 
     def get_value(self, bitstring: str):
         """Calculates eigenvalue of Z2 (+1 or -1) from measurement outcome."""
-        # Assumes bitstring format c...c1c0 based on runner's measurement order.
-        # Need number of classical bits used in the circuit for this measurement.
-        num_clbits = 2 # Alice (c0), Z2 (c1) for this observable's circuit
+        # EXPECT 3 classical bits based on runner standardization for N=3
+        num_clbits = 3
         try:
-            bob_creg = utils.get_counts_bob_creg_idx(self.N) # Expect index 1
+            # Get index for Bob's Z2 measurement result (should be 1 based on utils)
+            bob_creg = utils.get_counts_bob_creg_idx(self.N)
             z2_meas_bit = utils.get_bit_from_counts(bitstring, bob_creg, num_clbits)
             z2_eigenvalue = 1.0 if z2_meas_bit == '0' else -1.0
             return z2_eigenvalue
         except IndexError as e:
+            # Catch potential errors from get_bit_from_counts
             print(f"Error in {self.name}.get_value: Bitstring '{bitstring}', {e}")
-            return 0.0 # Or raise error
+            # Re-raise or return default? Re-raising might be better for debugging.
+            raise e # Or return 0.0
 
     def description(self):
-        return f"Measure Z2 for N=3 QKD (Alice Basis: {self.alice_basis}, J={self.J_param})"
+        return f"Measure Z2 for N=3 QKD (Alice Basis: {self.alice_basis}, J={self.k})"

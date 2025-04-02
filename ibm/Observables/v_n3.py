@@ -16,26 +16,25 @@ class V_N3(QKDBaseN3):
 
     def get_value(self, bitstring: str):
         """
-        Calculates eigenvalue of X1*X2 (+1 or -1) from Z1, Z2 measurement outcomes
-        (assuming H gates were applied by runner).
+        Calculates eigenvalue of X1*X2 (+1 or -1) from Z1, Z2 measurement outcomes...
         """
-        # Requires 3 classical bits: Alice (c0), Z2(c1), Z1(c2) - based on utils definition
+        # Ensure this is 3, matching the runner for N=3
         num_clbits = 3
         try:
             intermed_creg = utils.get_counts_intermediate_creg_idx(self.N) # Expect index 2
             bob_creg = utils.get_counts_bob_creg_idx(self.N) # Expect index 1
 
+            # Ensure get_bit_from_counts is used correctly
             z1_meas_bit = utils.get_bit_from_counts(bitstring, intermed_creg, num_clbits)
             z2_meas_bit = utils.get_bit_from_counts(bitstring, bob_creg, num_clbits)
 
             z1_eigenvalue = 1.0 if z1_meas_bit == '0' else -1.0
             z2_eigenvalue = 1.0 if z2_meas_bit == '0' else -1.0
 
-            # Eigenvalue of X1X2 is product of Z1, Z2 eigenvalues after H gates
             return z1_eigenvalue * z2_eigenvalue
         except IndexError as e:
-             print(f"Error in {self.name}.get_value: Bitstring '{bitstring}', {e}")
-             return 0.0 # Or raise error
+            print(f"Error in {self.name}.get_value: Bitstring '{bitstring}', {e}")
+            raise e # Or return 0.0
 
     def description(self):
-        return f"Measure X1*X2 for N=3 QKD (Alice Basis: {self.alice_basis}, J={self.J_param})"
+        return f"Measure X1*X2 for N=3 QKD (Alice Basis: {self.alice_basis}, J={self.k})"

@@ -102,7 +102,7 @@ class Results:
 
         # Iterate through all observables in the factory, find derived ones
         for obs_name, observable in observable_factory.obs_dict.items():
-            if not observable.is_derived_observable():
+            if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue
 
             print(f"  Attempting to calculate derived: {obs_name}")

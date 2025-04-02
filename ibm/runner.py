@@ -51,10 +51,28 @@ class Runner():
          self.simulator = AerSimulator(noise_model=self.noise_model)
 
     def _qet_circuit(self, obs: Observable, conf: Conf):
-        # ... circuit construction logic using obs and conf ...
-        # Ensure num_qubits comes from conf or is fixed
         num_qubits = conf.N
-        qc = QuantumCircuit(num_qubits, num_qubits)
+        qubit_indices = list(range(num_qubits))
+
+        # --- Determine required classical bits ---
+        if conf.N == 3:
+            # CONSISTENTLY use 3 classical bits for all N=3 simulation runs
+            # (Alice, Bob Z2, Intermediate Z1) even if not all are measured by the specific observable
+            num_clbits = 3
+            print(f"  N=3 run: Using {num_clbits} classical bits.")
+        elif conf.N == 2:
+            # Logic for N=2 runs (e.g., 2 classical bits)
+            num_clbits = 2 # Adjust if needed for specific N=2 observables
+            print(f"  N=2 run: Using {num_clbits} classical bits.")
+        else:
+            raise NotImplementedError(f"Unsupported N={conf.N} in _qet_circuit")
+
+        # Define classical register indices based on utils (Alice=c0, BobZ2=c1, IntermedZ1=c2)
+        alice_creg = utils.get_counts_alice_creg_idx(num_qubits)
+        bob_z2_creg = utils.get_counts_bob_creg_idx(num_qubits)
+        intermed_z1_creg = utils.get_counts_intermediate_creg_idx(num_qubits) # Expect 2 (or None if N!=3)
+
+        qc = QuantumCircuit(num_qubits, num_clbits) # Use determined num_clbits
         qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
@@ -75,14 +93,31 @@ class Runner():
         obs.apply_bob_operation(qc, utils.get_bob_qubit_idx(num_qubits), alice_creg_idx, conf.xor_alice_res)
 
         # Bob's measurement basis
-        bob_basis = obs.get_bob_measurement_basis()
-        if bob_basis == "X":
-            qc.h(utils.get_bob_qubit_idx(num_qubits))
-        elif bob_basis == "Y":
-             qc.sdg(utils.get_bob_qubit_idx(num_qubits)) # Apply S dagger
-             qc.h(utils.get_bob_qubit_idx(num_qubits))
+        bob_meas_basis = obs.get_bob_measurement_basis()
+        if conf.N == 3:
+            intermed_q_idx = 1
+            bob_q_idx = utils.get_bob_qubit_idx(num_qubits) # Should be 2
+            if bob_meas_basis == "X1X2":
+                print(f"  Adding measurements for X1X2 (H on q1, q2; Measure q1->c{intermed_z1_creg}, q2->c{bob_z2_creg})")
+                qc.h(intermed_q_idx)
+                qc.h(bob_q_idx)
+                # Ensure using the correct classical bit objects/indices
+                qc.measure(intermed_q_idx, qc.clbits[intermed_z1_creg])
+                qc.measure(bob_q_idx, qc.clbits[bob_z2_creg])
+            elif bob_meas_basis == "Z2":
+                print(f"  Adding measurement for Z2 (Measure q2->c{bob_z2_creg})")
+                # Measure Bob into the correct classical bit
+                qc.measure(bob_q_idx, qc.clbits[bob_z2_creg])
+                # Note: clbit[intermed_z1_creg] (index 2) remains unused for this specific circuit run
+            # else: handle other N=3 cases?
+        elif conf.N == 2:
+            if bob_meas_basis == "X":
+                qc.h(utils.get_bob_qubit_idx(num_qubits))
+            elif bob_meas_basis == "Y":
+                qc.sdg(utils.get_bob_qubit_idx(num_qubits)) # Apply S dagger
+                qc.h(utils.get_bob_qubit_idx(num_qubits))
 
-        qc.measure(utils.get_bob_qubit_idx(num_qubits), bob_creg_idx)
+            qc.measure(utils.get_bob_qubit_idx(num_qubits), bob_creg_idx)
 
         return qc
 
