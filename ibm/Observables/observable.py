@@ -1,4 +1,6 @@
 from qiskit import QuantumCircuit
+from qiskit.quantum_info import SparsePauliOp
+from scipy.sparse.linalg import eigsh
 import math
 import numpy as np
 import utils
@@ -11,6 +13,46 @@ class Observable:
         self.k = conf.k
         self.theta = conf.theta
         self.N = conf.N
+
+        # Cache for ground state vector to avoid recomputing
+        self._gs_vector_cache = {}
+
+    def _get_n3_tfim_ground_state(self):
+        """
+        Numerically calculates the ground state vector for the N=3 TFIM.
+        H = J*(X0X1 + X1X2) + Z0 + Z1 + Z2
+        Caches the result based on J.
+        """
+        cache_key = self.J_param
+        if cache_key in self._gs_vector_cache:
+            return self._gs_vector_cache[cache_key]
+
+        print(f"Calculating N=3 ground state for J={self.J_param}...")
+        # Define Pauli strings for the N=3 Hamiltonian
+        # Remember Qiskit orders qubits right-to-left (q2, q1, q0)
+        paulis = [
+            ("XXI", self.J_param), # X0*X1
+            ("IXX", self.J_param), # X1*X2
+            ("ZII", 1.0),         # Z0
+            ("IZI", 1.0),         # Z1
+            ("IIZ", 1.0)          # Z2
+        ]
+        hamiltonian_op = SparsePauliOp.from_list(paulis)
+        hamiltonian_matrix = hamiltonian_op.to_matrix(sparse=True)
+
+        # Find the eigenvalue and eigenvector for the ground state (lowest energy)
+        # Using eigsh for sparse matrices, requesting the lowest eigenvalue (which='SA')
+        try:
+            eigenvalues, eigenvectors = eigsh(hamiltonian_matrix, k=1, which='SA')
+            gs_vector = eigenvectors[:, 0]
+            # Ensure normalization (eigsh should provide normalized vectors)
+            gs_vector /= np.linalg.norm(gs_vector)
+            self._gs_vector_cache[cache_key] = gs_vector
+            print(f"Ground state calculated. Energy: {eigenvalues[0]}")
+            return gs_vector
+        except Exception as e:
+            print(f"Error during N=3 ground state calculation: {e}")
+            raise
 
     # --- Circuit Construction Methods (Keep as abstract or implement common logic) ---
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
@@ -28,22 +70,22 @@ class Observable:
         raise NotImplementedError()
 
     def apply_ground_state(self, qc: QuantumCircuit, qubits: list):
-        """
-        Prepares the ground state for Charge.
-        """
-        denominator = np.sqrt(self.h**2 + self.k**2)
+        """Prepares the ground state for the TFIM."""
+        if self.N == 2:
+            denominator = np.sqrt(self.h**2 + self.k**2)
+            if denominator == 0: raise ZeroDivisionError("N=2: h=k=0")
+            gs_theta = -np.arccos((1 / np.sqrt(2)) * np.sqrt(1 - self.h / denominator))
+            qc.ry(2 * gs_theta, qubits[utils.get_alice_qubit_idx(self.N)])
+            qc.cx(qubits[utils.get_alice_qubit_idx(self.N)], qubits[utils.get_bob_qubit_idx(self.N)])
+        elif self.N == 3:
+            print(f"Preparing N=3 ground state for J={self.k} using numerical diagonalization.")
+            gs_vector = self._get_n3_tfim_ground_state()
 
-        if denominator == 0:
-            raise ZeroDivisionError("h=k=0 - cannot calculate TFIM g.s.")
-
-        # Ground state angle calculation parameter
-        gs_theta = -np.arccos(
-            (1 / np.sqrt(2)) * np.sqrt(1 - self.h / denominator)
-        )
-        # Apply Ry(2*gs_theta) for state preparation
-        qc.ry(2 * gs_theta, qubits[utils.get_alice_qubit_idx(self.N)])
-        qc.cx(qubits[utils.get_alice_qubit_idx(self.N)], qubits[utils.get_bob_qubit_idx(self.N)])
-
+            # Qubits list [q0, q1, q2] corresponds to indices used in SparsePauliOp ('ZII' = Z on q0)
+            qc.initialize(gs_vector, [qubits[i] for i in range(self.N)])
+            qc.barrier() # Add barrier for visualization clarity
+        else:
+            raise NotImplementedError(f"Ground state prep not implemented for N={self.N}")
 
     def get_gs_expectation_value(self):
         # TODO: For simplicity currently this is the easiest way to add this functionality

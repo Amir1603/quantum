@@ -1,8 +1,8 @@
 from conf import Conf
-from .energy import Energy
+from .energy_n2 import Energy_N2
 import utils
 
-class H1_B(Energy):
+class H1_B(Energy_N2):
     """Observable for Bob's local energy term h*Z1."""
     def __init__(self, conf: Conf):
         super().__init__("h1", conf)

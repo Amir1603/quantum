@@ -1,5 +1,6 @@
 from .observable import Observable
-from .energy import Energy
+from .energy_n2 import Energy_N2
+from .energy_n3 import Energy_N3
 from .h1 import H1_B
 from .v import V_AB
 from .charge import Charge
@@ -7,4 +8,4 @@ from .current import Current
 from .observable_factory import ObservableFactory
 from .total_energy import TotalEnergy
 
-__all__ = ["Observable", "Energy", "H1_B", "V_AB", "Charge", "Current", "ObservableFactory", "TotalEnergy"]
+__all__ = ["Observable", "Energy_N2", "Energy_N3", "H1_B", "V_AB", "Charge", "Current", "ObservableFactory", "TotalEnergy"]

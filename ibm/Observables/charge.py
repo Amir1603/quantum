@@ -5,7 +5,7 @@ from .observable import Observable
 import utils
 
 class Charge(Observable):
-    def __init__(self, conf: Conf, apply_protocol: bool, theta: float = np.pi):
+    def __init__(self, conf: Conf, apply_protocol: bool):
         self.apply_protocol = apply_protocol
         # TODO
         ## Include theta in the name for clarity when running sweeps

@@ -2,20 +2,22 @@ import numpy as np
 from qiskit import QuantumCircuit
 from .observable import Observable
 
-class Energy(Observable):
+class Energy_N2(Observable):
     def __init__(self, name, conf):
         super().__init__(name, conf)
+        if self.N != 2:
+             raise ValueError("Energy_N2 only supports N=2")
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """
-        Alice's measurement for Energy.
+        Alice's measurement for Energy_N2.
         """
         qc.h(alice_qubit)  # Apply Hadamard to ancillary qubit
         qc.measure(alice_qubit, alice_creg)
 
     def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg, xor_alice_res):
         """
-        Bob's conditional operation for Energy.
+        Bob's conditional operation for Energy_N2.
         """
         theta = np.arcsin(
                 (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)

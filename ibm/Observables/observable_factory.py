@@ -4,6 +4,7 @@ from .charge import Charge
 from .current import Current
 from .total_energy import TotalEnergy # Import the new class
 from .observable import Observable
+from .energy_n3 import Energy_N3
 from conf import Conf
 
 
@@ -22,23 +23,22 @@ class ObservableFactory(metaclass=Singleton):
 
     def create_observables(self, conf: Conf) -> list[Observable]:
         # Create instances of directly simulated observables
-        self.obs_list = [
-            H1_B(conf),
-            V_AB(conf),
-            Charge(conf, True, conf.theta),
-            # Charge(conf, False),
-            # Current(conf, True),
-            # Current(conf, False)
-        ]
-        # Create instances of derived observables (don't add to obs_list used for running sims)
-        derived_obs = [
-            TotalEnergy(conf)
-        ]
+        if conf.N == 3:
+            self.obs_list = [
+                Energy_N3(conf, alice_basis='X'),
+                Energy_N3(conf, alice_basis='Y'),
+                Charge(conf, True),
+            ]
+            derived_obs = []
+        elif conf.N == 2:
+            self.obs_list = [H1_B(conf), V_AB(conf), Charge(conf, True)]
+            derived_obs = [TotalEnergy(conf)]
+        else:
+            raise ValueError(f"Unsupported N={conf.N}")
 
         # Create a dictionary for easy lookup by name
         self.obs_dict = {obs.name: obs for obs in self.obs_list + derived_obs}
 
-        # Return only the list of observables to be simulated
         return self.obs_list
 
     def get_observable(self, name: str) -> Observable | None:

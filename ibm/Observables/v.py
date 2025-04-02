@@ -1,9 +1,9 @@
 from conf import Conf
 import utils
-from .energy import Energy
+from .energy_n2 import Energy_N2
 
 
-class V_AB(Energy):
+class V_AB(Energy_N2):
     """Observable for the interaction energy term 2k*X0X1."""
     def __init__(self, conf: Conf):
         super().__init__("v", conf)
