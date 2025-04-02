@@ -260,9 +260,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
 
 
 def generate_report(results_list, plot_filenames, output_dir, table_obs_report=['charge', 'charge_no_protocol', 'total_energy']):
-    table_configs_report = [
-        {'conf_params.p_dephase': 0.0},
-    ]
+    table_configs_report = []
 
     generate_html_report(
         results_list=results_list,
