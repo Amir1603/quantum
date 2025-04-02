@@ -58,7 +58,7 @@ class Results:
                 observable_name=obs_name,
                 conf_params=conf_params,
                 backend_name=backend_name,
-                run_type='simulator' if noise_params else ('sampler' or 'estimator'), # Determine run_type better
+                run_type='simulator' if noise_params else ('sampler'), # Determine run_type better
                 noise_params=noise_params,
                 counts=counts,
                 total_shots=total_shots,

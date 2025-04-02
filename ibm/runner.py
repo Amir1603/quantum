@@ -3,7 +3,7 @@ from Observables import Observable
 from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
-from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2, EstimatorV2
+from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 from results import Results
 import plotting
 import utils
@@ -16,7 +16,7 @@ class Runner():
         self.service = QiskitRuntimeService()
 
     def __choose_backend(self, backend_name, conf: Conf):
-        if self.noise_model or (not conf.run_sampler and not conf.run_estimator):
+        if self.noise_model or (not conf.run_sampler):
             return AerSimulator(noise_model=self.noise_model)
         elif backend_name:
             return self.service.backend(backend_name)
@@ -44,10 +44,8 @@ class Runner():
          print(f"  Backend: {self.backend.name}")
          print(f"  Noise Model Active: {self.noise_model is not None}")
 
-         # Initialize sampler/estimator if needed (based on conf, not noise model directly)
-         # Note: SamplerV2/EstimatorV2 might handle noise models differently or require AerProvider
-         use_primitives = conf.run_sampler or conf.run_estimator
-         self.estimator = EstimatorV2(mode=self.backend) if use_primitives else None
+         # Note: SamplerV2 might handle noise models differently or require AerProvider
+         use_primitives = conf.run_sampler
          self.sampler = SamplerV2(mode=self.backend) if use_primitives else None
          # Keep AerSimulator separate for explicit simulator runs
          self.simulator = AerSimulator(noise_model=self.noise_model)

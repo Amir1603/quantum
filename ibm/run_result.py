@@ -10,7 +10,7 @@ class RunResult:
     observable_name: str
     conf_params: dict
     backend_name: str
-    run_type: str # 'simulator', 'sampler', 'estimator'
+    run_type: str # 'simulator', 'sampler'
     timestamp: datetime = field(default_factory=datetime.now)
     noise_params: dict = field(default_factory=dict) # e.g., {'p_dephase': 0.1} or {}
 
