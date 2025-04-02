@@ -41,6 +41,14 @@ def report_and_plot(results_obj: Results):
 
     # --- Plotting ---
     filter = {'conf_params.xor_alice_res': 0}
+    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'])
+    if file_name: plot_filenames.append(file_name)
+
+    filter = {'conf_params.xor_alice_res': 1}
+    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'])
+    if file_name: plot_filenames.append(file_name)
+
+    filter = {'conf_params.xor_alice_res': 0}
     file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'])
     if file_name: plot_filenames.append(file_name)
 

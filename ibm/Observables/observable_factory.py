@@ -26,9 +26,9 @@ class ObservableFactory(metaclass=Singleton):
             H1_B(conf),
             V_AB(conf),
             Charge(conf, True, conf.theta),
-            Charge(conf, False),
-            Current(conf, True),
-            Current(conf, False)
+            # Charge(conf, False),
+            # Current(conf, True),
+            # Current(conf, False)
         ]
         # Create instances of derived observables (don't add to obs_list used for running sims)
         derived_obs = [
