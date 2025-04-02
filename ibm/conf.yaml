@@ -2,7 +2,6 @@ error_mitigation: false
 h: 1.0
 k: 1.0
 run_all: false
-run_estimator: false
 run_sampler: false
 run_simulator: true
 total_shots: 10000

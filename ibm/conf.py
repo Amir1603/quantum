@@ -18,7 +18,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_k_for_h(conf, step=0.1, max_value=2):
+    def generate_k_for_h(conf, step=0.05, max_value=3):
         ks = np.arange(0, max_value + step, step).tolist()
 
         confs = []
@@ -80,13 +80,12 @@ class Conf:
         self.error_mitigation = False
         self.run_simulator = True
         self.run_sampler = False
-        self.run_estimator = False
         self.run_all = False
         self.p_dephase = None
         self.backend = None
         self.draw_circuit = False
         self.delay_time = 0
-        self.n_qubits = 2
+        self.N = 2
         self.theta = None
         self.xor_alice_res = 0
 
@@ -106,4 +105,4 @@ class Conf:
 
 
     def __repr__(self):
-        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_estimator:{self.run_estimator} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <n_qubits:{self.n_qubits}> <xor_alice_res:{self.xor_alice_res}>"
+        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <N:{self.N}> <xor_alice_res:{self.xor_alice_res}>"

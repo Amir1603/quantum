@@ -1,16 +1,17 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 import numpy as np
+from Observables import Observable
 
 
 @dataclass
 class RunResult:
     """Holds all data for a single simulation/hardware execution."""
     # --- Experiment Identification ---
-    observable_name: str
-    conf_params: dict # Store relevant params like h, k, shots, delay, n_qubits
+    observable: Observable
+    conf_params: dict
     backend_name: str
-    run_type: str # 'simulator', 'sampler', 'estimator'
+    run_type: str # 'simulator', 'sampler'
     timestamp: datetime = field(default_factory=datetime.now)
     noise_params: dict = field(default_factory=dict) # e.g., {'p_dephase': 0.1} or {}
 

@@ -2,12 +2,13 @@ from dataclasses import asdict
 import json
 import math
 import os
+import utils
+import numpy as np
+from collections import defaultdict
 from typing import List, Dict, Tuple, Any
 from run_result import RunResult
-from Observables import ObservableFactory, TotalEnergy
+from Observables import ObservableFactory, Observable
 from conf import Conf
-from constants import *
-
 
 class Results:
     def __init__(self, run_time, output_dir):
@@ -17,28 +18,25 @@ class Results:
         os.makedirs(self.output_dir, exist_ok=True)
 
         # Store raw data temporarily during the run
-        self._raw_results_buffer: List[Tuple[Conf, str, str, Dict, Dict, int, str | None]] = []
+        self._raw_results_buffer: List[Tuple[Conf, Observable, str, Dict, Dict, int, str | None]] = []
         # Final processed results
         self.processed_results: List[RunResult] = []
 
-    def add_raw_result(self, conf: Conf, obs_name: str, backend_name: str, noise_params: Dict,
+    def add_raw_result(self, conf: Conf, obs: Observable, backend_name: str, noise_params: Dict,
                        counts: Dict, total_shots: int, job_id: str | None = None):
         """Temporarily stores raw results from a run."""
         self._raw_results_buffer.append(
-            (conf, obs_name, backend_name, noise_params, counts, total_shots, job_id)
+            (conf, obs, backend_name, noise_params, counts, total_shots, job_id)
         )
 
-    def process_results(self, observable_factory: ObservableFactory):
+    def process_results(self):
         """Processes raw results, calculates values, and handles derived observables."""
         print("Processing raw results...")
         self.processed_results = []
-        obs_dict = observable_factory.obs_dict
 
         # --- Process Directly Simulated Observables ---
-        for conf, obs_name, backend_name, noise_params, counts, total_shots, job_id in self._raw_results_buffer:
-            observable = obs_dict.get(obs_name)
+        for conf, observable, backend_name, noise_params, counts, total_shots, job_id in self._raw_results_buffer:
             if not observable:
-                print(f"Warning: Observable '{obs_name}' not found in factory. Skipping.")
                 continue
             if hasattr(observable, 'is_derived_observable') and observable.is_derived_observable():
                 continue
@@ -46,20 +44,22 @@ class Results:
             # Calculate primary metrics
             exp_val, sem = observable.calculate_expectation_and_sem(counts, total_shots)
             susceptibility = observable.calculate_susceptibility(counts)
-            correlation = Results.calculate_correlation(counts, conf.n_qubits)
+            correlation = Results.calculate_correlation(counts, conf.N)
 
             # Extract relevant conf parameters
             conf_params = {
                 'h': conf.h, 'k': conf.k, 'total_shots': conf.total_shots,
-                'delay_time': conf.delay_time, 'n_qubits': conf.n_qubits,
-                'p_dephase': conf.p_dephase, 'theta': conf.theta, 'xor_alice_res': conf.xor_alice_res
+                'delay_time': conf.delay_time, 'N': conf.N,
+                'p_dephase': conf.p_dephase, 'theta': conf.theta,
+                'xor_alice_res': conf.xor_alice_res,
+                'alice_basis': getattr(observable, 'alice_basis', None)
             }
 
             run_result = RunResult(
-                observable_name=obs_name,
+                observable=observable,
                 conf_params=conf_params,
                 backend_name=backend_name,
-                run_type='simulator' if noise_params else ('sampler' or 'estimator'), # Determine run_type better
+                run_type='simulator' if noise_params else ('sampler'), # Determine run_type better
                 noise_params=noise_params,
                 counts=counts,
                 total_shots=total_shots,
@@ -72,87 +72,102 @@ class Results:
             )
             self.processed_results.append(run_result)
 
-        # --- Calculate Derived Observables (Example: TotalEnergy) ---
-        self._calculate_derived_total_energy(observable_factory)
+        # --- Calculate Derived Observables ---
+        self._calculate_all_derived_observables(self.processed_results)
 
         # Clear buffer after processing
         self._raw_results_buffer = []
         print(f"Processing complete. {len(self.processed_results)} results generated.")
 
-    def _calculate_derived_total_energy(self, observable_factory: ObservableFactory):
-        """Calculates TotalEnergy from H1 and V results."""
-        total_energy_obs = observable_factory.get_observable("total_energy")
-        if not total_energy_obs or not isinstance(total_energy_obs, TotalEnergy):
-            return # Skip if TotalEnergy observable isn't defined properly
+    def _get_unique_derived_observables(unique_properties: List[str]):
+        """
+        Filters observables to ensure uniqueness based on a combination of properties.
 
-        print("Calculating derived observable: total_energy")
-        h1_results = [res for res in self.processed_results if res.observable_name == "h1"]
-        v_results = [res for res in self.processed_results if res.observable_name == "v"]
+        :param unique_properties: List of property names to use for uniqueness (e.g., ['name', 'N']).
+        :return: List of unique observables.
+        """
+        seen = set()
+        unique_observables = []
+        for obs in ObservableFactory().derived_observables:
+            # Create a tuple of the specified properties
+            property_values = tuple(getattr(obs, prop, None) for prop in unique_properties)
+            if property_values not in seen:
+                seen.add(property_values)
+                unique_observables.append(obs)
+        return unique_observables
 
-        # Match H1 and V results based on configuration, backend, noise etc.
-        grouped_results: Dict[Tuple, Dict[str, RunResult]] = {}
 
-        for res in h1_results + v_results:
-             # Create a unique key based on parameters that should match
+    def _calculate_all_derived_observables(self, current_results: list):
+        """
+        Iterates through all known derived observables and calculates their values.
+        """
+        print("Calculating derived observables...")
+        newly_derived_results = []
+
+        # Group results by configuration to make lookups easier
+        # Key: tuple(sorted(conf_params.items())) + backend + run_type + tuple(sorted(noise.items()))
+        grouped_results: Dict[Tuple, Dict[str, RunResult]] = defaultdict(dict)
+        for res in current_results:
              key = (
-                 tuple(sorted(res.conf_params.items())), # Convert dict to tuple of tuples
-                 res.backend_name,
-                 res.run_type,
-                 tuple(sorted(res.noise_params.items()))
+                  tuple(sorted(res.conf_params.items())),
+                  res.backend_name,
+                  res.run_type,
+                  tuple(sorted(res.noise_params.items()))
              )
-             if key not in grouped_results:
-                 grouped_results[key] = {}
-             if res.observable_name in total_energy_obs.get_component_names():
-                  grouped_results[key][res.observable_name] = res
+             grouped_results[key][res.observable.name] = res
 
-        # Calculate TotalEnergy for matched pairs
-        new_total_energy_results = []
-        for key, components in grouped_results.items():
-            if "h1" in components and "v" in components:
-                h1_res = components["h1"]
-                v_res = components["v"]
+        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'k', 'theta'])
+        for observable in derived_obs:
+            if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
+                continue
 
-                # Check if expectation values are valid
-                if h1_res.expectation_value is None or v_res.expectation_value is None or \
-                   h1_res.sem is None or v_res.sem is None:
-                    print(f"Warning: Missing data for TotalEnergy calculation for key {key}. Skipping.")
-                    continue
+            print(f"  Attempting to calculate derived: {observable.name}")
+            # Iterate through configurations where components might exist
+            for key, component_dict in grouped_results.items():
+                conf_params_tuple, backend_name, run_type, noise_params_tuple = key
+                conf_params = dict(conf_params_tuple)
 
-                assert h1_res.conf_params['h'] == v_res.conf_params['h'] and h1_res.conf_params['k'] == v_res.conf_params['k']
-                h = h1_res.conf_params['h']
-                k = v_res.conf_params['k']
+                # Check if this derived observable applies to this N value
+                if conf_params.get('N') != observable.N:
+                     continue
 
-                gs_energy = -(h**2 + 2*k**2)/math.sqrt(h**2 + k**2)
-                # Calculate derived values
-                total_exp_val = h * h1_res.expectation_value + 2 * k * v_res.expectation_value
-                exp_val_diff = total_exp_val - gs_energy
-                # Combine SEM: sqrt(sem1^2 + sem2^2)
-                total_sem = math.sqrt(h1_res.sem**2 + v_res.sem**2)
+                # --- Get components needed by this derived observable ---
+                required_components = observable.get_component_names()
+                available_components = {name: component_dict.get(name) for name in required_components}
 
-                # Create a new RunResult for TotalEnergy
-                total_energy_result = RunResult(
-                    observable_name=total_energy_obs.name,
-                    timestamp=max(h1_res.timestamp, v_res.timestamp), # Use latest timestamp
-                    conf_params=h1_res.conf_params, # Assumes conf matches
-                    backend_name=h1_res.backend_name,
-                    run_type=h1_res.run_type,
-                    noise_params=h1_res.noise_params,
-                    counts={}, # No direct counts for derived observable
-                    total_shots=h1_res.total_shots, # Or average/sum? Use one for reference.
-                    job_id=f"derived_from_{h1_res.job_id or 'sim'}_{v_res.job_id or 'sim'}",
-                    expectation_value=exp_val_diff,
-                    sem=total_sem,
-                    susceptibility=None, # Susceptibility needs dedicated calculation
-                    correlation=None,
-                    is_derived=True
-                )
-                new_total_energy_results.append(total_energy_result)
-            else:
-                print(f"Debug: Missing H1 or V for key {key}")
+                # Check if all components are available for this config
+                if all(comp is not None for comp in available_components.values()):
+                     # Calculate the derived value using the observable's method
+                     if hasattr(observable, 'calculate_derived_value_and_sem'):
+                          derived_value, derived_sem = observable.calculate_derived_value_and_sem(available_components)
 
-        self.processed_results.extend(new_total_energy_results)
-        print(f"Added {len(new_total_energy_results)} derived TotalEnergy results.")
+                          if derived_value is not None and derived_sem is not None:
+                              # Create RunResult for the derived observable
+                              # Use data from one of the components for common fields
+                               ref_res = next(iter(available_components.values()))
+                               derived_run_result = RunResult(
+                                    observable=observable,
+                                    timestamp=ref_res.timestamp, # Or max timestamp
+                                    conf_params=conf_params,
+                                    backend_name=backend_name,
+                                    run_type=run_type,
+                                    noise_params=dict(noise_params_tuple),
+                                    counts={}, # No direct counts
+                                    total_shots=ref_res.total_shots,
+                                    job_id=f"derived_{observable.name}", # Simple derived ID
+                                    expectation_value=derived_value,
+                                    sem=derived_sem,
+                                    is_derived=True
+                               )
+                               newly_derived_results.append(derived_run_result)
+                     else:
+                          print(f"Warning: Derived observable {observable.name} missing calculation method.")
+                # else: (Optional print) Components missing for this config
 
+
+        # Add all newly calculated derived results to the main list
+        self.processed_results.extend(newly_derived_results)
+        print(f"Added {len(newly_derived_results)} derived results.")
 
     def save_results(self, filename="processed_results.json"):
         """Saves the processed results list to a JSON file."""
@@ -185,10 +200,6 @@ class Results:
 
     @staticmethod
     def calculate_correlation(counts: dict, num_qubits: int):
-        """
-        Calculates the Z0Z1 correlation. Assumes bitstring format 'b1b0'.
-        Adjust COUNTS_ALICE_QUBIT_IDX and COUNTS_BOB_QUBIT_IDX if format is different.
-        """
         if not counts: return 0.0
 
         total_counts = sum(counts.values())
@@ -206,8 +217,8 @@ class Results:
             # Map '0' -> +1, '1' -> -1 for Z measurement eigenvalue
             try:
                 # Use indices based on 'b1b0' format
-                outcome_q0 = 1.0 if bitstring[COUNTS_BOB_QUBIT_IDX] == '0' else -1.0 # Bob's value
-                outcome_q1 = 1.0 if bitstring[COUNTS_ALICE_QUBIT_IDX] == '0' else -1.0 # Alice's value
+                outcome_q0 = 1.0 if bitstring[utils.get_counts_bob_qubit_idx(num_qubits)] == '0' else -1.0 # Bob's value
+                outcome_q1 = 1.0 if bitstring[utils.get_counts_alice_qubit_idx(num_qubits)] == '0' else -1.0 # Alice's value
                 correlation += outcome_q1 * outcome_q0 * count
             except IndexError:
                 print(f"Warning: Skipping bitstring '{bitstring}' in correlation calc due to index error.")

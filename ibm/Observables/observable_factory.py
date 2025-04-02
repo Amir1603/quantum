@@ -1,9 +1,13 @@
 from .h1 import H1_B
 from .v import V_AB
 from .charge import Charge
+from .charge_n3 import Charge_N3
 from .current import Current
 from .total_energy import TotalEnergy # Import the new class
 from .observable import Observable
+from .h1_n3 import H1_N3
+from .v_n3 import V_N3
+from .energy_n3 import Energy_N3
 from conf import Conf
 
 
@@ -17,29 +21,30 @@ class Singleton(type):
 
 class ObservableFactory(metaclass=Singleton):
     def __init__(self):
-        self.obs_list: list[Observable] = []
-        self.obs_dict: dict[str, Observable] = {}
+        self.derived_observables = []
 
     def create_observables(self, conf: Conf) -> list[Observable]:
+        derived_obs = []
+        obs_list: list[Observable] = []
+
         # Create instances of directly simulated observables
-        self.obs_list = [
-            H1_B(conf),
-            V_AB(conf),
-            Charge(conf, True, conf.theta),
-            # Charge(conf, False),
-            # Current(conf, True),
-            # Current(conf, False)
-        ]
-        # Create instances of derived observables (don't add to obs_list used for running sims)
-        derived_obs = [
-            TotalEnergy(conf.h, conf.k, conf.theta)
-        ]
+        if conf.N == 3:
+            print("Creating N=3 observables (H1, V components + derived E_B + Charge_N3)")
+            # Create simulated components for each Alice basis
+            for alice_basis in ['X', 'Y']:
+                obs_list.append(H1_N3(conf, alice_basis=alice_basis))
+                obs_list.append(V_N3(conf, alice_basis=alice_basis))
 
-        # Create a dictionary for easy lookup by name
-        self.obs_dict = {obs.name: obs for obs in self.obs_list + derived_obs}
+                derived_obs.append(Energy_N3(conf, alice_basis=alice_basis))
 
-        # Return only the list of observables to be simulated
-        return self.obs_list
+            obs_list.append(Charge_N3(conf, apply_protocol=True))
 
-    def get_observable(self, name: str) -> Observable | None:
-        return self.obs_dict.get(name)
+        elif conf.N == 2:
+            obs_list = [H1_B(conf), V_AB(conf), Charge(conf, True)]
+            derived_obs.append(TotalEnergy(conf))
+        else:
+            raise ValueError(f"Unsupported N={conf.N}")
+
+        self.derived_observables.extend(derived_obs)
+
+        return obs_list
