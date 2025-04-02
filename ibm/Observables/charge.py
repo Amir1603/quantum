@@ -15,7 +15,7 @@ class Charge(Observable):
         protocol_tag = '' if apply_protocol else '_no_protocol'
         name = f'charge{protocol_tag}'
 
-        if conf.n_qubits - BOB_QUBIT_IDX - 1 < 0:
+        if conf.N - BOB_QUBIT_IDX - 1 < 0:
              raise ValueError("BOB_QUBIT_IDX is out of bounds")
 
         super().__init__(name, conf.h, conf.k, conf.theta)

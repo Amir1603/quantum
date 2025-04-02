@@ -8,7 +8,7 @@ class RunResult:
     """Holds all data for a single simulation/hardware execution."""
     # --- Experiment Identification ---
     observable_name: str
-    conf_params: dict # Store relevant params like h, k, shots, delay, n_qubits
+    conf_params: dict
     backend_name: str
     run_type: str # 'simulator', 'sampler', 'estimator'
     timestamp: datetime = field(default_factory=datetime.now)

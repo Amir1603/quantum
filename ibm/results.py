@@ -46,12 +46,12 @@ class Results:
             # Calculate primary metrics
             exp_val, sem = observable.calculate_expectation_and_sem(counts, total_shots)
             susceptibility = observable.calculate_susceptibility(counts)
-            correlation = Results.calculate_correlation(counts, conf.n_qubits)
+            correlation = Results.calculate_correlation(counts, conf.N)
 
             # Extract relevant conf parameters
             conf_params = {
                 'h': conf.h, 'k': conf.k, 'total_shots': conf.total_shots,
-                'delay_time': conf.delay_time, 'n_qubits': conf.n_qubits,
+                'delay_time': conf.delay_time, 'N': conf.N,
                 'p_dephase': conf.p_dephase, 'theta': conf.theta, 'xor_alice_res': conf.xor_alice_res
             }
 

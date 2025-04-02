@@ -55,7 +55,7 @@ class Runner():
     def _qet_circuit(self, obs: Observable, conf: Conf):
         # ... circuit construction logic using obs and conf ...
         # Ensure num_qubits comes from conf or is fixed
-        num_qubits = conf.n_qubits
+        num_qubits = conf.N
         qc = QuantumCircuit(num_qubits, num_qubits)
         qc.name = f'{obs.name}_qc'
 
