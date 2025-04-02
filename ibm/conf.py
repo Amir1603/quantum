@@ -18,7 +18,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_k_for_h(conf, step=0.1, max_value=2):
+    def generate_k_for_h(conf, step=0.1, max_value=2.5):
         ks = np.arange(0, max_value + step, step).tolist()
 
         confs = []
@@ -85,7 +85,7 @@ class Conf:
         self.backend = None
         self.draw_circuit = False
         self.delay_time = 0
-        self.N = 3
+        self.N = 2
         self.theta = None
         self.xor_alice_res = 0
 

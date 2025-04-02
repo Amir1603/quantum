@@ -42,8 +42,6 @@ class Runner():
 
          print(f"\n--- Initialized Run Level ---")
          print(f"  Conf: h={conf.h}, k={conf.k}, shots={conf.total_shots}, p_dephase={conf.p_dephase}, delay={conf.delay_time}")
-         print(f"  Backend: {self.backend.name}")
-         print(f"  Noise Model Active: {self.noise_model is not None}")
 
          # Note: SamplerV2 might handle noise models differently or require AerProvider
          use_primitives = conf.run_sampler
@@ -60,11 +58,9 @@ class Runner():
             # CONSISTENTLY use 3 classical bits for all N=3 simulation runs
             # (Alice, Bob Z2, Intermediate Z1) even if not all are measured by the specific observable
             num_clbits = 3
-            print(f"  N=3 run: Using {num_clbits} classical bits.")
         elif conf.N == 2:
             # Logic for N=2 runs (e.g., 2 classical bits)
             num_clbits = 2 # Adjust if needed for specific N=2 observables
-            print(f"  N=2 run: Using {num_clbits} classical bits.")
         else:
             raise NotImplementedError(f"Unsupported N={conf.N} in _qet_circuit")
 

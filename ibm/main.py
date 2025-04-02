@@ -29,7 +29,7 @@ def print_run_plan(confs):
     print('#########################################################')
 
 
-def report_and_plot(results_obj: Results):
+def report_and_plot(results_obj: Results, N: int):
     """Generates plots and the final HTML report."""
     results_list = results_obj.processed_results # Use the processed results list
     output_dir = results_obj.output_dir
@@ -40,29 +40,23 @@ def report_and_plot(results_obj: Results):
         return
 
     # --- Plotting ---
-    # filter = {'conf_params.xor_alice_res': 0}
-    # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'])
-    # if file_name: plot_filenames.append(file_name)
+    if N == 2:
+        filter = {}
+        # filter = {'conf_params.xor_alice_res': 0}
+        file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
+        if file_name: plot_filenames.append(file_name)
 
-    # filter = {'conf_params.xor_alice_res': 1}
-    # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'])
-    # if file_name: plot_filenames.append(file_name)
+        file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
+        if file_name: plot_filenames.append(file_name)
+    elif N == 3:
+        filter = {}
+        file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge_n3'], group_by=['conf_params.xor_alice_res'])
+        if file_name: plot_filenames.append(file_name)
 
-    filter = {'conf_params.xor_alice_res': 0}
-    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge_n3'])
-    if file_name: plot_filenames.append(file_name)
-
-    filter = {'conf_params.xor_alice_res': 1}
-    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge_n3'])
-    if file_name: plot_filenames.append(file_name)
-
-    filter = {'conf_params.xor_alice_res': 0}
-    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['E_B_n3_alicex', 'E_B_n3_alicey'])
-    if file_name: plot_filenames.append(file_name)
-
-    filter = {'conf_params.xor_alice_res': 1}
-    file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['E_B_n3_alicex', 'E_B_n3_alicey'])
-    if file_name: plot_filenames.append(file_name)
+        file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['E_B_n3_alicex'], group_by=['conf_params.xor_alice_res'])
+        if file_name: plot_filenames.append(file_name)
+        file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['E_B_n3_alicey'], group_by=['conf_params.xor_alice_res'])
+        if file_name: plot_filenames.append(file_name)
 
     # filter = {'conf_params.h': 1.0, 'conf_params.k': 1.0}
     # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_dephase')
@@ -85,11 +79,21 @@ if __name__ == "__main__":
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
+    parser.add_argument('-N', type=int, help="Choose value for N - the number of sites in chain (2 or 3 are supported)")
 
     args = parser.parse_args()
 
     # --- Configuration Loading ---
     confs = [Conf()]
+
+    if args.N:
+        if args.N not in [2, 3]:
+            raise ValueError("N must be either 2 or 3.")
+        for c in confs:
+            c.N = args.N
+
+    N = confs[0].N
+
     if args.all_hk:
         confs = [conf for c in confs for conf in Conf.generate_hk_combinations(c)]
     elif args.all_k_for_h:
@@ -156,5 +160,5 @@ if __name__ == "__main__":
     # Load results back if needed (e.g., if running analysis separately)
     # res.load_results("processed_results.json")
 
-    report_and_plot(res)
+    report_and_plot(res, N)
     print("\n--- Simulation and Analysis Complete ---")

@@ -540,7 +540,7 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         return None
 
 
-def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, filter_criteria_plot, obs=['charge', 'total_energy']):
+def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, filter_criteria_plot, obs=['charge', 'total_energy'], group_by=['observable']):
     # Define observables of interest for this plot
     selected_obs_plot = obs
 
@@ -548,11 +548,11 @@ def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_n
         results_list=results_list,
         x_param_path=f'conf_params.{parameter_name}',
         y_param_path='expectation_value',
-        error_param_path='sem',
+        #error_param_path='sem',
         output_dir=output_dir,
         filename_prefix=f"exp_vs_{parameter_name}",
-        title_prefix=f"Expectation Value vs {parameter_name} ({filter_criteria_plot})",
-        group_by=['observable'], # Separate lines for each selected observable
+        title_prefix=f"Expectation Value",
+        group_by=group_by,
         filter_criteria=filter_criteria_plot,
         observables_to_plot=selected_obs_plot # Apply observable filter
     )

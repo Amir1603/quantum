@@ -44,7 +44,6 @@ class Observable:
             gs_vector = eigenvectors[:, 0]
             # Ensure normalization (eigsh should provide normalized vectors)
             gs_vector /= np.linalg.norm(gs_vector)
-            print(f"Ground state calculated. Energy: {eigenvalues[0]}")
             return gs_vector
         except Exception as e:
             print(f"Error during N=3 ground state calculation: {e}")
@@ -74,7 +73,6 @@ class Observable:
             qc.ry(2 * gs_theta, qubits[utils.get_alice_qubit_idx(self.N)])
             qc.cx(qubits[utils.get_alice_qubit_idx(self.N)], qubits[utils.get_bob_qubit_idx(self.N)])
         elif self.N == 3:
-            print(f"Preparing N=3 ground state for J={self.k} using numerical diagonalization.")
             gs_vector = Observable._get_n3_tfim_ground_state(self.k)
 
             # Qubits list [q0, q1, q2] corresponds to indices used in SparsePauliOp ('ZII' = Z on q0)
