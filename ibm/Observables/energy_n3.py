@@ -8,12 +8,11 @@ class Energy_N3(Observable):
     It also calculates the final teleported energy E_B = <H_B> - <H_B>_gs.
     Calculated from results of V_N3 (<X1X2>) and H1_N3 (<Z2>).
     """
-    def __init__(self, conf: Conf, alice_basis: str, xor_alice_res: int):
+    def __init__(self, conf: Conf, alice_basis: str):
         # Name reflects the final calculated value E_B and its parameters
         name = f"E_B_n3_alice{alice_basis.lower()}"
         super().__init__(name, conf) # Pass full conf
         self.alice_basis = alice_basis.upper()
-        self.xor_alice_res = xor_alice_res
         if self.N != 3: raise ValueError("Energy_N3 only supports N=3")
 
         # Define component names based on the naming convention used above
@@ -44,7 +43,7 @@ class Energy_N3(Observable):
 
     # --- Metadata ---
     def description(self):
-        return f"Derived E_B = <J*X1X2 + Z2> - <H_B>_gs for N=3 QKD (Alice: {self.alice_basis}, XOR: {self.xor_alice_res})"
+        return f"Derived E_B = <J*X1X2 + Z2> - <H_B>_gs for N=3 QKD (Alice: {self.alice_basis})"
 
     @staticmethod
     def is_derived_observable():

@@ -7,7 +7,7 @@ import numpy as np
 from collections import defaultdict
 from typing import List, Dict, Tuple, Any
 from run_result import RunResult
-from Observables import ObservableFactory, TotalEnergy, Energy_N3
+from Observables import ObservableFactory, Observable
 from conf import Conf
 
 class Results:
@@ -18,26 +18,24 @@ class Results:
         os.makedirs(self.output_dir, exist_ok=True)
 
         # Store raw data temporarily during the run
-        self._raw_results_buffer: List[Tuple[Conf, str, str, Dict, Dict, int, str | None]] = []
+        self._raw_results_buffer: List[Tuple[Conf, Observable, str, Dict, Dict, int, str | None]] = []
         # Final processed results
         self.processed_results: List[RunResult] = []
 
-    def add_raw_result(self, conf: Conf, obs_name: str, backend_name: str, noise_params: Dict,
+    def add_raw_result(self, conf: Conf, obs: Observable, backend_name: str, noise_params: Dict,
                        counts: Dict, total_shots: int, job_id: str | None = None):
         """Temporarily stores raw results from a run."""
         self._raw_results_buffer.append(
-            (conf, obs_name, backend_name, noise_params, counts, total_shots, job_id)
+            (conf, obs, backend_name, noise_params, counts, total_shots, job_id)
         )
 
     def process_results(self, observable_factory: ObservableFactory):
         """Processes raw results, calculates values, and handles derived observables."""
         print("Processing raw results...")
         self.processed_results = []
-        obs_dict = observable_factory.obs_dict
 
         # --- Process Directly Simulated Observables ---
-        for conf, obs_name, backend_name, noise_params, counts, total_shots, job_id in self._raw_results_buffer:
-            observable = obs_dict.get(obs_name)
+        for conf, observable, backend_name, noise_params, counts, total_shots, job_id in self._raw_results_buffer:
             if not observable:
                 continue
             if hasattr(observable, 'is_derived_observable') and observable.is_derived_observable():
@@ -58,7 +56,7 @@ class Results:
             }
 
             run_result = RunResult(
-                observable_name=obs_name,
+                observable=observable,
                 conf_params=conf_params,
                 backend_name=backend_name,
                 run_type='simulator' if noise_params else ('sampler'), # Determine run_type better
@@ -98,14 +96,14 @@ class Results:
                   res.run_type,
                   tuple(sorted(res.noise_params.items()))
              )
-             grouped_results[key][res.observable_name] = res
+             grouped_results[key][res.observable.name] = res
 
-        # Iterate through all observables in the factory, find derived ones
-        for obs_name, observable in observable_factory.obs_dict.items():
+        observables = [res[1] for res in self._raw_results_buffer]
+        for observable in observables:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue
 
-            print(f"  Attempting to calculate derived: {obs_name}")
+            print(f"  Attempting to calculate derived: {observable.name}")
             # Iterate through configurations where components might exist
             for key, component_dict in grouped_results.items():
                  conf_params_tuple, backend_name, run_type, noise_params_tuple = key
@@ -130,7 +128,7 @@ class Results:
                                # Use data from one of the components for common fields
                                 ref_res = next(iter(available_components.values()))
                                 derived_run_result = RunResult(
-                                     observable_name=obs_name,
+                                     observable=observable,
                                      timestamp=ref_res.timestamp, # Or max timestamp
                                      conf_params=conf_params,
                                      backend_name=backend_name,
@@ -138,14 +136,14 @@ class Results:
                                      noise_params=dict(noise_params_tuple),
                                      counts={}, # No direct counts
                                      total_shots=ref_res.total_shots,
-                                     job_id=f"derived_{obs_name}", # Simple derived ID
+                                     job_id=f"derived_{observable.name}", # Simple derived ID
                                      expectation_value=derived_value,
                                      sem=derived_sem,
                                      is_derived=True
                                 )
                                 newly_derived_results.append(derived_run_result)
                       else:
-                           print(f"Warning: Derived observable {obs_name} missing calculation method.")
+                           print(f"Warning: Derived observable {observable.name} missing calculation method.")
                  # else: (Optional print) Components missing for this config
 
 

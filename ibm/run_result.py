@@ -1,13 +1,14 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 import numpy as np
+from Observables import Observable
 
 
 @dataclass
 class RunResult:
     """Holds all data for a single simulation/hardware execution."""
     # --- Experiment Identification ---
-    observable_name: str
+    observable: Observable
     conf_params: dict
     backend_name: str
     run_type: str # 'simulator', 'sampler'

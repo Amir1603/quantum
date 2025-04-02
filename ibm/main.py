@@ -111,7 +111,6 @@ if __name__ == "__main__":
 
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
-        print(conf) # Print current config
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones
@@ -127,8 +126,7 @@ if __name__ == "__main__":
         for obs in simulatable_obs_list:
              runner.execute_observable(obs, conf, res)
 
-        print(f"--- Finished Configuration {i+1}/{len(confs)} ---")
-
+        print(f"\n--- Finished Configuration {i+1}/{len(confs)} with {len(simulatable_obs_list)} obs ---")
 
     # --- Post-Processing ---
     print("\n--- Post-Processing Results ---")

@@ -180,7 +180,7 @@ class Runner():
             counts, job_id = self._run_sim(qc, conf.total_shots)
             # Add raw results immediately
             if counts:
-                 results.add_raw_result(conf, obs.name, backend_name_used, noise_params_used, counts, conf.total_shots, job_id)
+                 results.add_raw_result(conf, obs, backend_name_used, noise_params_used, counts, conf.total_shots, job_id)
 
         if conf.run_sampler:
             run_type = 'sampler'
@@ -191,7 +191,7 @@ class Runner():
                  counts_hw, job_id_hw = self._run_sampler(qc, conf.total_shots)
                  if counts_hw:
                      # Use actual backend name and no explicit noise params dict if using backend noise implicitly
-                     results.add_raw_result(conf, obs.name, self.backend.name, {}, counts_hw, conf.total_shots, job_id_hw)
+                     results.add_raw_result(conf, obs, self.backend.name, {}, counts_hw, conf.total_shots, job_id_hw)
 
         if not conf.run_simulator and not conf.run_sampler:
              print(f"  Skipping execution for {obs.name} as no run type is enabled.")

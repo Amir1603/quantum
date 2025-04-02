@@ -85,7 +85,7 @@ class Conf:
         self.backend = None
         self.draw_circuit = False
         self.delay_time = 0
-        self.N = 2
+        self.N = 3
         self.theta = None
         self.xor_alice_res = 0
 
