@@ -106,9 +106,15 @@ class Observable:
         if total_shots <= 0:
              return 0.0, 0.0
 
+        gs_exp_val = self.get_gs_expectation_value()
+
         # Calculate expectation value <O>
         expectation = sum_val / total_shots
-        expectation = expectation - self.get_gs_expectation_value()
+        expectation = expectation - gs_exp_val
+
+        # Normalize expectation value to get result in arbitrary units
+        if gs_exp_val != 0:
+            expectation /= gs_exp_val
 
         # Calculate <O^2>
         expectation_sq = sum_val_sq / total_shots

@@ -59,10 +59,9 @@ class Charge(Observable):
     def get_gs_expectation_value(self):
         # Calculate <(I+Z1)/2>_gs = 0.5 * (1 + <Z1>_gs)
         # For N=2 TFIM ground state, <Z1>_gs = -h / sqrt(h^2 + k^2)
-        denominator = np.sqrt(self.h**2 + self.k**2)
 
         # Calculate <(I+Z1)/2>_gs
-        gs_exp_val = 0.5 * (1.0 - self.h / denominator)
+        gs_exp_val = 0.5 * (1.0 - self.h / np.sqrt(self.h**2 + self.k**2))
 
         return gs_exp_val
 
