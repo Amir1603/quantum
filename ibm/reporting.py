@@ -74,7 +74,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
         obs_to_include = set()
         if table_observables:
             obs_to_include = set(table_observables)
-        else:
+        elif table_observables is None:
             temp_obs = set()
             for res in results_list:
                  obs_name = None
