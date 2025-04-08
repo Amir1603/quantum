@@ -44,9 +44,11 @@ def report_and_plot(results_obj: Results, N: int):
         filter = {}
         # filter = {'conf_params.xor_alice_res': 0}
         file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
+        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
         if file_name: plot_filenames.append(file_name)
 
         file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
+        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.xor_alice_res'])
         if file_name: plot_filenames.append(file_name)
     elif N == 3:
         filter = {}
