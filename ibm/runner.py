@@ -10,18 +10,17 @@ import utils
 
 
 class Runner():
-    def __init__(self, observables: list[Observable]):
+    def __init__(self, observables: list[Observable], service: QiskitRuntimeService = None):
         self.noise_model = None
         self.observables = observables
+        self.service = service
 
     def __choose_backend(self, backend_name, conf: Conf):
         if self.noise_model or (not conf.run_sampler):
             return AerSimulator(noise_model=self.noise_model)
         elif backend_name:
-            self.service = QiskitRuntimeService()
             return self.service.backend(backend_name)
         else:
-            self.service = QiskitRuntimeService()
             return self.service.least_busy(operational=True, simulator=False)
 
     def _create_noise_model(self, p_dephase):
@@ -144,13 +143,18 @@ class Runner():
              # SamplerV2 returns data slightly differently
              pub_result = result[0]
              # Get counts, format bitstrings (often hex in V2)
-             raw_counts = pub_result.data.meas.get_counts()
+             raw_counts = pub_result.data.c.array
 
              num_bits = qc.num_clbits
              binary_counts = {}
-             for hex_key, count in raw_counts.items():
-                 binary_key = format(int(hex_key, 16), f'0{num_bits}b')
-                 binary_counts[binary_key] = count
+             for res in raw_counts:
+                 res = res[0]
+                 binary_key = format(res, f'0{num_bits}b')
+
+                 if binary_key not in binary_counts:
+                    binary_counts[binary_key] = 0
+
+                 binary_counts[binary_key] = binary_counts[binary_key] + 1
 
              # No direct density matrix from SamplerV2
              return binary_counts, job.job_id()
