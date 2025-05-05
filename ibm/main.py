@@ -30,7 +30,7 @@ def print_run_plan(confs):
     print('#########################################################')
 
 
-def report_and_plot(results_obj: Results, N: int):
+def report_and_plot(results_obj: Results, N: int, args):
     """Generates plots and the final HTML report."""
     results_list = results_obj.processed_results # Use the processed results list
     output_dir = results_obj.output_dir
@@ -44,15 +44,24 @@ def report_and_plot(results_obj: Results, N: int):
     if N == 2:
         filter = {}
         # filter = {'conf_params.xor_alice_res': 0}
-        # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
-        file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
-        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
-        if file_name: plot_filenames.append(file_name)
 
-        # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.k'])
-        file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
+        energy_file = None
+        charge_file = None
+
+        if args.all_classical_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.k'])
+
+        if args.all_alice_values:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
+
+        if energy_file: plot_filenames.append(energy_file)
+        if charge_file: plot_filenames.append(charge_file)
+
+        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
         # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.xor_alice_res'])
-        if file_name: plot_filenames.append(file_name)
+
     elif N == 3:
         filter = {}
         file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge_n3'], group_by=['conf_params.xor_alice_res'])
@@ -174,5 +183,5 @@ if __name__ == "__main__":
     # Load results back if needed (e.g., if running analysis separately)
     # res.load_results("processed_results.json")
 
-    report_and_plot(res, N)
+    report_and_plot(res, N, args)
     print("\n--- Simulation and Analysis Complete ---")
