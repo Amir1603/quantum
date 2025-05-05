@@ -7,6 +7,7 @@ from runner import Runner
 from results import Results
 import plotting
 import reporting
+from qiskit_ibm_runtime import QiskitRuntimeService
 
 
 run_time_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -95,6 +96,11 @@ if __name__ == "__main__":
             c.N = args.N
 
     N = confs[0].N
+    if confs[0].run_all or confs[0].run_sampler:
+        print("Initializing QiskitRuntimeService()")
+        service = QiskitRuntimeService()
+    else:
+        service = None
 
     if args.all_hk:
         confs = [conf for c in confs for conf in Conf.generate_hk_combinations(c)]
@@ -140,7 +146,7 @@ if __name__ == "__main__":
 
         # Initialize Runner (or re-init if backend/noise changes significantly)
         # Pass only the list of observables to simulate
-        runner = Runner(simulatable_obs_list)
+        runner = Runner(simulatable_obs_list, service=service)
         # Initialize backend, noise model etc. for this specific conf
         runner.init_run_level(conf, conf.backend)
 
