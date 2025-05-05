@@ -13,3 +13,4 @@ backend:
 # - 'ibm_sherbrooke'
 draw_circuit: false
 delay_time: 0
+p_classical_error: 0.0

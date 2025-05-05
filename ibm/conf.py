@@ -73,6 +73,18 @@ class Conf:
 
         return confs
 
+    @staticmethod
+    def generate_classical_error(conf, num_points=20):
+        probs = np.linspace(0.0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = Conf()
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.p_classical_error = p
+            confs.append(new_conf)
+        return confs
+
     def __init__(self):
         self.h = 1.0
         self.k = 1.0
@@ -88,6 +100,7 @@ class Conf:
         self.N = 2
         self.theta = None
         self.xor_alice_res = 0
+        self.p_classical_error = 0
 
 
     def load(self):

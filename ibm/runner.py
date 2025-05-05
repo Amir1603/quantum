@@ -4,9 +4,11 @@ from qiskit_aer import Aer, AerSimulator
 from qiskit_aer.noise import NoiseModel, phase_damping_error
 from qiskit import QuantumCircuit, transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
+from qiskit.circuit.classical import expr
 from results import Results
 import plotting
 import utils
+import numpy as np
 
 
 class Runner():
@@ -47,6 +49,28 @@ class Runner():
          self.sampler = SamplerV2(mode=self.backend) if use_primitives else None
          # Keep AerSimulator separate for explicit simulator runs
          self.simulator = AerSimulator(noise_model=self.noise_model)
+
+    @staticmethod
+    def _manipulate_classical_bit_with_probability(qc: QuantumCircuit, qubit, creg, target_creg, probability):
+        """
+        Manipulates the value of a classical bit with a given probability.
+
+        Args:
+            qc (QuantumCircuit): The quantum circuit.
+            qubit (int): The qubit used for probabilistic manipulation.
+            creg (int): The classical register to store the measurement result.
+            target_creg (int): The classical register of the target bit to manipulate.
+            probability (float): The probability of flipping the target classical bit.
+        """
+        # Apply Ry gate to set the probability
+        theta = 2 * np.arcsin(np.sqrt(probability))
+        qc.ry(theta, qubit)
+
+        # Measure the qubit into the classical register
+        qc.measure(qubit, creg)
+
+        # Conditionally flip the target classical bit
+        return expr.bit_xor(target_creg, creg)
 
     def _qet_circuit(self, obs: Observable, conf: Conf):
         num_qubits = conf.N

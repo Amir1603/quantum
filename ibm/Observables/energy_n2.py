@@ -15,7 +15,7 @@ class Energy_N2(Observable):
         qc.h(alice_qubit)  # Apply Hadamard to ancillary qubit
         qc.measure(alice_qubit, alice_creg)
 
-    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg, xor_alice_res):
+    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, cond, xor_alice_res):
         """
         Bob's conditional operation for Energy_N2.
         """
@@ -23,5 +23,8 @@ class Energy_N2(Observable):
                 (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
             ) / 2 if not self.theta else self.theta
 
-        qc.ry(2 * theta, bob_qubit).c_if(alice_creg, 0^xor_alice_res)
-        qc.ry(-2 * theta, bob_qubit).c_if(alice_creg, 1^xor_alice_res)
+        with qc.if_test((cond, 0^xor_alice_res)):
+            qc.ry(2 * theta, bob_qubit)
+
+        with qc.if_test((cond, 1^xor_alice_res)):
+            qc.ry(-2 * theta, bob_qubit)

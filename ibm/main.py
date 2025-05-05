@@ -44,10 +44,12 @@ def report_and_plot(results_obj: Results, N: int):
     if N == 2:
         filter = {}
         # filter = {'conf_params.xor_alice_res': 0}
+        # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
         file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
         # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
         if file_name: plot_filenames.append(file_name)
 
+        # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.k'])
         file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
         # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.xor_alice_res'])
         if file_name: plot_filenames.append(file_name)
@@ -81,6 +83,7 @@ if __name__ == "__main__":
     parser.add_argument('--all-k-for-h', action='store_true', help="Run all k configurations for a specific h value")
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
+    parser.add_argument('--all-classical-errors', action='store_true', help="Run all classical error probabilities configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
     parser.add_argument('-N', type=int, help="Choose value for N - the number of sites in chain (2 or 3 are supported)")
 
@@ -115,6 +118,9 @@ if __name__ == "__main__":
 
     if args.both_alice_values:
         confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]
+
+    if args.all_classical_errors:
+        confs = [conf for c in confs for conf in Conf.generate_classical_error(c)]
 
 
     print(f"Generated {len(confs)} configurations to run.")

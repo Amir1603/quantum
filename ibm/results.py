@@ -52,7 +52,8 @@ class Results:
                 'delay_time': conf.delay_time, 'N': conf.N,
                 'p_dephase': conf.p_dephase, 'theta': conf.theta,
                 'xor_alice_res': conf.xor_alice_res,
-                'alice_basis': getattr(observable, 'alice_basis', None)
+                'alice_basis': getattr(observable, 'alice_basis', None),
+                'p_classical_error': conf.p_classical_error
             }
 
             run_result = RunResult(
