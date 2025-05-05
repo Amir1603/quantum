@@ -7,7 +7,6 @@ from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 from results import Results
 import plotting
 import utils
-import numpy as np
 
 
 class Runner():

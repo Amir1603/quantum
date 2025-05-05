@@ -24,7 +24,7 @@ class QKDBaseN3(Observable):
         # Assumes alice_creg is the correct ClassicalRegister bit object
         qc.measure(alice_qubit_idx, alice_creg)
 
-    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit_idx: int, cond, xor_alice_res: int):
+    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit_idx: int, alice_creg, xor_alice_res: int):
         """Bob's conditional rotation on site 2 (N-1)."""
         # Ensure theta is available
         if self.theta is None:
@@ -54,12 +54,12 @@ class QKDBaseN3(Observable):
         qiskit_angle_if_1 = 2 * angle_if_1 # Angle for b_eff=1
 
         if bob_op_basis == 'Y':
-            with qc.if_test((cond, target_b_0)):
+            with qc.if_test((alice_creg, target_b_0)):
                 qc.ry(qiskit_angle_if_0, bob_qubit_idx)
-            with qc.if_test((cond, target_b_1)):
+            with qc.if_test((alice_creg, target_b_1)):
                 qc.ry(qiskit_angle_if_1, bob_qubit_idx)
         elif bob_op_basis == 'X':
-            with qc.if_test((cond, target_b_0)):
+            with qc.if_test((alice_creg, target_b_0)):
                 qc.rx(qiskit_angle_if_0, bob_qubit_idx)
-            with qc.if_test((cond, target_b_1)):
+            with qc.if_test((alice_creg, target_b_1)):
                 qc.rx(qiskit_angle_if_1, bob_qubit_idx)
