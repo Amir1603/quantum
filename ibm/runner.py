@@ -88,7 +88,6 @@ class Runner():
             raise NotImplementedError(f"Unsupported N={conf.N} in _qet_circuit")
 
         # Define classical register indices based on utils (Alice=c0, BobZ2=c1, IntermedZ1=c2)
-        alice_creg = utils.get_counts_alice_creg_idx(num_qubits)
         bob_z2_creg = utils.get_counts_bob_creg_idx(num_qubits)
         intermed_z1_creg = utils.get_counts_intermediate_creg_idx(num_qubits) # Expect 2 (or None if N!=3)
 
@@ -96,7 +95,7 @@ class Runner():
         qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
-        obs.apply_ground_state(qc, list(range(num_qubits)))
+        obs.apply_ground_state(qc, qubit_indices)
 
         alice_creg_idx = utils.get_alice_qubit_idx(num_qubits)
         bob_creg_idx = utils.get_bob_qubit_idx(num_qubits)
@@ -114,9 +113,10 @@ class Runner():
 
         # Bob's measurement basis
         bob_meas_basis = obs.get_bob_measurement_basis()
+        bob_q_idx = utils.get_bob_qubit_idx(num_qubits)
+
         if conf.N == 3:
             intermed_q_idx = 1
-            bob_q_idx = utils.get_bob_qubit_idx(num_qubits) # Should be 2
             if bob_meas_basis == "X1X2":
                 print(f"  Adding measurements for X1X2 (H on q1, q2; Measure q1->c{intermed_z1_creg}, q2->c{bob_z2_creg})")
                 qc.h(intermed_q_idx)
@@ -132,12 +132,12 @@ class Runner():
             # else: handle other N=3 cases?
         elif conf.N == 2:
             if bob_meas_basis == "X":
-                qc.h(utils.get_bob_qubit_idx(num_qubits))
+                qc.h(bob_q_idx)
             elif bob_meas_basis == "Y":
-                qc.sdg(utils.get_bob_qubit_idx(num_qubits)) # Apply S dagger
-                qc.h(utils.get_bob_qubit_idx(num_qubits))
+                qc.sdg(bob_q_idx) # Apply S dagger
+                qc.h(bob_q_idx)
 
-            qc.measure(utils.get_bob_qubit_idx(num_qubits), bob_creg_idx)
+            qc.measure(bob_q_idx, bob_creg_idx)
 
         return qc
 
