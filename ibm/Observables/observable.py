@@ -114,7 +114,7 @@ class Observable:
 
         # Normalize expectation value to get result in arbitrary units
         if gs_exp_val != 0:
-            expectation /= gs_exp_val
+            expectation /= abs(gs_exp_val)
 
         # Calculate <O^2>
         expectation_sq = sum_val_sq / total_shots
