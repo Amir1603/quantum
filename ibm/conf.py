@@ -18,7 +18,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_k_for_h(conf, step=0.05, max_value=3):
+    def generate_k_for_h(conf, step=0.25, max_value=2):
         ks = np.arange(0, max_value + step, step).tolist()
 
         confs = []
@@ -85,6 +85,18 @@ class Conf:
             confs.append(new_conf)
         return confs
 
+    @staticmethod
+    def generate_depolarization_error(conf, num_points=20):
+        probs = np.linspace(0.0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = Conf()
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.p_depol_error = p
+            confs.append(new_conf)
+        return confs
+
     def __init__(self):
         self.h = 1.0
         self.k = 1.0
@@ -101,6 +113,7 @@ class Conf:
         self.theta = None
         self.xor_alice_res = 0
         self.p_classical_error = 0
+        self.p_depol_error = 0
 
 
     def load(self):

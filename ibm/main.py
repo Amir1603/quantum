@@ -51,8 +51,11 @@ def report_and_plot(results_obj: Results, N: int, args):
         if args.all_classical_errors:
             energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.k'])
+        elif args.all_depolarization_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['charge'], group_by=['conf_params.k'])
 
-        if args.all_alice_values:
+        if args.both_alice_values:
             energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
 
@@ -94,6 +97,7 @@ if __name__ == "__main__":
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
     parser.add_argument('--all-classical-errors', action='store_true', help="Run all classical error probabilities configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
+    parser.add_argument('--all-depolarization-errors', action='store_true', help="Run all depolarization error probabilities configurations")
     parser.add_argument('-N', type=int, help="Choose value for N - the number of sites in chain (2 or 3 are supported)")
 
     args = parser.parse_args()
@@ -106,6 +110,9 @@ if __name__ == "__main__":
             raise ValueError("N must be either 2 or 3.")
         for c in confs:
             c.N = args.N
+
+    if args.all_classical_errors and args.all_depolarization_errors:
+        raise ValueError("Cannot run both classical and depolarization error configurations at the same time.")
 
     N = confs[0].N
     if confs[0].run_all or confs[0].run_sampler:
@@ -130,6 +137,9 @@ if __name__ == "__main__":
 
     if args.all_classical_errors:
         confs = [conf for c in confs for conf in Conf.generate_classical_error(c)]
+
+    if args.all_depolarization_errors:
+        confs = [conf for c in confs for conf in Conf.generate_depolarization_error(c)]
 
 
     print(f"Generated {len(confs)} configurations to run.")

@@ -53,7 +53,8 @@ class Results:
                 'p_dephase': conf.p_dephase, 'theta': conf.theta,
                 'xor_alice_res': conf.xor_alice_res,
                 'alice_basis': getattr(observable, 'alice_basis', None),
-                'p_classical_error': conf.p_classical_error
+                'p_classical_error': conf.p_classical_error,
+                'p_depol_error': conf.p_depol_error
             }
 
             run_result = RunResult(
