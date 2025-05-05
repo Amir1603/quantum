@@ -1,10 +1,9 @@
 from conf import Conf
 from Observables import Observable
 from qiskit_aer import Aer, AerSimulator
-from qiskit_aer.noise import NoiseModel, phase_damping_error
+from qiskit_aer.noise import NoiseModel, phase_damping_error, ReadoutError
 from qiskit import QuantumCircuit, transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
-from qiskit.circuit.classical import expr
 from results import Results
 import plotting
 import utils
@@ -25,21 +24,32 @@ class Runner():
         else:
             return self.service.least_busy(operational=True, simulator=False)
 
-    def _create_noise_model(self, p_dephase):
-        if not p_dephase or p_dephase == 0:
-            self.noise_model = None
-            return
-        # Create dephasing error
-        dephase_error = phase_damping_error(p_dephase)
+    def _create_noise_model(self, conf: Conf):
+        p_dephase = conf.p_dephase
+        p_cl_error = conf.p_classical_error
+
         noise_model = NoiseModel()
-        # Apply error more selectively if possible based on gate times and delay
-        noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'rz', 'sx', 'x']) # Example gates (Add 'cx'??)
+
+        # Create dephasing error
+        if p_dephase and p_dephase != 0:
+            dephase_error = phase_damping_error(p_dephase)
+            # Apply error more selectively if possible based on gate times and delay
+            noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'rz', 'sx', 'x']) # Example gates (Add 'cx'??)
+
+        if p_cl_error and p_cl_error != 0:
+            readout_error_on_alice = ReadoutError([
+                [1.0 - p_cl_error, p_cl_error], # Probabilities when true state is |0>
+                [p_cl_error, 1.0 - p_cl_error]  # Probabilities when true state is |1>
+            ])
+            # Add this error ONLY to the measurement of Alice's qubit
+            noise_model.add_readout_error(readout_error_on_alice, [utils.get_alice_qubit_idx(conf.N)])
+
         self.noise_model = noise_model
 
     def init_run_level(self, conf: Conf, backend_name: str | None = None):
          """ Initialize backend and noise for a specific configuration (h, k, delay etc.) """
          self.backend = self.__choose_backend(backend_name, conf)
-         self._create_noise_model(conf.p_dephase) # Create noise model based on conf
+         self._create_noise_model(conf)
 
          print(f"\n--- Initialized Run Level ---")
          print(f"  Conf: h={conf.h}, k={conf.k}, shots={conf.total_shots}, p_dephase={conf.p_dephase}, delay={conf.delay_time}")
@@ -49,28 +59,6 @@ class Runner():
          self.sampler = SamplerV2(mode=self.backend) if use_primitives else None
          # Keep AerSimulator separate for explicit simulator runs
          self.simulator = AerSimulator(noise_model=self.noise_model)
-
-    @staticmethod
-    def _manipulate_classical_bit_with_probability(qc: QuantumCircuit, qubit, creg, target_creg, probability):
-        """
-        Manipulates the value of a classical bit with a given probability.
-
-        Args:
-            qc (QuantumCircuit): The quantum circuit.
-            qubit (int): The qubit used for probabilistic manipulation.
-            creg (int): The classical register to store the measurement result.
-            target_creg (int): The classical register of the target bit to manipulate.
-            probability (float): The probability of flipping the target classical bit.
-        """
-        # Apply Ry gate to set the probability
-        theta = 2 * np.arcsin(np.sqrt(probability))
-        qc.ry(theta, qubit)
-
-        # Measure the qubit into the classical register
-        qc.measure(qubit, creg)
-
-        # Conditionally flip the target classical bit
-        return expr.bit_xor(target_creg, creg)
 
     def _qet_circuit(self, obs: Observable, conf: Conf):
         num_qubits = conf.N
