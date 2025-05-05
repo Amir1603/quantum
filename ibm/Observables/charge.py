@@ -35,7 +35,8 @@ class Charge(Observable):
             ) / 2 if not self.theta else self.theta
 
             # Apply Ry(-theta) if Alice measured '1'.
-            qc.ry(-2 * theta, bob_qubit).c_if(alice_creg, 1^xor_alice_res)
+            with qc.if_test((alice_creg, 1^xor_alice_res)):
+                qc.ry(-2 * theta, bob_qubit)
 
     def get_bob_measurement_basis(self):
         """

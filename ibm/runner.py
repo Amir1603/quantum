@@ -1,7 +1,7 @@
 from conf import Conf
 from Observables import Observable
 from qiskit_aer import Aer, AerSimulator
-from qiskit_aer.noise import NoiseModel, phase_damping_error
+from qiskit_aer.noise import NoiseModel, phase_damping_error, ReadoutError
 from qiskit import QuantumCircuit, transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 from results import Results
@@ -23,21 +23,32 @@ class Runner():
         else:
             return self.service.least_busy(operational=True, simulator=False)
 
-    def _create_noise_model(self, p_dephase):
-        if not p_dephase or p_dephase == 0:
-            self.noise_model = None
-            return
-        # Create dephasing error
-        dephase_error = phase_damping_error(p_dephase)
+    def _create_noise_model(self, conf: Conf):
+        p_dephase = conf.p_dephase
+        p_cl_error = conf.p_classical_error
+
         noise_model = NoiseModel()
-        # Apply error more selectively if possible based on gate times and delay
-        noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'rz', 'sx', 'x']) # Example gates (Add 'cx'??)
+
+        # Create dephasing error
+        if p_dephase and p_dephase != 0:
+            dephase_error = phase_damping_error(p_dephase)
+            # Apply error more selectively if possible based on gate times and delay
+            noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'rz', 'sx', 'x']) # Example gates (Add 'cx'??)
+
+        if p_cl_error and p_cl_error != 0:
+            readout_error_on_alice = ReadoutError([
+                [1.0 - p_cl_error, p_cl_error], # Probabilities when true state is |0>
+                [p_cl_error, 1.0 - p_cl_error]  # Probabilities when true state is |1>
+            ])
+            # Add this error ONLY to the measurement of Alice's qubit
+            noise_model.add_readout_error(readout_error_on_alice, [utils.get_alice_qubit_idx(conf.N)])
+
         self.noise_model = noise_model
 
     def init_run_level(self, conf: Conf, backend_name: str | None = None):
          """ Initialize backend and noise for a specific configuration (h, k, delay etc.) """
          self.backend = self.__choose_backend(backend_name, conf)
-         self._create_noise_model(conf.p_dephase) # Create noise model based on conf
+         self._create_noise_model(conf)
 
          print(f"\n--- Initialized Run Level ---")
          print(f"  Conf: h={conf.h}, k={conf.k}, shots={conf.total_shots}, p_dephase={conf.p_dephase}, delay={conf.delay_time}")
@@ -64,7 +75,6 @@ class Runner():
             raise NotImplementedError(f"Unsupported N={conf.N} in _qet_circuit")
 
         # Define classical register indices based on utils (Alice=c0, BobZ2=c1, IntermedZ1=c2)
-        alice_creg = utils.get_counts_alice_creg_idx(num_qubits)
         bob_z2_creg = utils.get_counts_bob_creg_idx(num_qubits)
         intermed_z1_creg = utils.get_counts_intermediate_creg_idx(num_qubits) # Expect 2 (or None if N!=3)
 
@@ -72,7 +82,7 @@ class Runner():
         qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
-        obs.apply_ground_state(qc, list(range(num_qubits)))
+        obs.apply_ground_state(qc, qubit_indices)
 
         alice_creg_idx = utils.get_alice_qubit_idx(num_qubits)
         bob_creg_idx = utils.get_bob_qubit_idx(num_qubits)
@@ -90,9 +100,10 @@ class Runner():
 
         # Bob's measurement basis
         bob_meas_basis = obs.get_bob_measurement_basis()
+        bob_q_idx = utils.get_bob_qubit_idx(num_qubits)
+
         if conf.N == 3:
             intermed_q_idx = 1
-            bob_q_idx = utils.get_bob_qubit_idx(num_qubits) # Should be 2
             if bob_meas_basis == "X1X2":
                 print(f"  Adding measurements for X1X2 (H on q1, q2; Measure q1->c{intermed_z1_creg}, q2->c{bob_z2_creg})")
                 qc.h(intermed_q_idx)
@@ -108,12 +119,12 @@ class Runner():
             # else: handle other N=3 cases?
         elif conf.N == 2:
             if bob_meas_basis == "X":
-                qc.h(utils.get_bob_qubit_idx(num_qubits))
+                qc.h(bob_q_idx)
             elif bob_meas_basis == "Y":
-                qc.sdg(utils.get_bob_qubit_idx(num_qubits)) # Apply S dagger
-                qc.h(utils.get_bob_qubit_idx(num_qubits))
+                qc.sdg(bob_q_idx) # Apply S dagger
+                qc.h(bob_q_idx)
 
-            qc.measure(utils.get_bob_qubit_idx(num_qubits), bob_creg_idx)
+            qc.measure(bob_q_idx, bob_creg_idx)
 
         return qc
 
