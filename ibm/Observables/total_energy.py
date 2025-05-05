@@ -66,7 +66,7 @@ class TotalEnergy(Observable):
         gs_energy = -(h**2 + 2 * k**2) / math.sqrt(h**2 + k**2)
 
         # Calculate final value relative to ground state in arbitrary units
-        final_value = (total_exp_val - gs_energy) / gs_energy
+        final_value = (total_exp_val - gs_energy) / abs(gs_energy)
 
         # Calculate combined SEM for h*<h1> + 2k*<v>
         # SEM = sqrt( Var(h*O1 + 2k*O2) / shots )
