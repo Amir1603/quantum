@@ -12,8 +12,6 @@ class QKDBaseN3(Observable):
         if self.N != 3: raise ValueError(f"{self.__class__.__name__} only supports N=3")
         if self.alice_basis not in ['X', 'Y']: raise ValueError("Alice basis must be 'X' or 'Y'")
 
-    # apply_ground_state is inherited from Observable (using numerical method)
-
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit_idx: int, alice_creg):
         """Alice measures site 0 in X or Y basis."""
         if self.alice_basis == 'X':

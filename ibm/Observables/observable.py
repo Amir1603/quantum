@@ -64,22 +64,27 @@ class Observable:
         """Calculate the observable's value for a given measurement bitstring."""
         raise NotImplementedError()
 
-    def apply_ground_state(self, qc: QuantumCircuit, qubits: list):
+    def apply_ground_state(self, qc: QuantumCircuit):
         """Prepares the ground state for the TFIM."""
         if self.N == 2:
             denominator = np.sqrt(self.h**2 + self.k**2)
             if denominator == 0: raise ZeroDivisionError("N=2: h=k=0")
+
             gs_theta = -np.arccos((1 / np.sqrt(2)) * np.sqrt(1 - self.h / denominator))
-            qc.ry(2 * gs_theta, qubits[utils.get_alice_qubit_idx(self.N)])
-            qc.cx(qubits[utils.get_alice_qubit_idx(self.N)], qubits[utils.get_bob_qubit_idx(self.N)])
+
+            qc.ry(2 * gs_theta, utils.get_alice_qubit_idx(self.N))
+            qc.cx(utils.get_alice_qubit_idx(self.N), utils.get_bob_qubit_idx(self.N))
+
         elif self.N == 3:
             gs_vector = Observable._get_n3_tfim_ground_state(self.k)
 
             # Qubits list [q0, q1, q2] corresponds to indices used in SparsePauliOp ('ZII' = Z on q0)
-            qc.initialize(gs_vector, [qubits[i] for i in range(self.N)])
-            qc.barrier() # Add barrier for visualization clarity
+            qc.initialize(gs_vector, list(range(self.N)))
         else:
             raise NotImplementedError(f"Ground state prep not implemented for N={self.N}")
+
+        # Add a barrier for clarity in the circuit
+        qc.barrier()
 
     def get_gs_expectation_value(self):
         # TODO: For simplicity currently this is the easiest way to add this functionality
