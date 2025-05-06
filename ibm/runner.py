@@ -66,7 +66,6 @@ class Runner():
 
     def _qet_circuit(self, obs: Observable, conf: Conf):
         num_qubits = conf.N
-        qubit_indices = list(range(num_qubits))
 
         # --- Determine required classical bits ---
         if conf.N == 3:
@@ -87,7 +86,7 @@ class Runner():
         qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
-        obs.apply_ground_state(qc, qubit_indices)
+        obs.apply_ground_state(qc)
 
         alice_creg_idx = utils.get_alice_qubit_idx(num_qubits)
         bob_creg_idx = utils.get_bob_qubit_idx(num_qubits)
