@@ -1,7 +1,7 @@
 from conf import Conf
 from Observables import Observable
 from qiskit_aer import Aer, AerSimulator
-from qiskit_aer.noise import NoiseModel, phase_damping_error, ReadoutError
+import qiskit_aer.noise as noise
 from qiskit import QuantumCircuit, transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 from results import Results
@@ -26,22 +26,27 @@ class Runner():
     def _create_noise_model(self, conf: Conf):
         p_dephase = conf.p_dephase
         p_cl_error = conf.p_classical_error
+        p_depol_error = conf.p_depol_error
 
-        noise_model = NoiseModel()
+        noise_model = noise.NoiseModel()
 
         # Create dephasing error
         if p_dephase and p_dephase != 0:
-            dephase_error = phase_damping_error(p_dephase)
+            dephase_error = noise.phase_damping_error(p_dephase)
             # Apply error more selectively if possible based on gate times and delay
             noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'rz', 'sx', 'x']) # Example gates (Add 'cx'??)
 
         if p_cl_error and p_cl_error != 0:
-            readout_error_on_alice = ReadoutError([
+            readout_error_on_alice = noise.ReadoutError([
                 [1.0 - p_cl_error, p_cl_error], # Probabilities when true state is |0>
                 [p_cl_error, 1.0 - p_cl_error]  # Probabilities when true state is |1>
             ])
             # Add this error ONLY to the measurement of Alice's qubit
             noise_model.add_readout_error(readout_error_on_alice, [utils.get_alice_qubit_idx(conf.N)])
+
+        if p_depol_error and p_depol_error != 0:
+            depol_error = noise.depolarizing_error(p_depol_error, 2)
+            noise_model.add_all_qubit_quantum_error(depol_error, ['cx'])
 
         self.noise_model = noise_model
 
