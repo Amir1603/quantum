@@ -105,12 +105,15 @@ if __name__ == "__main__":
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
-    parser.add_argument('--classical-errors', action='store_true', help="Run classical error simulation")
-    parser.add_argument('--depolarization-errors', action='store_true', help="Run depolarization error simulation")
-    parser.add_argument('--bit-flip-errors', action='store_true', help="Run bit-flip error simulation")
-    parser.add_argument('--alice-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Alice's site")
-    parser.add_argument('--bob-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Bob's site")
     parser.add_argument('-N', type=int, help="Choose value for N - the number of sites in chain (2 or 3 are supported)")
+
+    error_group = parser.add_mutually_exclusive_group(required=False)
+
+    error_group.add_argument('--classical-errors', action='store_true', help="Run classical error simulation")
+    error_group.add_argument('--depolarization-errors', action='store_true', help="Run depolarization error simulation")
+    error_group.add_argument('--bit-flip-errors', action='store_true', help="Run bit-flip error simulation")
+    error_group.add_argument('--alice-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Alice's site")
+    error_group.add_argument('--bob-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Bob's site")
 
     args = parser.parse_args()
 
@@ -122,9 +125,6 @@ if __name__ == "__main__":
             raise ValueError("N must be either 2 or 3.")
         for c in confs:
             c.N = args.N
-
-    if args.classical_errors and args.depolarization_errors:
-        raise ValueError("Cannot run both classical and depolarization error configurations at the same time.")
 
     N = confs[0].N
     if confs[0].run_all or confs[0].run_sampler:
