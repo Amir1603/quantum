@@ -18,8 +18,8 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_k_for_h(conf, step=0.25, max_value=2):
-        ks = np.arange(step, max_value + step, step).tolist()
+    def generate_k_for_h(conf, num_points=50):
+        ks = np.linspace(0, 2.0, num_points).tolist()
 
         confs = []
         for k in ks:
