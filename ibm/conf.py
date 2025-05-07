@@ -18,7 +18,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_k_for_h(conf, step=0.25, max_value=2):
+    def generate_k_for_h(conf, step=0.05, max_value=3):
         ks = np.arange(0, max_value + step, step).tolist()
 
         confs = []
