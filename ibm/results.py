@@ -58,7 +58,8 @@ class Results:
                 'p_bitflip_error': conf.p_bitflip_error,
                 'p_alice_phaseflip_error': conf.p_alice_phaseflip_error,
                 'p_bob_phaseflip_error': conf.p_bob_phaseflip_error,
-                'p_excited_mixture': conf.p_excited_mixture,
+                'p_excited_mixture_error': conf.p_excited_mixture,
+                'p_excited_superposition_error': conf.p_excited_superposition_error,
             }
 
             run_result = RunResult(
