@@ -63,6 +63,9 @@ def report_and_plot(results_obj: Results, N: int, args):
         elif args.bob_phase_flip_errors:
             energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.k'])
+        elif args.excited_mixture_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture', filter, obs=['charge'], group_by=['conf_params.k'])
 
         if args.both_alice_values:
             energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
@@ -114,6 +117,7 @@ if __name__ == "__main__":
     error_group.add_argument('--bit-flip-errors', action='store_true', help="Run bit-flip error simulation")
     error_group.add_argument('--alice-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Alice's site")
     error_group.add_argument('--bob-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Bob's site")
+    error_group.add_argument('--excited-mixture-errors', action='store_true', help="Run mixture with excited states error simulation on Bob's site")
 
     args = parser.parse_args()
 
@@ -161,6 +165,9 @@ if __name__ == "__main__":
 
     if args.bob_phase_flip_errors:
         confs = [conf for c in confs for conf in Conf.generate_bob_phase_flip_error(c)]
+
+    if args.excited_mixture_errors:
+        confs = [conf for c in confs for conf in Conf.generate_excited_mixture_error(c)]
 
 
     print(f"Generated {len(confs)} configurations to run.")

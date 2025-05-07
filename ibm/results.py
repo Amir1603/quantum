@@ -57,7 +57,8 @@ class Results:
                 'p_depol_error': conf.p_depol_error,
                 'p_bitflip_error': conf.p_bitflip_error,
                 'p_alice_phaseflip_error': conf.p_alice_phaseflip_error,
-                'p_bob_phaseflip_error': conf.p_bob_phaseflip_error
+                'p_bob_phaseflip_error': conf.p_bob_phaseflip_error,
+                'p_excited_mixture': conf.p_excited_mixture,
             }
 
             run_result = RunResult(

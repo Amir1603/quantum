@@ -90,6 +90,14 @@ class Observable:
             rho_err = Z_bob @ rho @ Z_bob
             p_err = self._conf.p_bob_phaseflip_error
 
+        if self._conf.p_excited_mixture != 0:
+            # This is the density matrix for the excited state sqrt(0.5)*(|01>-|10>)
+            rho_err[1, 1] = 0.5
+            rho_err[1, 2] = -0.5
+            rho_err[2, 1] = -0.5
+            rho_err[2, 2] = 0.5
+            p_err = self._conf.p_excited_mixture
+
         rho_error = (1 - p_err) * rho + p_err * rho_err
 
         dm = DensityMatrix(rho_error)

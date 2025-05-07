@@ -18,3 +18,4 @@ p_depol_error: 0.0
 p_bitflip_error: 0.0
 p_alice_phaseflip_error: 0.0
 p_bob_phaseflip_error: 0.0
+p_excited_mixture: 0.0
