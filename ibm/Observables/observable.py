@@ -72,18 +72,25 @@ class Observable:
         rho[3, 0] = cos_t * sin_t # rho is Hermitian, so rho[3,0] = conj(rho[0,3])
         rho[3, 3] = sin_t**2
 
-        # Calculate rho_flipped = X1 * rho_gs * X1
-        # X1 is Pauli X on the second qubit (Bob's qubit)
-        # X1 = np.kron(np.eye(2), np.array([[0, 1], [1, 0]]))
-        # rho_flipped = X1 @ rho_gs @ X1 
-        # For this specific rho_gs and X1, we can directly construct rho_flipped:
-        rho_flipped_X1 = np.zeros((4, 4), dtype=complex)
-        rho_flipped_X1[1, 1] = rho[0, 0]
-        rho_flipped_X1[1, 2] = rho[0, 3]
-        rho_flipped_X1[2, 1] = rho[3, 0]
-        rho_flipped_X1[2, 2] = rho[3, 3]
+        p_err = 0
+        rho_err = np.zeros((4, 4), dtype=complex)
 
-        rho_error = (1 - self._conf.p_bitflip_error) * rho + self._conf.p_bitflip_error * rho_flipped_X1
+        if self._conf.p_bitflip_error != 0:
+            X_bob = np.kron(np.array([[0, 1], [1, 0]]), np.eye(2))
+            rho_err = X_bob @ rho @ X_bob
+            p_err = self._conf.p_bitflip_error
+
+        if self._conf.p_alice_phaseflip_error != 0:
+            Z_alice = np.kron(np.eye(2), np.array([[1, 0], [0, -1]]))
+            rho_err = Z_alice @ rho @ Z_alice
+            p_err = self._conf.p_alice_phaseflip_error
+
+        if self._conf.p_bob_phaseflip_error != 0:
+            Z_bob = np.kron(np.array([[1, 0], [0, -1]]), np.eye(2))
+            rho_err = Z_bob @ rho @ Z_bob
+            p_err = self._conf.p_bob_phaseflip_error
+
+        rho_error = (1 - p_err) * rho + p_err * rho_err
 
         dm = DensityMatrix(rho_error)
 

@@ -56,6 +56,8 @@ class Results:
                 'p_classical_error': conf.p_classical_error,
                 'p_depol_error': conf.p_depol_error,
                 'p_bitflip_error': conf.p_bitflip_error,
+                'p_alice_phaseflip_error': conf.p_alice_phaseflip_error,
+                'p_bob_phaseflip_error': conf.p_bob_phaseflip_error
             }
 
             run_result = RunResult(
