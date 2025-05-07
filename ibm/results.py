@@ -54,7 +54,8 @@ class Results:
                 'xor_alice_res': conf.xor_alice_res,
                 'alice_basis': getattr(observable, 'alice_basis', None),
                 'p_classical_error': conf.p_classical_error,
-                'p_depol_error': conf.p_depol_error
+                'p_depol_error': conf.p_depol_error,
+                'p_bitflip_error': conf.p_bitflip_error,
             }
 
             run_result = RunResult(

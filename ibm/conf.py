@@ -18,8 +18,8 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_k_for_h(conf, step=0.05, max_value=3):
-        ks = np.arange(0, max_value + step, step).tolist()
+    def generate_k_for_h(conf, step=0.05, max_value=2):
+        ks = np.arange(step, max_value + step, step).tolist()
 
         confs = []
         for k in ks:
@@ -97,6 +97,18 @@ class Conf:
             confs.append(new_conf)
         return confs
 
+    @staticmethod
+    def generate_bitflip_error(conf, num_points=20):
+        probs = np.linspace(0.0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = Conf()
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.p_bitflip_error = p
+            confs.append(new_conf)
+        return confs
+
     def __init__(self):
         self.h = 1.0
         self.k = 1.0
@@ -114,6 +126,7 @@ class Conf:
         self.xor_alice_res = 0
         self.p_classical_error = 0
         self.p_depol_error = 0
+        self.p_bitflip_error = 0.0
 
 
     def load(self):
@@ -131,4 +144,4 @@ class Conf:
 
 
     def __repr__(self):
-        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <N:{self.N}> <xor_alice_res:{self.xor_alice_res}>"
+        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <N:{self.N}> <xor_alice_res:{self.xor_alice_res}> <p_classical_error:{self.p_classical_error}> <p_depol_error:{self.p_depol_error}> <p_bitflip_error:{self.p_bitflip_error}>"

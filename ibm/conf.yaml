@@ -14,3 +14,5 @@ backend:
 draw_circuit: false
 delay_time: 0
 p_classical_error: 0.0
+p_depol_error: 0.0
+p_bitflip_error: 0.0
