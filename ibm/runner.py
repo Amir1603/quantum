@@ -17,7 +17,7 @@ class Runner():
 
     def __choose_backend(self, backend_name, conf: Conf):
         if self.noise_model or (not conf.run_sampler):
-            return AerSimulator(noise_model=self.noise_model)
+            return AerSimulator(method="density_matrix", noise_model=self.noise_model)
         elif backend_name:
             return self.service.backend(backend_name)
         else:
