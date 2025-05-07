@@ -48,12 +48,21 @@ def report_and_plot(results_obj: Results, N: int, args):
         energy_file = None
         charge_file = None
 
-        if args.all_classical_errors:
+        if args.classical_errors:
             energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.k'])
-        elif args.all_depolarization_errors:
+        elif args.depolarization_errors:
             energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['charge'], group_by=['conf_params.k'])
+        elif args.bit_flip_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['charge'], group_by=['conf_params.k'])
+        elif args.alice_phase_flip_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.k'])
+        elif args.bob_phase_flip_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.k'])
 
         if args.both_alice_values:
             energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
@@ -95,10 +104,16 @@ if __name__ == "__main__":
     parser.add_argument('--all-k-for-h', action='store_true', help="Run all k configurations for a specific h value")
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
-    parser.add_argument('--all-classical-errors', action='store_true', help="Run all classical error probabilities configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
-    parser.add_argument('--all-depolarization-errors', action='store_true', help="Run all depolarization error probabilities configurations")
     parser.add_argument('-N', type=int, help="Choose value for N - the number of sites in chain (2 or 3 are supported)")
+
+    error_group = parser.add_mutually_exclusive_group(required=False)
+
+    error_group.add_argument('--classical-errors', action='store_true', help="Run classical error simulation")
+    error_group.add_argument('--depolarization-errors', action='store_true', help="Run depolarization error simulation")
+    error_group.add_argument('--bit-flip-errors', action='store_true', help="Run bit-flip error simulation")
+    error_group.add_argument('--alice-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Alice's site")
+    error_group.add_argument('--bob-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Bob's site")
 
     args = parser.parse_args()
 
@@ -110,9 +125,6 @@ if __name__ == "__main__":
             raise ValueError("N must be either 2 or 3.")
         for c in confs:
             c.N = args.N
-
-    if args.all_classical_errors and args.all_depolarization_errors:
-        raise ValueError("Cannot run both classical and depolarization error configurations at the same time.")
 
     N = confs[0].N
     if confs[0].run_all or confs[0].run_sampler:
@@ -135,11 +147,20 @@ if __name__ == "__main__":
     if args.both_alice_values:
         confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]
 
-    if args.all_classical_errors:
+    if args.classical_errors:
         confs = [conf for c in confs for conf in Conf.generate_classical_error(c)]
 
-    if args.all_depolarization_errors:
+    if args.depolarization_errors:
         confs = [conf for c in confs for conf in Conf.generate_depolarization_error(c)]
+
+    if args.bit_flip_errors:
+        confs = [conf for c in confs for conf in Conf.generate_bitflip_error(c)]
+
+    if args.alice_phase_flip_errors:
+        confs = [conf for c in confs for conf in Conf.generate_alice_phase_flip_error(c)]
+
+    if args.bob_phase_flip_errors:
+        confs = [conf for c in confs for conf in Conf.generate_bob_phase_flip_error(c)]
 
 
     print(f"Generated {len(confs)} configurations to run.")

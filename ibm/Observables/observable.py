@@ -10,22 +10,34 @@ from conf import Conf
 class Observable:
     def __init__(self, name, conf: Conf):
         self.name = name
-        self.h = conf.h
-        self.k = conf.k
-        self.theta = conf.theta
-        self.N = conf.N
+        self._conf = conf
 
         # Cache for ground state vector to avoid recomputing
         self._gs_vector_cache = {}
 
-    @staticmethod
-    def _get_n2_tfim_ground_state_density_matrix(h, k) -> np.ndarray:
+    @property
+    def h(self):
+        return self._conf.h
+
+    @property
+    def k(self):
+        return self._conf.k
+    
+    @property
+    def theta(self):
+        return self._conf.theta
+
+    @property
+    def N(self):
+        return self._conf.N
+
+    def _get_n2_tfim_ground_state_density_matrix(self) -> np.ndarray:
         """
         Calculates the ground state density matrix for the TFIM with N=2.
         The ground state is a pure state: |psi> = cos(gs_theta)|00> + sin(gs_theta)|11>.
         This method returns rho = |psi><psi|.
         """
-        denominator = np.sqrt(h**2 + k**2)
+        denominator = np.sqrt(self.h**2 + self.k**2)
         if np.isclose(denominator, 0):
             # This case (h=0, k=0) means H=0, so any state is a ground state with E=0.
             # The formula for gs_theta would be ill-defined.
@@ -35,11 +47,11 @@ class Observable:
 
         # Term for arccos: (1 / sqrt(2)) * sqrt(1 - h / sqrt(h^2 + k^2))
         # Ensure argument for sqrt is non-negative
-        val_inside_sqrt = 1 - h / denominator
+        val_inside_sqrt = 1 - self.h / denominator
         if val_inside_sqrt < 0 and not np.isclose(val_inside_sqrt, 0):
             # This implies h_param / denominator > 1, which shouldn't happen if h_param, k_param are real
             # and k_param != 0 or h_param != 0.
-            raise ValueError(f"Invalid value for sqrt calculation: h/denominator = {h/denominator} > 1.")
+            raise ValueError(f"Invalid value for sqrt calculation: h/denominator = {self.h/denominator} > 1.")
         val_inside_sqrt = max(0, val_inside_sqrt) # Clamp to non-negative for safety
 
         term_for_arccos = (1 / np.sqrt(2)) * np.sqrt(val_inside_sqrt)
@@ -60,7 +72,27 @@ class Observable:
         rho[3, 0] = cos_t * sin_t # rho is Hermitian, so rho[3,0] = conj(rho[0,3])
         rho[3, 3] = sin_t**2
 
-        dm = DensityMatrix(rho)
+        p_err = 0
+        rho_err = np.zeros((4, 4), dtype=complex)
+
+        if self._conf.p_bitflip_error != 0:
+            X_bob = np.kron(np.array([[0, 1], [1, 0]]), np.eye(2))
+            rho_err = X_bob @ rho @ X_bob
+            p_err = self._conf.p_bitflip_error
+
+        if self._conf.p_alice_phaseflip_error != 0:
+            Z_alice = np.kron(np.eye(2), np.array([[1, 0], [0, -1]]))
+            rho_err = Z_alice @ rho @ Z_alice
+            p_err = self._conf.p_alice_phaseflip_error
+
+        if self._conf.p_bob_phaseflip_error != 0:
+            Z_bob = np.kron(np.array([[1, 0], [0, -1]]), np.eye(2))
+            rho_err = Z_bob @ rho @ Z_bob
+            p_err = self._conf.p_bob_phaseflip_error
+
+        rho_error = (1 - p_err) * rho + p_err * rho_err
+
+        dm = DensityMatrix(rho_error)
 
         return dm
 
@@ -114,7 +146,7 @@ class Observable:
     def apply_ground_state(self, qc: QuantumCircuit):
         """Prepares the ground state for the TFIM."""
         if self.N == 2:
-            gs_dm = Observable._get_n2_tfim_ground_state_density_matrix(self.h, self.k)
+            gs_dm = self._get_n2_tfim_ground_state_density_matrix()
 
             qc.append(SetDensityMatrix(gs_dm), list(range(self.N)))
         elif self.N == 3:
