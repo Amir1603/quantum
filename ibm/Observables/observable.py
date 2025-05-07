@@ -1,10 +1,10 @@
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import SparsePauliOp, DensityMatrix
+from qiskit.quantum_info import SparsePauliOp, Statevector, DensityMatrix
 from qiskit_aer.library import SetDensityMatrix
 from scipy.sparse.linalg import eigsh
 import math
+import cmath
 import numpy as np
-import utils
 from conf import Conf
 
 class Observable:
@@ -64,41 +64,67 @@ class Observable:
         cos_t = np.cos(gs_theta)
         sin_t = np.sin(gs_theta)
 
-        # The state vector is |psi> = [cos_t, 0, 0, sin_t]^T (for basis |00>, |01>, |10>, |11>)
-        # The density matrix rho = |psi><psi|
-        rho = np.zeros((4, 4), dtype=complex)
-        rho[0, 0] = cos_t**2
-        rho[0, 3] = cos_t * sin_t
-        rho[3, 0] = cos_t * sin_t # rho is Hermitian, so rho[3,0] = conj(rho[0,3])
-        rho[3, 3] = sin_t**2
+        # The state vector is |gs> = [cos_t, 0, 0, sin_t]^T (for basis |00>, |01>, |10>, |11>)
+        gs = np.zeros(4, dtype=complex)
+        gs[0] = cos_t
+        gs[3] = sin_t
+        gs = Statevector(gs)
+
+        rho_gs = DensityMatrix(gs)
+
+        # First Excited State Vector: |E1> = (1/sqrt(2)) * (|01> - |10>)
+        # |E1> = 0*|00> + (1/sqrt(2))|01> - (1/sqrt(2))|10> + 0*|11>
+        e1 = np.zeros(4, dtype=complex)
+        e1[1] = 1 / np.sqrt(2)
+        e1[2] = -1 / np.sqrt(2)
+        e1 = Statevector(e1)
+
+        rho_e1 = DensityMatrix(e1)
 
         p_err = 0
         rho_err = np.zeros((4, 4), dtype=complex)
 
         if self._conf.p_bitflip_error != 0:
             X_bob = np.kron(np.array([[0, 1], [1, 0]]), np.eye(2))
-            rho_err = X_bob @ rho @ X_bob
+            rho_err = X_bob @ rho_gs @ X_bob
             p_err = self._conf.p_bitflip_error
 
         if self._conf.p_alice_phaseflip_error != 0:
             Z_alice = np.kron(np.eye(2), np.array([[1, 0], [0, -1]]))
-            rho_err = Z_alice @ rho @ Z_alice
+            rho_err = Z_alice @ rho_gs @ Z_alice
             p_err = self._conf.p_alice_phaseflip_error
 
         if self._conf.p_bob_phaseflip_error != 0:
             Z_bob = np.kron(np.array([[1, 0], [0, -1]]), np.eye(2))
-            rho_err = Z_bob @ rho @ Z_bob
+            rho_err = Z_bob @ rho_gs @ Z_bob
             p_err = self._conf.p_bob_phaseflip_error
 
         if self._conf.p_excited_mixture != 0:
-            # This is the density matrix for the excited state sqrt(0.5)*(|01>-|10>)
-            rho_err[1, 1] = 0.5
-            rho_err[1, 2] = -0.5
-            rho_err[2, 1] = -0.5
-            rho_err[2, 2] = 0.5
+            rho_err = rho_e1
             p_err = self._conf.p_excited_mixture
 
-        rho_error = (1 - p_err) * rho + p_err * rho_err
+        if self._conf.p_excited_superposition_error != 0:
+            p_err = self._conf.p_excited_superposition_error
+            # Relative phase for the superposition is negligible according to QKD paper
+            alpha = np.pi / 4
+            # Amplitudes for the superposition
+            amp_gs_super = np.sqrt(1 - p_err)
+            amp_excited_super = cmath.exp(1j * alpha) * np.sqrt(p_err)
+
+            # Superposition state vector: |psi> = amp_gs_super * |gs> + amp_excited_super * |E1>
+            psi_superposition = (amp_gs_super * gs.data) + (amp_excited_super * e1.data)
+            psi_superposition = psi_superposition / np.linalg.norm(psi_superposition)
+            psi_superposition = Statevector(psi_superposition)
+
+            rho_superposition = DensityMatrix(psi_superposition)
+
+            # In this unique case, we don't need to calculate rho_err separately
+            # because we are using the superposition state directly,
+            # so we will use `p_err=1` to force `rho_error = rho_superposition`.
+            p_err = 1
+            rho_err = rho_superposition
+
+        rho_error = (1 - p_err) * rho_gs + p_err * rho_err
 
         dm = DensityMatrix(rho_error)
 
