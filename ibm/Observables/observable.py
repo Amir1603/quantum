@@ -1,5 +1,6 @@
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import SparsePauliOp
+from qiskit.quantum_info import SparsePauliOp, DensityMatrix
+from qiskit_aer.library import SetDensityMatrix
 from scipy.sparse.linalg import eigsh
 import math
 import numpy as np
@@ -16,6 +17,52 @@ class Observable:
 
         # Cache for ground state vector to avoid recomputing
         self._gs_vector_cache = {}
+
+    @staticmethod
+    def _get_n2_tfim_ground_state_density_matrix(h, k) -> np.ndarray:
+        """
+        Calculates the ground state density matrix for the TFIM with N=2.
+        The ground state is a pure state: |psi> = cos(gs_theta)|00> + sin(gs_theta)|11>.
+        This method returns rho = |psi><psi|.
+        """
+        denominator = np.sqrt(h**2 + k**2)
+        if np.isclose(denominator, 0):
+            # This case (h=0, k=0) means H=0, so any state is a ground state with E=0.
+            # The formula for gs_theta would be ill-defined.
+            # You need to decide on a specific ground state or raise an error.
+            # The original code raised ZeroDivisionError.
+            raise ZeroDivisionError("N=2: h=k=0, gs_theta formula is ill-defined. Cannot determine a unique ground state via this formula.")
+
+        # Term for arccos: (1 / sqrt(2)) * sqrt(1 - h / sqrt(h^2 + k^2))
+        # Ensure argument for sqrt is non-negative
+        val_inside_sqrt = 1 - h / denominator
+        if val_inside_sqrt < 0 and not np.isclose(val_inside_sqrt, 0):
+            # This implies h_param / denominator > 1, which shouldn't happen if h_param, k_param are real
+            # and k_param != 0 or h_param != 0.
+            raise ValueError(f"Invalid value for sqrt calculation: h/denominator = {h/denominator} > 1.")
+        val_inside_sqrt = max(0, val_inside_sqrt) # Clamp to non-negative for safety
+
+        term_for_arccos = (1 / np.sqrt(2)) * np.sqrt(val_inside_sqrt)
+        
+        # Ensure argument for arccos is within [-1, 1]
+        term_for_arccos = np.clip(term_for_arccos, -1.0, 1.0)
+        
+        gs_theta = -np.arccos(term_for_arccos)
+
+        cos_t = np.cos(gs_theta)
+        sin_t = np.sin(gs_theta)
+
+        # The state vector is |psi> = [cos_t, 0, 0, sin_t]^T (for basis |00>, |01>, |10>, |11>)
+        # The density matrix rho = |psi><psi|
+        rho = np.zeros((4, 4), dtype=complex)
+        rho[0, 0] = cos_t**2
+        rho[0, 3] = cos_t * sin_t
+        rho[3, 0] = cos_t * sin_t # rho is Hermitian, so rho[3,0] = conj(rho[0,3])
+        rho[3, 3] = sin_t**2
+
+        dm = DensityMatrix(rho)
+
+        return dm
 
     @staticmethod
     def _get_n3_tfim_ground_state(k):
@@ -67,14 +114,9 @@ class Observable:
     def apply_ground_state(self, qc: QuantumCircuit):
         """Prepares the ground state for the TFIM."""
         if self.N == 2:
-            denominator = np.sqrt(self.h**2 + self.k**2)
-            if denominator == 0: raise ZeroDivisionError("N=2: h=k=0")
+            gs_dm = Observable._get_n2_tfim_ground_state_density_matrix(self.h, self.k)
 
-            gs_theta = -np.arccos((1 / np.sqrt(2)) * np.sqrt(1 - self.h / denominator))
-
-            qc.ry(2 * gs_theta, utils.get_alice_qubit_idx(self.N))
-            qc.cx(utils.get_alice_qubit_idx(self.N), utils.get_bob_qubit_idx(self.N))
-
+            qc.append(SetDensityMatrix(gs_dm), list(range(self.N)))
         elif self.N == 3:
             gs_vector = Observable._get_n3_tfim_ground_state(self.k)
 
