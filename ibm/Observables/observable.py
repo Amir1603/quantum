@@ -1,11 +1,12 @@
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import SparsePauliOp, Statevector, DensityMatrix
+from qiskit.quantum_info import SparsePauliOp, Statevector, DensityMatrix, partial_trace
 from qiskit_aer.library import SetDensityMatrix
 from scipy.sparse.linalg import eigsh
 import math
 import cmath
 import numpy as np
 from conf import Conf
+import utils
 
 class Observable:
     def __init__(self, name, conf: Conf):
@@ -84,19 +85,27 @@ class Observable:
         p_err = 0
         rho_err = np.zeros((4, 4), dtype=complex)
 
+        if self._conf.p_depol_error != 0:
+            rho_bob_reduced = partial_trace(rho_gs, [utils.get_bob_qubit_idx(self.N)])
+            identity_alice_data = np.eye(2, dtype=complex) / 2
+            rho_alice_mixed = DensityMatrix(identity_alice_data)
+
+            rho_err = rho_alice_mixed.tensor(rho_bob_reduced)
+            p_err = self._conf.p_depol_error
+
         if self._conf.p_bitflip_error != 0:
             X_bob = np.kron(np.array([[0, 1], [1, 0]]), np.eye(2))
-            rho_err = X_bob @ rho_gs @ X_bob
+            rho_err = X_bob @ rho_gs.data @ X_bob
             p_err = self._conf.p_bitflip_error
 
         if self._conf.p_alice_phaseflip_error != 0:
             Z_alice = np.kron(np.eye(2), np.array([[1, 0], [0, -1]]))
-            rho_err = Z_alice @ rho_gs @ Z_alice
+            rho_err = Z_alice @ rho_gs.data @ Z_alice
             p_err = self._conf.p_alice_phaseflip_error
 
         if self._conf.p_bob_phaseflip_error != 0:
             Z_bob = np.kron(np.array([[1, 0], [0, -1]]), np.eye(2))
-            rho_err = Z_bob @ rho_gs @ Z_bob
+            rho_err = Z_bob @ rho_gs.data @ Z_bob
             p_err = self._conf.p_bob_phaseflip_error
 
         if self._conf.p_excited_mixture != 0:

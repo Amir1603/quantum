@@ -26,7 +26,6 @@ class Runner():
     def _create_noise_model(self, conf: Conf):
         p_dephase = conf.p_dephase
         p_cl_error = conf.p_classical_error
-        p_depol_error = conf.p_depol_error
 
         noise_model = noise.NoiseModel()
 
@@ -43,10 +42,6 @@ class Runner():
             ])
             # Add this error ONLY to the measurement of Alice's qubit
             noise_model.add_readout_error(readout_error_on_alice, [utils.get_alice_qubit_idx(conf.N)])
-
-        if p_depol_error and p_depol_error != 0:
-            depol_error = noise.depolarizing_error(p_depol_error, 2)
-            noise_model.add_all_qubit_quantum_error(depol_error, ['cx'])
 
         self.noise_model = noise_model
 

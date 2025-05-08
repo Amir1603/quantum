@@ -74,7 +74,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_classical_error(conf, num_points=10):
+    def generate_classical_error(conf, num_points=11):
         probs = np.linspace(0.0, 1.0, num_points).tolist()
 
         confs = []
@@ -86,7 +86,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_depolarization_error(conf, num_points=10):
+    def generate_depolarization_error(conf, num_points=11):
         probs = np.linspace(0.0, 1.0, num_points).tolist()
 
         confs = []
@@ -98,7 +98,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_bitflip_error(conf, num_points=10):
+    def generate_bitflip_error(conf, num_points=11):
         probs = np.linspace(0.0, 1.0, num_points).tolist()
 
         confs = []
@@ -110,7 +110,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_alice_phase_flip_error(conf, num_points=10):
+    def generate_alice_phase_flip_error(conf, num_points=11):
         probs = np.linspace(0.0, 1.0, num_points).tolist()
 
         confs = []
@@ -122,7 +122,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_bob_phase_flip_error(conf, num_points=10):
+    def generate_bob_phase_flip_error(conf, num_points=11):
         probs = np.linspace(0.0, 1.0, num_points).tolist()
 
         confs = []
@@ -134,7 +134,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_excited_mixture_error(conf, num_points=10):
+    def generate_excited_mixture_error(conf, num_points=11):
         probs = np.linspace(0.0, 1.0, num_points).tolist()
 
         confs = []
@@ -146,7 +146,7 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_excited_superposition_error(conf, num_points=10):
+    def generate_excited_superposition_error(conf, num_points=11):
         probs = np.linspace(0.0, 1.0, num_points).tolist()
 
         confs = []
