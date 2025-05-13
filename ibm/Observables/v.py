@@ -1,12 +1,12 @@
 from conf import Conf
 import utils
 from .energy_n2 import Energy_N2
-
+from Calculators.tfim_calculator import TFIMCalculator
 
 class V_AB(Energy_N2):
     """Observable for the interaction energy term 2k*X0X1."""
-    def __init__(self, conf: Conf):
-        super().__init__("v", conf)
+    def __init__(self, conf: Conf, calc: TFIMCalculator):
+        super().__init__("v", conf, calc)
 
     def get_bob_measurement_basis(self):
         return "X"

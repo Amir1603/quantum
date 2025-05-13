@@ -1,4 +1,5 @@
 from .energy_n import Energy_N
+from Calculators.tfim_calculator import TFIMCalculator
 from conf import Conf
 import utils
 
@@ -7,8 +8,8 @@ class V_N(Energy_N):
     Observable to measure X_{N-2}*X_{N-1} term for arbitrary QKD protocol.
     Note: Returns eigenvalue (+/-1). Factor J applied during derived calculation.
     """
-    def __init__(self, conf: Conf, alice_basis: str):
-        super().__init__(name_suffix="v", conf=conf, alice_basis=alice_basis)
+    def __init__(self, conf: Conf, alice_basis: str, calc: TFIMCalculator):
+        super().__init__(name_suffix="v", conf=conf, alice_basis=alice_basis, calc=calc)
 
     def get_bob_measurement_basis(self):
         """Indicates the runner needs to measure X_{N-2}*X_{N-1} (requires H gates)."""

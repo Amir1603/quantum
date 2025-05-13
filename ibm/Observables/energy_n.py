@@ -1,12 +1,12 @@
-import numpy as np
+from Calculators.tfim_calculator import TFIMCalculator
 from qiskit import QuantumCircuit
 from .observable import Observable
 from conf import Conf
 
 class Energy_N(Observable):
     """Base class for arbitrary N QKD protocol measurement observables."""
-    def __init__(self, name_suffix: str, conf: Conf, alice_basis: str):
-        super().__init__(f"qkd_{name_suffix}_n_alice_{alice_basis.lower()}", conf)
+    def __init__(self, name_suffix: str, conf: Conf, alice_basis: str, calc: TFIMCalculator):
+        super().__init__(f"qkd_{name_suffix}_n_alice_{alice_basis.lower()}", conf, calc)
         self.alice_basis = alice_basis.upper()
         if self.alice_basis not in ['X', 'Y']: raise ValueError("Alice basis must be 'X' or 'Y'")
 

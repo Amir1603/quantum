@@ -236,6 +236,7 @@ class NumericalTFIM(TFIMCalculator):
 
     def _compute_bob_gs_energy_and_charge(self):
         gs = csc_matrix(self.gs0.reshape(-1, 1))
+        # TODO: Check H_b - shouldn't it be X*X??
         H_b = self.J * kron(eye(2**(self.N-1)), NumericalTFIM.X) + self.h * kron(eye(2**(self.N-1)), NumericalTFIM.Z)
         Q_b = kron(eye(2**(self.N-1)), (NumericalTFIM.I + NumericalTFIM.Z) / 2)
         energy_bob = (gs.getH() @ (H_b @ gs)).toarray().real.item()

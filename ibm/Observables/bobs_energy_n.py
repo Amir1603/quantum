@@ -1,4 +1,5 @@
 from .observable import Observable
+from Calculators.tfim_calculator import TFIMCalculator
 from conf import Conf
 import numpy as np
 
@@ -8,10 +9,10 @@ class BobsEnergy_N(Observable):
     It also calculates the final teleported energy E_B = <H_B> - <H_B>_gs.
     Calculated from results of V_N (<X_{N-2}X_{N-1}>) and H1_N (<Z_{N-1}>).
     """
-    def __init__(self, conf: Conf, alice_basis: str):
+    def __init__(self, conf: Conf, alice_basis: str, calc: TFIMCalculator):
         # Name reflects the final calculated value E_B and its parameters
         name = f"E_B_n_alice{alice_basis.lower()}"
-        super().__init__(name, conf) # Pass full conf
+        super().__init__(name, conf, calc)
         self.alice_basis = alice_basis.upper()
 
         # Define component names based on the naming convention used above
@@ -30,6 +31,9 @@ class BobsEnergy_N(Observable):
     def apply_alice_measurement(self, qc, alice_qubit, alice_creg): pass
     def apply_bob_operation(self, qc, bob_qubit, alice_creg, xor_alice_res): pass
     def get_bob_measurement_basis(self): return None # Not directly measured
+
+    def get_theoretical_gs_expectation_value(self):
+        return self._calc.bob_energy
 
     # --- Value Extraction (Not Applicable from Bitstring) ---
     def get_value(self, bitstring: str):
@@ -79,17 +83,7 @@ class BobsEnergy_N(Observable):
         sem_h1 = h1_res.sem
         sem_hb = np.sqrt((j_val * sem_v)**2 + sem_h1**2)
 
-        # --- Calculate <H_B>_gs = J<X{N-2}X{N-1}>_gs + <Z{N-1}>_gs ---
-        exp_X1X2_gs = self.calculate_gs_expectation("I"*(self.N-2) + "XX")
-        exp_Z_gs = self.calculate_gs_expectation("I"*(self.N-1) + "Z")
-
-        if exp_X1X2_gs is None or exp_Z_gs is None:
-            print(f"Warning: Failed to calculate ground state expectation values for H_B_gs (J={j_val}). Assuming 0.")
-            hb_gs = 0.0
-        else:
-            hb_gs = j_val * exp_X1X2_gs + exp_Z_gs
-            print(f"Calculated <H_B>_gs for J={j_val}: {hb_gs:.4f} (J*{exp_X1X2_gs:.4f} + {exp_Z_gs:.4f})")
-
+        hb_gs = self._calc.bob_energy
 
         # Calculate final E_B = <H_B> - <H_B>_gs
         final_eb_value = exp_val_hb - hb_gs

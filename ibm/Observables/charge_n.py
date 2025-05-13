@@ -1,6 +1,7 @@
 import numpy as np
 from qiskit import QuantumCircuit
 from .observable import Observable
+from Calculators.tfim_calculator import TFIMCalculator
 from conf import Conf
 import utils
 
@@ -9,12 +10,12 @@ class Charge_N(Observable):
     Observable for Bob's local charge density (rho_B ~ (I+Z{N-1})/2) for arbitrary N,
     under the protocol optimized for energy (Alice measures X0, Bob rotates Ry based on theta).
     """
-    def __init__(self, conf: Conf, apply_protocol: bool):
+    def __init__(self, conf: Conf, apply_protocol: bool, calc: TFIMCalculator):
         self.apply_protocol = apply_protocol
         protocol_tag = '' if apply_protocol else '_no_protocol'
         # Use a distinct name
         name = f'charge_n{protocol_tag}'
-        super().__init__(name, conf)
+        super().__init__(name, conf, calc)
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit_idx, alice_creg):
         """
@@ -70,15 +71,8 @@ class Charge_N(Observable):
             print(f"Error in {self.name}.get_value: Bitstring '{bitstring}', {e}")
             raise e
 
-    def get_gs_expectation_value(self):
-        """Calculate <(I+Z{N-1})/2>_gs = 0.5 * (1 + <Z{N-1}>_gs)"""
-        exp_Z_gs = self.calculate_gs_expectation("I"*(self.N-1) + "Z")
-        if exp_Z_gs is None:
-            print(f"Warning: Failed to get <Z{self.N-1}>_gs for {self.name}. Assuming 0 for subtraction.")
-            return 0.5 # 0.5 * (1 + 0)
-        else:
-            gs_exp_val = 0.5 * (1.0 + exp_Z_gs)
-            return gs_exp_val
+    def get_theoretical_gs_expectation_value(self):
+        return self._calc.bob_charge
 
     def description(self):
         protocol_state = "Protocol ON" if self.apply_protocol else "Protocol OFF"

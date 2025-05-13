@@ -1,5 +1,6 @@
-import math
+import numpy as np
 from .observable import Observable
+from Calculators.tfim_calculator import TFIMCalculator
 
 class BobsEnergy_N2(Observable):
     """
@@ -7,11 +8,11 @@ class BobsEnergy_N2(Observable):
     It does not correspond to a direct circuit execution but is calculated
     from the results of H1_B and V_AB.
     """
-    def __init__(self, conf):
+    def __init__(self, conf, calc: TFIMCalculator):
         # Ensure N=2 for this observable
         if conf.N != 2:
              raise ValueError("BobsEnergy_N2 observable is defined for N=2 only.")
-        super().__init__("bobs_energy_n2", conf)
+        super().__init__("bobs_energy_n2", conf, calc)
         self.component_observables = ["h1", "v"]
 
     # --- No Circuit Methods Needed ---
@@ -23,6 +24,9 @@ class BobsEnergy_N2(Observable):
     # --- Value Extraction (Not Applicable from Bitstring) ---
     def get_value(self, bitstring: str):
         raise NotImplementedError("BobsEnergy_N2 is derived, not calculated from single bitstring.")
+
+    def get_theoretical_gs_expectation_value(self):
+        return self._calc.bob_energy
 
     # --- Post-Processing Calculations (Not Applicable Directly) ---
     def calculate_expectation_and_sem(self, counts: dict, total_shots: int):
@@ -62,8 +66,7 @@ class BobsEnergy_N2(Observable):
         exp_val_v = v_res.expectation_value
         total_exp_val = h * exp_val_h1 + 2 * k * exp_val_v
 
-        # Calculate ground state energy for N=2 TFIM
-        gs_energy = -(h**2 + 2 * k**2) / math.sqrt(h**2 + k**2)
+        gs_energy = self._calc.bob_energy
 
         # Calculate final value relative to ground state in arbitrary units
         final_value = (total_exp_val - gs_energy) / abs(gs_energy)
@@ -75,10 +78,9 @@ class BobsEnergy_N2(Observable):
         # SEM = sqrt( h^2*SEM(O1)^2 + (2k)^2*SEM(O2)^2 )
         sem_h1 = h1_res.sem
         sem_v = v_res.sem
-        total_sem = math.sqrt((h * sem_h1)**2 + (2 * k * sem_v)**2)
+        total_sem = np.sqrt((h * sem_h1)**2 + (2 * k * sem_v)**2)
 
         return final_value, total_sem
-
     # --- Metadata ---
     def description(self):
         return "E_B = h*Z1 + 2k*X0X1 for N=2"

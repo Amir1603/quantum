@@ -1,19 +1,18 @@
 from conf import Conf
-import numpy as np
+from Calculators.tfim_calculator import TFIMCalculator
 from qiskit import QuantumCircuit
 from .observable import Observable
 import utils
 
 class Charge(Observable):
-    def __init__(self, conf: Conf, apply_protocol: bool):
+    def __init__(self, conf: Conf, apply_protocol: bool, calc: TFIMCalculator):
         self.apply_protocol = apply_protocol
-        # TODO
-        ## Include theta in the name for clarity when running sweeps
-        #protocol_tag = f'_theta{theta/np.pi:.2f}pi' if apply_protocol else '_no_protocol'
+        # FIXME: Include theta in the name for clarity when running sweeps?
+        #        protocol_tag = f'_theta{theta/np.pi:.2f}pi' if apply_protocol else '_no_protocol'
         protocol_tag = '' if apply_protocol else '_no_protocol'
         name = f'charge{protocol_tag}'
 
-        super().__init__(name, conf)
+        super().__init__(name, conf, calc)
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """
@@ -55,7 +54,7 @@ class Charge(Observable):
         else:
             return 0.0 # Eigenvalue 0
 
-    def get_gs_expectation_value(self):
+    def get_theoretical_gs_expectation_value(self):
         return self._calc.bob_charge
 
     def description(self):

@@ -1,10 +1,10 @@
-import numpy as np
+from Calculators.tfim_calculator import TFIMCalculator
 from qiskit import QuantumCircuit
 from .observable import Observable
 
 class Energy_N2(Observable):
-    def __init__(self, name, conf):
-        super().__init__(name, conf)
+    def __init__(self, name, conf, calc: TFIMCalculator):
+        super().__init__(name, conf, calc)
         if self.N != 2:
              raise ValueError("Energy_N2 only supports N=2")
 

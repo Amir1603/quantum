@@ -2,7 +2,8 @@ import argparse
 import os
 from datetime import datetime
 from conf import Conf
-from Observables import ObservableFactory, Observable
+from Observables import ObservableFactory
+from Calculators import TFIMCalculator, NumericalTFIM, AnalyticalTFIM
 from runner import Runner
 from results import Results
 import plotting
@@ -189,13 +190,11 @@ if __name__ == "__main__":
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
 
-        # TODO: Init numerical_tfim
-        if not args.run_analytical:
-            pass
+        tfim = AnalyticalTFIM(conf.N, conf.k, conf.h) if args.run_analytical else NumericalTFIM(conf.N, conf.k, conf.h)
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones
-        simulatable_obs_list = observable_factory.create_observables(conf)
+        simulatable_obs_list = observable_factory.create_observables(conf, tfim)
 
         # Initialize Runner (or re-init if backend/noise changes significantly)
         # Pass only the list of observables to simulate
