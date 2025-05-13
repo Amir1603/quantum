@@ -6,14 +6,15 @@ import math
 import cmath
 import numpy as np
 from conf import Conf
-import numerical_tfim
+from Calculators.tfim_calculator import TFIMCalculator
 import utils
 
 
 class Observable:
-    def __init__(self, name, conf: Conf):
+    def __init__(self, name, conf: Conf, calc: TFIMCalculator):
         self.name = name
         self._conf = conf
+        self._calc = calc
 
         # Cache for ground state vector to avoid recomputing
         self._gs_vector_cache = {}
@@ -141,17 +142,6 @@ class Observable:
 
         return dm
 
-    @staticmethod
-    def _get_numerical_tfim_ground_state(N, h, k):
-        """
-        Numerically calculates the ground state vector for the arbitrary N TFIM.
-        Caches the result based on J.
-        """
-        H = numerical_tfim.build_tfim_hamiltonian(N, k, h)
-        _, gs, _, _ = numerical_tfim.compute_lowest_states(H)
-
-        return gs
-
     # --- Circuit Construction Methods (Keep as abstract or implement common logic) ---
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         raise NotImplementedError()
@@ -169,12 +159,13 @@ class Observable:
 
     def apply_ground_state(self, qc: QuantumCircuit):
         """Prepares the ground state for the TFIM."""
+        # TODO: Unify
         if self.N == 2:
             gs_dm = self._get_n2_tfim_ground_state_density_matrix()
 
             qc.append(SetDensityMatrix(gs_dm), list(range(self.N)))
         else:
-            gs_vector = Observable._get_numerical_tfim_ground_state(self.N, self.h, self.k)
+            gs_vector = self._calc.gs0
 
             # Qubits list [q0, q1, q2] corresponds to indices used in SparsePauliOp ('ZII' = Z on q0)
             qc.initialize(gs_vector, list(range(self.N)))
@@ -183,8 +174,7 @@ class Observable:
         qc.barrier()
 
     def get_gs_expectation_value(self):
-        # TODO: For simplicity currently this is the easiest way to add this functionality
-        return 0
+        raise NotImplementedError("Subclasses should implement this method to return the ground state expectation value.")
 
     # --- Post-Processing Calculations ---
     def calculate_expectation_and_sem(self, counts: dict, total_shots: int):
@@ -264,6 +254,7 @@ class Observable:
             print(f"Error creating matrix for {pauli_string}: {e}")
             return None
 
+    # TODO: What is the difference from `get_gs_expectation_value`??
     def calculate_gs_expectation(self, pauli_string: str) -> float | None:
         """Calculates the ground state expectation value for a given Pauli string."""
         if self.N == 2:

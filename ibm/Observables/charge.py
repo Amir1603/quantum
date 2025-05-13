@@ -30,9 +30,7 @@ class Charge(Observable):
         We implement by applying Ry(-theta) if Alice measured '1' (a=-1).
         """
         if self.apply_protocol:
-            theta = np.arcsin(
-                (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
-            ) / 2 if not self.theta else self.theta
+            theta = self._calc.theta_q1 if not self.theta else self.theta
 
             # Apply Ry(-theta) if Alice measured '1'.
             with qc.if_test((alice_creg, 1^xor_alice_res)):
@@ -58,13 +56,7 @@ class Charge(Observable):
             return 0.0 # Eigenvalue 0
 
     def get_gs_expectation_value(self):
-        # Calculate <(I+Z1)/2>_gs = 0.5 * (1 + <Z1>_gs)
-        # For N=2 TFIM ground state, <Z1>_gs = -h / sqrt(h^2 + k^2)
-
-        # Calculate <(I+Z1)/2>_gs
-        gs_exp_val = 0.5 * (1.0 - self.h / np.sqrt(self.h**2 + self.k**2))
-
-        return gs_exp_val
+        return self._calc.bob_charge
 
     def description(self):
         return "charge = (I+Z)/2"

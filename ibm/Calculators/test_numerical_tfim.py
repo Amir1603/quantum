@@ -1,5 +1,5 @@
 import numpy as np
-from numerical_tfim import NumericalTFIM
+from .numerical_tfim import NumericalTFIM
 import pytest
 
 @pytest.fixture

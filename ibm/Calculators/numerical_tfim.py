@@ -2,8 +2,9 @@ import numpy as np
 from scipy.sparse import kron, eye, csc_matrix
 from scipy.sparse.linalg import eigsh
 import utils
+from .tfim_calculator import TFIMCalculator
 
-class NumericalTFIM:
+class NumericalTFIM(TFIMCalculator):
     # Pauli Matrices
     I = csc_matrix(np.array([[1, 0], [0, 1]], dtype=complex))
     X = csc_matrix(np.array([[0, 1], [1, 0]], dtype=complex))
@@ -11,17 +12,7 @@ class NumericalTFIM:
     Z = csc_matrix(np.array([[1, 0], [0, -1]], dtype=complex))
 
     def __init__(self, N, J, h):
-        """
-        Initialize the NumericalTFIM class with parameters for the transverse field Ising model.
-
-        Parameters:
-        N (int): Number of spins.
-        J (float): Coupling constant.
-        h (float): Transverse field strength.
-        """
-        self.N = N
-        self.J = J
-        self.h = h
+        super().__init__(N, J, h)
         self.H = self._build_tfim_hamiltonian()
 
     def calc_all(self):

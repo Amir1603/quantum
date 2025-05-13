@@ -19,9 +19,7 @@ class Energy_N2(Observable):
         """
         Bob's conditional operation for Energy_N2.
         """
-        theta = np.arcsin(
-                (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
-            ) / 2 if not self.theta else self.theta
+        theta = self._calc.theta_E1 if not self.theta else self.theta
 
         with qc.if_test((alice_creg, 0^xor_alice_res)):
             qc.ry(2 * theta, bob_qubit)
