@@ -2,29 +2,28 @@ from .observable import Observable
 from conf import Conf
 import numpy as np
 
-class Energy_N3(Observable):
+class BobsEnergy_N(Observable):
     """
-    A DERIVED observable representing Bob's Hamiltonian H_B = J*X1*X2 + Z2 for N=3.
+    A DERIVED observable representing Bob's Hamiltonian H_B = J*X_{N-2}*X_{N-1} + Z_{N-1}.
     It also calculates the final teleported energy E_B = <H_B> - <H_B>_gs.
-    Calculated from results of V_N3 (<X1X2>) and H1_N3 (<Z2>).
+    Calculated from results of V_N (<X_{N-2}X_{N-1}>) and H1_N (<Z_{N-1}>).
     """
     def __init__(self, conf: Conf, alice_basis: str):
         # Name reflects the final calculated value E_B and its parameters
-        name = f"E_B_n3_alice{alice_basis.lower()}"
+        name = f"E_B_n_alice{alice_basis.lower()}"
         super().__init__(name, conf) # Pass full conf
         self.alice_basis = alice_basis.upper()
-        if self.N != 3: raise ValueError("Energy_N3 only supports N=3")
 
         # Define component names based on the naming convention used above
-        self._v_n3_comp_name = f"qkd_v_n3_alice_{alice_basis.lower()}"
-        self._h1_n3_comp_name = f"qkd_h1_n3_alice_{alice_basis.lower()}"
-        self.component_observables = [self._v_n3_comp_name, self._h1_n3_comp_name]
+        self._v_n_comp_name = f"qkd_v_n_alice_{alice_basis.lower()}"
+        self._h1_n_comp_name = f"qkd_h1_n_alice_{alice_basis.lower()}"
+        self.component_observables = [self._v_n_comp_name, self._h1_n_comp_name]
 
         # --- Ground State Expectation Values ---
         # These MUST be calculated somehow (theoretically or separate runs)
         # Placeholder: Initialize to None, calculate in results processing
-        self.exp_val_v_n3_gs = None
-        self.exp_val_h1_n3_gs = None
+        self.exp_val_v_n_gs = None
+        self.exp_val_h1_n_gs = None
 
     # --- No Circuit Methods Needed ---
     def apply_ground_state(self, qc): pass
@@ -42,22 +41,22 @@ class Energy_N3(Observable):
 
     # --- Metadata ---
     def description(self):
-        return f"Derived E_B = <J*X1X2 + Z2> - <H_B>_gs for N=3 QKD (Alice: {self.alice_basis})"
+        return f"Derived E_B = <J*X{self.N-2}X{self.N-1} + Z{self.N-1}> - <H_B>_gs for N QKD (Alice: {self.alice_basis})"
 
     @staticmethod
     def is_derived_observable():
         return True
 
     def get_component_names(self):
-        # Return names matching the V_N3 and H1_N3 instances for the specific Alice basis
+        # Return names matching the V_N and H1_N instances for the specific Alice basis
         return self.component_observables
 
     def calculate_derived_value_and_sem(self, component_results: dict):
         """
         Calculates E_B = <H_B> - <H_B>_gs and its SEM.
         """
-        v_res = component_results.get(self._v_n3_comp_name)
-        h1_res = component_results.get(self._h1_n3_comp_name)
+        v_res = component_results.get(self._v_n_comp_name)
+        h1_res = component_results.get(self._h1_n_comp_name)
 
         if not v_res or not h1_res or \
         v_res.expectation_value is None or h1_res.expectation_value is None or \
@@ -70,7 +69,7 @@ class Energy_N3(Observable):
             print(f"Warning: J value is None for {self.name}. Cannot calculate derived value.")
             return None, None
 
-        # Calculate <H_B> = J * <X1X2> + <Z2>
+        # Calculate <H_B> = J * <X{self.N-2}X{self.N-1}> + <Z{self.N-1}>
         exp_val_v = v_res.expectation_value
         exp_val_h1 = h1_res.expectation_value
         exp_val_hb = j_val * exp_val_v + exp_val_h1
@@ -80,16 +79,16 @@ class Energy_N3(Observable):
         sem_h1 = h1_res.sem
         sem_hb = np.sqrt((j_val * sem_v)**2 + sem_h1**2)
 
-        # --- Calculate <H_B>_gs = J<X1X2>_gs + <Z2>_gs ---
-        exp_X1X2_gs = self.calculate_gs_expectation("IXX") # Pauli string for X1*X2
-        exp_Z2_gs = self.calculate_gs_expectation("IIZ") # Pauli string for Z2
+        # --- Calculate <H_B>_gs = J<X{N-2}X{N-1}>_gs + <Z{N-1}>_gs ---
+        exp_X1X2_gs = self.calculate_gs_expectation("I"*(self.N-2) + "XX")
+        exp_Z_gs = self.calculate_gs_expectation("I"*(self.N-1) + "Z")
 
-        if exp_X1X2_gs is None or exp_Z2_gs is None:
+        if exp_X1X2_gs is None or exp_Z_gs is None:
             print(f"Warning: Failed to calculate ground state expectation values for H_B_gs (J={j_val}). Assuming 0.")
             hb_gs = 0.0
         else:
-            hb_gs = j_val * exp_X1X2_gs + exp_Z2_gs
-            print(f"Calculated <H_B>_gs for J={j_val}: {hb_gs:.4f} (J*{exp_X1X2_gs:.4f} + {exp_Z2_gs:.4f})")
+            hb_gs = j_val * exp_X1X2_gs + exp_Z_gs
+            print(f"Calculated <H_B>_gs for J={j_val}: {hb_gs:.4f} (J*{exp_X1X2_gs:.4f} + {exp_Z_gs:.4f})")
 
 
         # Calculate final E_B = <H_B> - <H_B>_gs
