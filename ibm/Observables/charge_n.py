@@ -72,7 +72,6 @@ class Charge_N(Observable):
 
     def get_gs_expectation_value(self):
         """Calculate <(I+Z{N-1})/2>_gs = 0.5 * (1 + <Z{N-1}>_gs)"""
-        if self.N != 3: return 0.0
         exp_Z_gs = self.calculate_gs_expectation("I"*(self.N-1) + "Z")
         if exp_Z_gs is None:
             print(f"Warning: Failed to get <Z{self.N-1}>_gs for {self.name}. Assuming 0 for subtraction.")

@@ -157,7 +157,9 @@ class Conf:
             confs.append(new_conf)
         return confs
 
-    def __init__(self):
+    def __init__(self, N):
+        self.N = N
+
         self.h = 1.0
         self.k = 1.0
         self.total_shots = 10000
@@ -169,7 +171,6 @@ class Conf:
         self.backend = None
         self.draw_circuit = False
         self.delay_time = 0
-        self.N = 2
         self.theta = None
         self.xor_alice_res = 0
         self.p_classical_error = 0.0

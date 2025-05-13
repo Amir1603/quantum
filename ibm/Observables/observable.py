@@ -297,66 +297,6 @@ class Observable:
                 print(f"Error calculating arbitrary N GS expectation for {pauli_string}: {e}")
                 return None
 
-    @staticmethod
-    def calculate_n3_theta_params(conf: Conf):
-        """
-        Calculates xi, eta, and theta for N=3 based on ground state properties.
-        Requires J (conf.k) to be set.
-        Returns: tuple (xi, eta, theta) or (None, None, None) if N != 3 or error.
-        """
-        if conf.N != 3:
-            return None, None, None
-        if not hasattr(conf, 'k') or conf.k is None:
-            print("Warning: Cannot calculate N=3 theta, J (conf.k) is not defined.")
-            return None, None, None
-
-        J = conf.k
-        try:
-            gs_vector = Observable._get_n3_tfim_ground_state(conf.k)
-            if gs_vector is None: return None, None, None
-
-            # --- Define Operators (N=3, Qiskit order q2, q1, q0) ---
-            op_X0 = SparsePauliOp("XII")
-            op_X1 = SparsePauliOp("IXI")
-            op_X2 = SparsePauliOp("IIX")
-            op_Z0 = SparsePauliOp("ZII")
-            op_Z1 = SparsePauliOp("IZI")
-            op_Z2 = SparsePauliOp("IIZ")
-
-            # --- Calculate Expectation Values ---
-            def expect(op: SparsePauliOp, vec: np.ndarray):
-                # Calculate <vec| Op |vec> = vec.conj().T @ Op_matrix @ vec
-                op_matrix = op.to_matrix(sparse=True)
-                val = vec.conj().T @ (op_matrix @ vec)
-                return np.real(val) # Expectation values should be real
-
-            exp_Z0 = expect(op_Z0, gs_vector)
-            exp_Z1 = expect(op_Z1, gs_vector)
-            # exp_Z2 = expect(op_Z2, gs_vector) # Not needed for xi, eta directly but for H_B_gs
-
-            # <X0*X2>
-            op_X0X2 = op_X0.compose(op_X2) # Qiskit composition order
-            exp_X0X2 = expect(op_X0X2, gs_vector)
-
-            # <X0*X1*Z2>
-            op_X0X1Z2 = op_X0.compose(op_X1).compose(op_Z2)
-            exp_X0X1Z2 = expect(op_X0X1Z2, gs_vector)
-
-            # --- Calculate xi and eta ---
-            xi = exp_Z1 + 2 * exp_Z0
-            eta = 2 * exp_X0X2 - 2 * J * exp_X0X1Z2
-
-            # --- Calculate theta ---
-            # atan2(y, x) handles quadrants correctly and x=0 case
-            theta = 0.5 * np.arctan2(eta, xi)
-
-            print(f"Calculated N=3 Params for J={J}: xi={xi:.4f}, eta={eta:.4f}, theta={theta:.4f}")
-            return xi, eta, theta
-
-        except Exception as e:
-            print(f"Error calculating N=3 theta parameters: {e}")
-            return None, None, None
-
     # --- Metadata ---
     def description(self):
         """Return a string description of the observable."""
