@@ -1,7 +1,7 @@
 from .h1 import H1_B
 from .v import V_AB
 from .charge import Charge
-from .charge_n3 import Charge_N3
+from .charge_n import Charge_N
 from .current import Current
 from .bobs_energy_n2 import BobsEnergy_N2
 from .observable import Observable
@@ -28,8 +28,8 @@ class ObservableFactory(metaclass=Singleton):
         obs_list: list[Observable] = []
 
         # Create instances of directly simulated observables
-        if conf.N == 3:
-            print("Creating N=3 observables (H1, V components + derived E_B + Charge_N3)")
+        if conf.N >= 3:
+            print("Creating N>=3 observables (H1, V components + derived E_B + Charge_N)")
             # Create simulated components for each Alice basis
             for alice_basis in ['X', 'Y']:
                 obs_list.append(H1_N(conf, alice_basis=alice_basis))
@@ -37,7 +37,7 @@ class ObservableFactory(metaclass=Singleton):
 
                 derived_obs.append(BobsEnergy_N(conf, alice_basis=alice_basis))
 
-            obs_list.append(Charge_N3(conf, apply_protocol=True))
+            obs_list.append(Charge_N(conf, apply_protocol=True))
 
         elif conf.N == 2:
             obs_list = [H1_B(conf), V_AB(conf), Charge(conf, True)]

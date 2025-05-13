@@ -6,7 +6,9 @@ import math
 import cmath
 import numpy as np
 from conf import Conf
+import numerical_tfim
 import utils
+
 
 class Observable:
     def __init__(self, name, conf: Conf):
@@ -140,36 +142,15 @@ class Observable:
         return dm
 
     @staticmethod
-    def _get_n3_tfim_ground_state(k):
+    def _get_numerical_tfim_ground_state(N, h, k):
         """
-        Numerically calculates the ground state vector for the N=3 TFIM.
-        H = J*(X0X1 + X1X2) + Z0 + Z1 + Z2
+        Numerically calculates the ground state vector for the arbitrary N TFIM.
         Caches the result based on J.
         """
-        print(f"Calculating N=3 ground state for J={k}...")
-        # Define Pauli strings for the N=3 Hamiltonian
-        # Remember Qiskit orders qubits right-to-left (q2, q1, q0)
-        paulis = [
-            ("XXI", k), # X0*X1
-            ("IXX", k), # X1*X2
-            ("ZII", 1.0),         # Z0
-            ("IZI", 1.0),         # Z1
-            ("IIZ", 1.0)          # Z2
-        ]
-        hamiltonian_op = SparsePauliOp.from_list(paulis)
-        hamiltonian_matrix = hamiltonian_op.to_matrix(sparse=True)
+        H = numerical_tfim.build_tfim_hamiltonian(N, k, h)
+        _, gs, _, _ = numerical_tfim.compute_lowest_states(H)
 
-        # Find the eigenvalue and eigenvector for the ground state (lowest energy)
-        # Using eigsh for sparse matrices, requesting the lowest eigenvalue (which='SA')
-        try:
-            eigenvalues, eigenvectors = eigsh(hamiltonian_matrix, k=1, which='SA')
-            gs_vector = eigenvectors[:, 0]
-            # Ensure normalization (eigsh should provide normalized vectors)
-            gs_vector /= np.linalg.norm(gs_vector)
-            return gs_vector
-        except Exception as e:
-            print(f"Error during N=3 ground state calculation: {e}")
-            raise
+        return gs
 
     # --- Circuit Construction Methods (Keep as abstract or implement common logic) ---
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
@@ -192,13 +173,11 @@ class Observable:
             gs_dm = self._get_n2_tfim_ground_state_density_matrix()
 
             qc.append(SetDensityMatrix(gs_dm), list(range(self.N)))
-        elif self.N == 3:
-            gs_vector = Observable._get_n3_tfim_ground_state(self.k)
+        else:
+            gs_vector = Observable._get_numerical_tfim_ground_state(self.N, self.h, self.k)
 
             # Qubits list [q0, q1, q2] corresponds to indices used in SparsePauliOp ('ZII' = Z on q0)
             qc.initialize(gs_vector, list(range(self.N)))
-        else:
-            raise NotImplementedError(f"Ground state prep not implemented for N={self.N}")
 
         # Add a barrier for clarity in the circuit
         qc.barrier()
@@ -304,9 +283,9 @@ class Observable:
             else:
                 return 0.0 # Placeholder for other N=2 operators
 
-        elif self.N == 3:
+        else:
             try:
-                gs_vector = Observable._get_n3_tfim_ground_state(self.k)
+                gs_vector = Observable._get_numerical_tfim_ground_state(self.N, self.h, self.k)
                 if gs_vector is None: return None
 
                 op_matrix = self._get_operator_matrix(pauli_string)
@@ -315,11 +294,8 @@ class Observable:
                 val = gs_vector.conj().T @ (op_matrix @ gs_vector)
                 return np.real(val)
             except Exception as e:
-                print(f"Error calculating N=3 GS expectation for {pauli_string}: {e}")
+                print(f"Error calculating arbitrary N GS expectation for {pauli_string}: {e}")
                 return None
-        else:
-            print(f"GS expectation calculation not supported for N={self.N}")
-            return None
 
     @staticmethod
     def calculate_n3_theta_params(conf: Conf):

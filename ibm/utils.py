@@ -35,13 +35,23 @@ def get_bob_qubit_idx(N):
 def get_counts_alice_creg_idx(N):
     return 0
 
+# TODO
+def get_counts_intermediate_creg_idx(N):
+    """
+    Returns the classical register index used for measuring the
+    intermediate qubit (site N-2).
+    """
+    return N-2
+
 def get_counts_bob_creg_idx(N):
-    return 1
+    return N-1
 
 def get_counts_alice_qubit_idx(N):
-    # Because we have only two measurements, for Alice & Bob,
-    # the index for the counts result is still 1
-    return 1
+    """
+    Because we have only two measurements, for Alice & Bob,
+    the index for the counts result is still 1
+    """
+    return N-1
 
 def get_counts_bob_qubit_idx(N):
     return 0
@@ -87,15 +97,3 @@ def get_bit_from_counts(bitstring: str, creg_index: int, num_clbits: int) -> str
         )
 
     return bitstring[string_index]
-
-def get_counts_intermediate_creg_idx(N):
-     """
-     Returns the classical register index used for measuring the
-     intermediate qubit (site 1) when N=3.
-     Returns None if N is not 3.
-     """
-     if N != 3:
-          # Or raise ValueError("Intermediate qubit only defined for N=3")
-          return None
-     # Based on convention: Alice=c0, BobZ2=c1, IntermedZ1=c2
-     return 2

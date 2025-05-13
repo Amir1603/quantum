@@ -62,22 +62,15 @@ class Runner():
     def _qet_circuit(self, obs: Observable, conf: Conf):
         num_qubits = conf.N
 
-        # --- Determine required classical bits ---
-        if conf.N == 3:
-            # CONSISTENTLY use 3 classical bits for all N=3 simulation runs
-            # (Alice, Bob Z2, Intermediate Z1) even if not all are measured by the specific observable
-            num_clbits = 3
-        elif conf.N == 2:
-            # Logic for N=2 runs (e.g., 2 classical bits)
-            num_clbits = 2 # Adjust if needed for specific N=2 observables
-        else:
-            raise NotImplementedError(f"Unsupported N={conf.N} in _qet_circuit")
+        # Consistently use N classical bits for arbitrary N simulation runs
+        # even if not all are measured by the specific observable
+        num_clbits = conf.N
 
         # Define classical register indices based on utils (Alice=c0, BobZ2=c1, IntermedZ1=c2)
         bob_z2_creg = utils.get_counts_bob_creg_idx(num_qubits)
-        intermed_z1_creg = utils.get_counts_intermediate_creg_idx(num_qubits) # Expect 2 (or None if N!=3)
+        intermed_z1_creg = utils.get_counts_intermediate_creg_idx(num_qubits)
 
-        qc = QuantumCircuit(num_qubits, num_clbits) # Use determined num_clbits
+        qc = QuantumCircuit(num_qubits, num_clbits)
         qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
@@ -123,7 +116,6 @@ class Runner():
                 # Measure Bob into the correct classical bit
                 qc.measure(bob_q_idx, qc.clbits[bob_z2_creg])
                 # Note: clbit[intermed_z1_creg] (index 2) remains unused for this specific circuit run
-            # else: handle other N=3 cases?
 
         return qc
 
