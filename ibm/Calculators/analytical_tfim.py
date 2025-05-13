@@ -5,26 +5,27 @@ from qiskit.quantum_info import Statevector, DensityMatrix, partial_trace
 import numpy as np
 
 class AnalyticalTFIM(TFIMCalculator):
-    def __init__(self, N, J, h):
+    def __init__(self, N, J, h, conf):
         if N != 2:
             raise ValueError("AnalyticalTFIM only supports N=2")
 
         super().__init__(N, J, h)
+        self._conf = conf
 
     def calc_all(self):
         # FIXME: Verify
-        self.E0 = -self.h / np.sqrt(self.h**2 + self.k**2)
+        self.E0 = -self.h / np.sqrt(self.h**2 + self.J**2)
         # FIXME: Complete
         self.E1 = None
         self.total_energy = None
         self.total_charge = None
-        self.bob_energy = (self.h**2 + 2 * self.k**2) / np.sqrt(self.h**2 + self.k**2)
-        self.bob_charge = 0.5 * (1.0 - self.h / np.sqrt(self.h**2 + self.k**2))
+        self.bob_energy = (self.h**2 + 2 * self.J**2) / np.sqrt(self.h**2 + self.J**2)
+        self.bob_charge = 0.5 * (1.0 - self.h / np.sqrt(self.h**2 + self.J**2))
         self.theta_E1 = np.arcsin(
-                (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
+                (self.h * self.J) / np.sqrt((self.h**2 + 2 * self.J**2)**2 + self.h**2 * self.J**2)
             ) / 2
         self.theta_q1 = np.arcsin(
-                (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
+                (self.h * self.J) / np.sqrt((self.h**2 + 2 * self.J**2)**2 + self.h**2 * self.J**2)
             ) / 2
 
         # FIXME: Add when handling Alice basis choosing
@@ -39,7 +40,7 @@ class AnalyticalTFIM(TFIMCalculator):
         The ground state is a pure state: |psi> = cos(gs_theta)|00> + sin(gs_theta)|11>.
         This method returns rho = |psi><psi|.
         """
-        denominator = np.sqrt(self.h**2 + self.k**2)
+        denominator = np.sqrt(self.h**2 + self.J**2)
         if np.isclose(denominator, 0):
             # This case (h=0, k=0) means H=0, so any state is a ground state with E=0.
             # The formula for gs_theta would be ill-defined.

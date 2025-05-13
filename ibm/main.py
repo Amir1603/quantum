@@ -190,7 +190,9 @@ if __name__ == "__main__":
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
 
-        tfim = AnalyticalTFIM(conf.N, conf.k, conf.h) if args.run_analytical else NumericalTFIM(conf.N, conf.k, conf.h)
+        tfim = AnalyticalTFIM(conf.N, conf.k, conf.h, conf) if args.run_analytical else NumericalTFIM(conf.N, conf.k, conf.h)
+
+        tfim.calc_all()
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones

@@ -10,7 +10,7 @@ class Conf:
 
         confs = []
         for h, k in hks:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.h = h
             new_conf.k = k
@@ -23,7 +23,7 @@ class Conf:
 
         confs = []
         for k in ks:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.k = k
             confs.append(new_conf)
@@ -35,7 +35,7 @@ class Conf:
 
         confs = []
         for p in dephases:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_dephase = p
             confs.append(new_conf)
@@ -55,7 +55,7 @@ class Conf:
 
         confs = []
         for theta in thetas:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.theta = theta
             confs.append(new_conf)
@@ -66,7 +66,7 @@ class Conf:
         confs = []
 
         for xor_val in [0, 1]:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.xor_alice_res = xor_val
             confs.append(new_conf)
@@ -79,7 +79,7 @@ class Conf:
 
         confs = []
         for p in probs:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_classical_error = p
             confs.append(new_conf)
@@ -91,7 +91,7 @@ class Conf:
 
         confs = []
         for p in probs:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_depol_error = p
             confs.append(new_conf)
@@ -103,7 +103,7 @@ class Conf:
 
         confs = []
         for p in probs:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_bitflip_error = p
             confs.append(new_conf)
@@ -115,7 +115,7 @@ class Conf:
 
         confs = []
         for p in probs:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_alice_phaseflip_error = p
             confs.append(new_conf)
@@ -127,7 +127,7 @@ class Conf:
 
         confs = []
         for p in probs:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_bob_phaseflip_error = p
             confs.append(new_conf)
@@ -139,7 +139,7 @@ class Conf:
 
         confs = []
         for p in probs:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_excited_mixture = p
             confs.append(new_conf)
@@ -151,7 +151,7 @@ class Conf:
 
         confs = []
         for p in probs:
-            new_conf = Conf()
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_excited_superposition_error = p
             confs.append(new_conf)

@@ -6,7 +6,7 @@ import utils
 class H1_N(Energy_N):
     """Observable to measure Z_{N-1} term for arbitrary N QKD protocol."""
     def __init__(self, conf: Conf, alice_basis: str, calc: TFIMCalculator):
-        super().__init__(name_suffix="h1", conf=conf, alice_basis=alice_basis, calc)
+        super().__init__(name_suffix="h1", conf=conf, alice_basis=alice_basis, calc=calc)
 
     def get_bob_measurement_basis(self):
         """Indicates the runner needs to measure Z_{N-1} directly."""

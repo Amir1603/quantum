@@ -66,9 +66,12 @@ class Observable:
             return None
 
     def get_theoretical_gs_expectation_value(self) -> float:
-        """Calculates the theoretical ground state expectation value."""
-        # This is a placeholder. The actual implementation should be in subclasses.
-        raise NotImplementedError()
+        """
+        This is a placeholder for the theoretical ground state expectation value.
+        The actual implementation should be provided in subclasses.
+        This is a dummy implementation for observables that are not used as final results.
+        """
+        return 0
 
     # --- Post-Processing Calculations ---
     def calculate_expectation_and_sem(self, counts: dict, total_shots: int):

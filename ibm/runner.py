@@ -95,7 +95,8 @@ class Runner():
         bob_meas_basis = obs.get_bob_measurement_basis()
         bob_q_idx = utils.get_bob_qubit_idx(num_qubits)
 
-        # TODO: Check if N=2 case is handled correctly
+        # TODO: Check if N=2 case is handled correctly -
+        # shouldn't the neighbour qubit be manipulated and measured as well?
         if conf.N == 2:
             if bob_meas_basis == "X":
                 qc.h(bob_q_idx)
