@@ -49,35 +49,35 @@ def report_and_plot(results_obj: Results, N: int, args):
         charge_file = None
 
         if args.classical_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['bobs_energy_n2'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.k'])
         elif args.depolarization_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['bobs_energy_n2'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['charge'], group_by=['conf_params.k'])
         elif args.bit_flip_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['bobs_energy_n2'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['charge'], group_by=['conf_params.k'])
         elif args.alice_phase_flip_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['bobs_energy_n2'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.k'])
         elif args.bob_phase_flip_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['bobs_energy_n2'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.k'])
         elif args.excited_mixture_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['bobs_energy_n2'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['charge'], group_by=['conf_params.k'])
         elif args.excited_superposition_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['total_energy'], group_by=['conf_params.k'])
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['bobs_energy_n2'], group_by=['conf_params.k'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['charge'], group_by=['conf_params.k'])
 
         if args.both_alice_values:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['bobs_energy_n2'], group_by=['conf_params.xor_alice_res'])
             charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'k', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
 
         if energy_file: plot_filenames.append(energy_file)
         if charge_file: plot_filenames.append(charge_file)
 
-        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['total_energy'], group_by=['conf_params.xor_alice_res'])
+        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['bobs_energy_n2'], group_by=['conf_params.xor_alice_res'])
         # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'k', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.xor_alice_res'])
 
     elif N == 3:

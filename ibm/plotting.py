@@ -540,7 +540,7 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         return None
 
 
-def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, filter_criteria_plot, obs=['charge', 'total_energy'], group_by=['observable']):
+def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, filter_criteria_plot, obs=['charge', 'bobs_energy_n2'], group_by=['observable']):
     # Define observables of interest for this plot
     selected_obs_plot = obs
 
@@ -561,7 +561,7 @@ def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_n
     return plot_exp_vs_p_filt
 
 
-def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, parameter_name, subplot_params, obs=['charge', 'total_energy'], group_by=['observable'], filter_criteria={}):
+def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, parameter_name, subplot_params, obs=['charge', 'bobs_energy_n2'], group_by=['observable'], filter_criteria={}):
     try:
         plot_exp_vs_p_subplot = plot_expectation_vs_parameter_subplots(
             results_list=results_list,

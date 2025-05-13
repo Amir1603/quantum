@@ -1,7 +1,7 @@
 import math
 from .observable import Observable
 
-class TotalEnergy(Observable):
+class BobsEnergy_N2(Observable):
     """
     A derived observable representing H_B = h*Z1 + 2k*X0X1 for N=2 TFIM.
     It does not correspond to a direct circuit execution but is calculated
@@ -10,8 +10,8 @@ class TotalEnergy(Observable):
     def __init__(self, conf):
         # Ensure N=2 for this observable
         if conf.N != 2:
-             raise ValueError("TotalEnergy observable is defined for N=2 only.")
-        super().__init__("total_energy", conf)
+             raise ValueError("BobsEnergy_N2 observable is defined for N=2 only.")
+        super().__init__("bobs_energy_n2", conf)
         self.component_observables = ["h1", "v"]
 
     # --- No Circuit Methods Needed ---
@@ -22,15 +22,15 @@ class TotalEnergy(Observable):
 
     # --- Value Extraction (Not Applicable from Bitstring) ---
     def get_value(self, bitstring: str):
-        raise NotImplementedError("TotalEnergy is derived, not calculated from single bitstring.")
+        raise NotImplementedError("BobsEnergy_N2 is derived, not calculated from single bitstring.")
 
     # --- Post-Processing Calculations (Not Applicable Directly) ---
     def calculate_expectation_and_sem(self, counts: dict, total_shots: int):
-        raise NotImplementedError("TotalEnergy is derived from H1 and V results.")
+        raise NotImplementedError("BobsEnergy_N2 is derived from H1 and V results.")
 
     def calculate_derived_value_and_sem(self, component_results: dict):
         """
-        Calculates the TotalEnergy value and SEM from component results.
+        Calculates the BobsEnergy_N2 value and SEM from component results.
         Args:
             component_results (dict): {'h1': RunResult for H1_B, 'v': RunResult for V_AB}
                                        (Keys must match self.component_observables)

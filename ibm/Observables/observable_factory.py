@@ -3,7 +3,7 @@ from .v import V_AB
 from .charge import Charge
 from .charge_n3 import Charge_N3
 from .current import Current
-from .total_energy import TotalEnergy # Import the new class
+from .bobs_energy_n2 import BobsEnergy_N2
 from .observable import Observable
 from .h1_n3 import H1_N3
 from .v_n3 import V_N3
@@ -41,7 +41,7 @@ class ObservableFactory(metaclass=Singleton):
 
         elif conf.N == 2:
             obs_list = [H1_B(conf), V_AB(conf), Charge(conf, True)]
-            derived_obs.append(TotalEnergy(conf))
+            derived_obs.append(BobsEnergy_N2(conf))
         else:
             raise ValueError(f"Unsupported N={conf.N}")
 
