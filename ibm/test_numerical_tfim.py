@@ -108,7 +108,7 @@ def test_optimal_rotation_angles_N2():
         else: # +/- inf case
             analytic_theta_q1 = 0.5 * (np.pi / 2) if -J > 0 else 0.5 * (-np.pi/2)
     else:
-        analytic_theta_q1 = 0.5 * np.arctan2(-J, denominator_q1)
+        analytic_theta_q1 = 0.5 * np.arctan(J/denominator_q1)
 
     # Theta_q2: tan(2*theta) = J / (E_gs + 2h)
     denominator_q2 = E_gs_analytic + 2 * h
@@ -118,7 +118,7 @@ def test_optimal_rotation_angles_N2():
         else: # +/- inf case
             analytic_theta_q2 = 0.5 * (np.pi / 2) if J > 0 else 0.5 * (-np.pi/2)
     else:
-        analytic_theta_q2 = 0.5 * np.arctan2(J, denominator_q2)
+        analytic_theta_q2 = 0.5 * np.arctan(-J/denominator_q2)
 
     # Assertions
     # Using a tolerance, e.g., atol=1e-9
