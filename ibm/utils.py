@@ -26,6 +26,9 @@ def get_nested_value(data, path_str):
 def get_alice_qubit_idx(N):
     return 0
 
+def get_bob_neighbor_qubit_idx(N):
+    return N - 2
+
 def get_bob_qubit_idx(N):
     return N - 1
 
