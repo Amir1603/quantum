@@ -35,11 +35,10 @@ def get_bob_qubit_idx(N):
 def get_counts_alice_creg_idx(N):
     return 0
 
-# TODO
-def get_counts_intermediate_creg_idx(N):
+def get_counts_bob_neighbor_creg_idx(N):
     """
-    Returns the classical register index used for measuring the
-    intermediate qubit (site N-2).
+    Returns the classical register index used for measuring
+    Bob's neighnour qubit (site N-2).
     """
     return N-2
 
@@ -52,6 +51,9 @@ def get_counts_alice_qubit_idx(N):
     the index for the counts result is still 1
     """
     return N-1
+
+def get_counts_bob_neighbor_qubit_idx(N):
+    return 1
 
 def get_counts_bob_qubit_idx(N):
     return 0
