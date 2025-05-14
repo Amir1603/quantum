@@ -119,7 +119,7 @@ def test_optimal_rotation_angles(request, name):
     # Assertions
     # Using a tolerance, e.g., atol=1e-9
     assert np.isclose(tfim.theta_E1, analytic_theta_E1, atol=1e-9), \
-        f"Theta_E1 mismatch: Num={tfim.theta_E1_num:.7f}, Ana={analytic_theta_E1:.7f}"
+        f"Theta_E1 mismatch: Num={tfim.theta_E1:.7f}, Ana={analytic_theta_E1:.7f}"
     assert np.isclose(tfim.theta_E2, analytic_theta_E2, atol=1e-9), \
         f"Theta_E2 mismatch: Num={tfim.theta_E2:.7f}, Ana={analytic_theta_E2:.7f}"
     assert np.isclose(tfim.theta_q1, analytic_theta_q1, atol=1e-9), \
@@ -131,7 +131,7 @@ def test_optimal_rotation_angles(request, name):
 def test_bob_energy_and_charge(request, name):
     tfim = request.getfixturevalue(name)
     # Arrange
-    energy_bob_analytic = -2 * tfim.h**2 / np.sqrt(4 * tfim.h**2 + tfim.J**2)
+    energy_bob_analytic = -(2 * tfim.h**2 + tfim.J**2) / np.sqrt(4 * tfim.h**2 + tfim.J**2)
     charge_bob_analytic = 0.5 - (tfim.h / np.sqrt(4 * tfim.h**2 + tfim.J**2))
 
     # Assert
@@ -164,7 +164,7 @@ def test_lowest_states(request, name):
     # Assert
     # Phase alignment for ground state
     # Find first significant component in gs_analytic to use as phase reference
-    ref_idx_gs_analytic = np.argmax(np.abs(gs_analytic))
+    ref_idx_gs_analytic = int(np.argmax(np.abs(gs_analytic)))
     if np.abs(gs_analytic[ref_idx_gs_analytic]) > 1e-9: # Avoid division by zero
         # Phase factor to make gs_analytic[ref_idx] have the same phase as gs[ref_idx]
         phase_factor_gs = (tfim.gs0[ref_idx_gs_analytic] * np.conj(gs_analytic[ref_idx_gs_analytic]))
@@ -180,7 +180,7 @@ def test_lowest_states(request, name):
         f"Ground state mismatch:\nNum: {tfim.gs0}\nAna_orig: {gs_analytic}\nAna_aligned: {gs_analytic_aligned}"
 
     # Phase alignment for first excited state
-    ref_idx_ex_analytic = np.argmax(np.abs(ex_analytic))
+    ref_idx_ex_analytic = int(np.argmax(np.abs(ex_analytic)))
     if np.abs(ex_analytic[ref_idx_ex_analytic]) > 1e-9:
         phase_factor_ex = (tfim.ex1[ref_idx_ex_analytic] * np.conj(ex_analytic[ref_idx_ex_analytic]))
         if np.abs(phase_factor_ex) > 1e-9:
