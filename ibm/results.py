@@ -101,6 +101,7 @@ class Results:
             if property_values not in seen:
                 seen.add(property_values)
                 unique_observables.append(obs)
+
         return unique_observables
 
 
@@ -123,7 +124,9 @@ class Results:
              )
              grouped_results[key][res.observable.name] = res
 
-        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'k', 'theta'])
+        # FIXME: These were part of the unique list, are they needed?
+        #        'N', 'h', 'k', 'theta'
+        derived_obs = Results._get_unique_derived_observables(['name'])
         for observable in derived_obs:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue
