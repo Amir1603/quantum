@@ -25,9 +25,6 @@ class BobsEnergy_N2(Observable):
     def get_value(self, bitstring: str):
         raise NotImplementedError("BobsEnergy_N2 is derived, not calculated from single bitstring.")
 
-    def get_theoretical_gs_expectation_value(self):
-        return self._calc.bob_energy
-
     # --- Post-Processing Calculations (Not Applicable Directly) ---
     def calculate_expectation_and_sem(self, counts: dict, total_shots: int):
         raise NotImplementedError("BobsEnergy_N2 is derived from H1 and V results.")
@@ -81,6 +78,7 @@ class BobsEnergy_N2(Observable):
         total_sem = np.sqrt((h * sem_h1)**2 + (2 * k * sem_v)**2)
 
         return final_value, total_sem
+
     # --- Metadata ---
     def description(self):
         return "E_B = h*Z1 + 2k*X0X1 for N=2"

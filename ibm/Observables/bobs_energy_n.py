@@ -32,9 +32,6 @@ class BobsEnergy_N(Observable):
     def apply_bob_operation(self, qc, bob_qubit, alice_creg, xor_alice_res): pass
     def get_bob_measurement_basis(self): return None # Not directly measured
 
-    def get_theoretical_gs_expectation_value(self):
-        return self._calc.bob_energy
-
     # --- Value Extraction (Not Applicable from Bitstring) ---
     def get_value(self, bitstring: str):
         raise NotImplementedError(f"{self.name} is derived, not calculated from single bitstring.")
