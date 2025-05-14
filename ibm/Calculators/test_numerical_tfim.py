@@ -48,7 +48,7 @@ def test_build_tfim_hamiltonian(request, name):
     # Assert
     assert tfim.H.shape == (4, 4), f"Expected Hamiltonian shape (4, 4), but got {tfim.H.shape}"
 
-@pytest.mark.parametrize("name", ["ntfim", "atfim"])
+@pytest.mark.parametrize("name", ["ntfim"])
 def test_ground_state_energy(request, name):
     tfim = request.getfixturevalue(name)
     # Arrange
@@ -68,7 +68,7 @@ def test_total_energy_and_charge(request, name):
     assert np.isclose(tfim.total_energy, energy_analytic), f"Total energy mismatch: got {tfim.total_energy}, expected {energy_analytic}"
     assert np.isclose(tfim.total_charge, Q_analytic), f"Total charge mismatch: got {tfim.total_charge}, expected {Q_analytic}"
 
-@pytest.mark.parametrize("name", ["ntfim"])
+@pytest.mark.parametrize("name", ["ntfim", "atfim"])
 def test_optimal_rotation_angles(request, name):
     """
     Tests compute_optimal_rotation_angles for N=2 against derived analytical expressions.

@@ -13,12 +13,16 @@ class AnalyticalTFIM(TFIMCalculator):
         self._conf = conf
 
     def calc_all(self):
-        # FIXME: Verify
-        self.E0 = -self.h / np.sqrt(self.h**2 + self.J**2)
-        # FIXME: Complete
+        # FIXME: Unused parameters for now? Complete when needed
+        # self.E0 = -self.h / np.sqrt(self.h**2 + self.J**2) # Verify!
+        self.E0 = None
         self.E1 = None
         self.total_energy = None
         self.total_charge = None
+        self.theta_E2 = None
+        self.theta_q2 = None
+
+        # Used parameters for the TFIM
         self.bob_energy = -(self.h**2 + 2 * self.J**2) / np.sqrt(self.h**2 + self.J**2)
         self.bob_charge = 0.5 * (1.0 - self.h / np.sqrt(self.h**2 + self.J**2))
         self.theta_E1 = np.arcsin(
@@ -27,10 +31,6 @@ class AnalyticalTFIM(TFIMCalculator):
         self.theta_q1 = np.arcsin(
                 (self.h * self.J) / np.sqrt((self.h**2 + 2 * self.J**2)**2 + self.h**2 * self.J**2)
             ) / 2
-
-        # FIXME: Add when handling Alice basis choosing
-        self.theta_E2 = None
-        self.theta_q2 = None
 
         self._init_n2_tfim_states_and_density_matrices()
 
@@ -71,18 +71,18 @@ class AnalyticalTFIM(TFIMCalculator):
         gs = np.zeros(4, dtype=complex)
         gs[0] = cos_t
         gs[3] = sin_t
-        self.gs0 = Statevector(gs)
+        gs_vector = Statevector(gs)
 
-        rho_gs = DensityMatrix(self.gs0)
+        rho_gs = DensityMatrix(gs_vector)
 
         # First Excited State Vector: |E1> = (1/sqrt(2)) * (|01> - |10>)
         # |E1> = 0*|00> + (1/sqrt(2))|01> - (1/sqrt(2))|10> + 0*|11>
         e1 = np.zeros(4, dtype=complex)
         e1[1] = 1 / np.sqrt(2)
         e1[2] = -1 / np.sqrt(2)
-        self.ex1 = Statevector(e1)
+        ex1_vector = Statevector(e1)
 
-        self.ex1_rho = DensityMatrix(self.ex1)
+        ex1_rho = DensityMatrix(ex1_vector)
 
         # Apply errors to the density matrix
         p_err = 0
@@ -112,7 +112,7 @@ class AnalyticalTFIM(TFIMCalculator):
             p_err = self._conf.p_bob_phaseflip_error
 
         if self._conf.p_excited_mixture != 0:
-            rho_err = self.ex1_rho.data
+            rho_err = ex1_rho.data
             p_err = self._conf.p_excited_mixture
 
         if self._conf.p_excited_superposition_error != 0:
@@ -138,4 +138,7 @@ class AnalyticalTFIM(TFIMCalculator):
 
         rho_error = (1 - p_err) * rho_gs + p_err * rho_err
 
+        self.gs0 = gs_vector
         self.gs_rho = DensityMatrix(rho_error)
+        self.ex1 = ex1_vector
+        self.ex1_rho = ex1_rho
