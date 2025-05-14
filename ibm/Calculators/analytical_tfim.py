@@ -19,7 +19,7 @@ class AnalyticalTFIM(TFIMCalculator):
         self.E1 = None
         self.total_energy = None
         self.total_charge = None
-        self.bob_energy = (self.h**2 + 2 * self.J**2) / np.sqrt(self.h**2 + self.J**2)
+        self.bob_energy = -(self.h**2 + 2 * self.J**2) / np.sqrt(self.h**2 + self.J**2)
         self.bob_charge = 0.5 * (1.0 - self.h / np.sqrt(self.h**2 + self.J**2))
         self.theta_E1 = np.arcsin(
                 (self.h * self.J) / np.sqrt((self.h**2 + 2 * self.J**2)**2 + self.h**2 * self.J**2)
