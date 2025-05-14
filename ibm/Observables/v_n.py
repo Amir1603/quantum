@@ -20,8 +20,8 @@ class V_N(Energy_N):
         Calculates eigenvalue of X_{N-2}*X_{N-1} (+1 or -1) from Z_{N-2}, Z_{N-1} measurement outcomes...
         """
         try:
-            intermed_creg = utils.get_counts_bob_neighbor_creg_idx(self.N)
-            bob_creg = utils.get_counts_bob_creg_idx(self.N)
+            intermed_creg = utils.get_bob_neighbor_idx(self.N)
+            bob_creg = utils.get_bob_idx(self.N)
 
             # Ensure get_bit_from_counts is used correctly
             z1_meas_bit = utils.get_bit_from_counts(bitstring, intermed_creg, self.N)

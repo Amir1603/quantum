@@ -12,7 +12,8 @@ class H1_B(Energy_N2):
         return "Z"
 
     def get_value(self, bitstring: str):
-        bob_bit = bitstring[utils.get_counts_bob_qubit_idx(self.N)]
+        bob_bit = utils.get_bit_from_counts(bitstring, utils.get_bob_idx(self.N), self.N)
+
         if bob_bit == '0':
             return 1 # Z eigenvalue for |0>
         else:

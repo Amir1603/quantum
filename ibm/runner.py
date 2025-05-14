@@ -42,7 +42,7 @@ class Runner():
                 [p_cl_error, 1.0 - p_cl_error]  # Probabilities when true state is |1>
             ])
             # Add this error ONLY to the measurement of Alice's qubit
-            noise_model.add_readout_error(readout_error_on_alice, [utils.get_alice_qubit_idx(conf.N)])
+            noise_model.add_readout_error(readout_error_on_alice, [utils.get_alice_idx(conf.N)])
 
         self.noise_model = noise_model
 
@@ -68,8 +68,8 @@ class Runner():
         num_clbits = conf.N
 
         # Define classical register indices based on utils (Alice=c0, BobZ2=c1, IntermedZ1=c2)
-        bob_creg = utils.get_counts_bob_creg_idx(num_qubits)
-        bobs_neighbour_creg = utils.get_counts_bob_neighbor_creg_idx(num_qubits)
+        bob_creg = utils.get_bob_idx(num_qubits)
+        bobs_neighbour_creg = utils.get_bob_neighbor_idx(num_qubits)
 
         qc = QuantumCircuit(num_qubits, num_clbits)
         qc.name = f'{obs.name}_qc'
@@ -77,23 +77,23 @@ class Runner():
         # Prepare the ground state
         obs.apply_ground_state(qc)
 
-        alice_creg_idx = utils.get_alice_qubit_idx(num_qubits)
-        bob_creg_idx = utils.get_bob_qubit_idx(num_qubits)
+        alice_creg_idx = utils.get_alice_idx(num_qubits)
+        bob_creg_idx = utils.get_bob_idx(num_qubits)
 
-        obs.apply_alice_measurement(qc, utils.get_alice_qubit_idx(num_qubits), alice_creg_idx)
+        obs.apply_alice_measurement(qc, utils.get_alice_idx(num_qubits), alice_creg_idx)
 
         # Idle Bob’s qubit
         if conf.delay_time and conf.delay_time > 0:
              # Ensure delay_time is in appropriate units (dt, sec). Assume dt for Aer.
-             qc.delay(conf.delay_time, utils.get_bob_qubit_idx(num_qubits), unit='dt')
+             qc.delay(conf.delay_time, utils.get_bob_idx(num_qubits), unit='dt')
 
         # Bob's conditional operation
         # Pass the classical register/bit index Alice measured into
-        obs.apply_bob_operation(qc, utils.get_bob_qubit_idx(num_qubits), alice_creg_idx, conf.xor_alice_res)
+        obs.apply_bob_operation(qc, utils.get_bob_idx(num_qubits), alice_creg_idx, conf.xor_alice_res)
 
         # Bob's measurement basis
         bob_meas_basis = obs.get_bob_measurement_basis()
-        bob_q_idx = utils.get_bob_qubit_idx(num_qubits)
+        bob_q_idx = utils.get_bob_idx(num_qubits)
 
         # TODO: Check if N=2 case is handled correctly -
         # shouldn't the neighbour qubit be manipulated and measured as well?
@@ -106,7 +106,7 @@ class Runner():
 
             qc.measure(bob_q_idx, bob_creg_idx)
         else:
-            intermed_q_idx = utils.get_bob_neighbor_qubit_idx(num_qubits)
+            intermed_q_idx = utils.get_bob_neighbor_idx(num_qubits)
             if bob_meas_basis == f"X{conf.N-2}X{conf.N-1}":
                 print(f"  Adding measurements for X{conf.N-2}X{conf.N-1} (H on q1, q2; Measure q1->c{bobs_neighbour_creg}, q2->c{bob_creg})")
                 qc.h(intermed_q_idx)

@@ -228,8 +228,8 @@ class Results:
             # Map '0' -> +1, '1' -> -1 for Z measurement eigenvalue
             try:
                 # Use indices based on 'b1b0' format
-                outcome_q0 = 1.0 if bitstring[utils.get_counts_bob_qubit_idx(num_qubits)] == '0' else -1.0 # Bob's value
-                outcome_q1 = 1.0 if bitstring[utils.get_counts_alice_qubit_idx(num_qubits)] == '0' else -1.0 # Alice's value
+                outcome_q0 = 1.0 if utils.get_bit_from_counts(bitstring, utils.get_bob_idx(num_qubits), num_qubits) == '0' else -1.0 # Bob's value
+                outcome_q1 = 1.0 if utils.get_bit_from_counts(bitstring, utils.get_alice_idx(num_qubits), num_qubits) == '0' else -1.0 # Alice's value
                 correlation += outcome_q1 * outcome_q0 * count
             except IndexError:
                 print(f"Warning: Skipping bitstring '{bitstring}' in correlation calc due to index error.")

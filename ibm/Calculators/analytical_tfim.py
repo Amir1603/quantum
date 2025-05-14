@@ -89,7 +89,7 @@ class AnalyticalTFIM(TFIMCalculator):
         rho_err = np.zeros((4, 4), dtype=complex)
 
         if self._conf.p_depol_error != 0:
-            rho_bob_reduced = partial_trace(rho_gs, [utils.get_bob_qubit_idx(self.N)])
+            rho_bob_reduced = partial_trace(rho_gs, [utils.get_bob_idx(self.N)])
             identity_alice_data = np.eye(2, dtype=complex) / 2
             rho_alice_mixed = DensityMatrix(identity_alice_data)
 

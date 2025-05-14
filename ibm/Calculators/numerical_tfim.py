@@ -139,8 +139,8 @@ class NumericalTFIM(TFIMCalculator):
             # Or, the calling code should be mindful. For now, we assume N>=2 for the J term.
             # If N=1, X_{N-2} is not defined. We'll proceed assuming N>=2 where X_{N-2} is distinct from X_{N-1} unless N=2.
 
-        alice_site = utils.get_alice_qubit_idx(self.N)
-        bob_site = utils.get_bob_qubit_idx(self.N)
+        alice_site = utils.get_alice_idx(self.N)
+        bob_site = utils.get_bob_idx(self.N)
         # bob_neighbor_site = N - 2 # Only defined if N >= 2
 
         # --- Theta_E1: Alice X0, Bob Y_{N-1} rot, P_B = hZ_{N-1} + JX_{N-2}X_{N-1} ---
@@ -157,7 +157,7 @@ class NumericalTFIM(TFIMCalculator):
 
         # Terms for J part of P_B and P_C for E1
         if self.N >= 2:
-            bob_neighbor_site = utils.get_bob_neighbor_qubit_idx(self.N)
+            bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
             op_Xn2_Zn1 = NumericalTFIM._get_two_site_operator('X', bob_neighbor_site, 'Z', bob_site, self.N, NumericalTFIM.pauli_ops)
             op_Xn2_Xn1 = NumericalTFIM._get_two_site_operator('X', bob_neighbor_site, 'X', bob_site, self.N, NumericalTFIM.pauli_ops)
             
@@ -236,8 +236,8 @@ class NumericalTFIM(TFIMCalculator):
     def _compute_bob_gs_energy_and_charge(self):
         gs = csc_matrix(self.gs0.reshape(-1, 1))
 
-        bob_site = utils.get_bob_qubit_idx(self.N)
-        bob_neighbor_site = utils.get_bob_neighbor_qubit_idx(self.N)
+        bob_site = utils.get_bob_idx(self.N)
+        bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
         H_b = (self.h * NumericalTFIM._get_pauli_operator_on_site('Z', bob_site, self.N, NumericalTFIM.pauli_ops) +
                self.J * NumericalTFIM._get_two_site_operator('X', bob_neighbor_site, 'X', bob_site, self.N, NumericalTFIM.pauli_ops))

@@ -47,7 +47,7 @@ class Charge(Observable):
         rho|+> = 1|+> (Eigenvalue 1, measurement '0')
         rho|-> = 0|-> (Eigenvalue 0, measurement '1')
         """
-        bob_measurement_result = bitstring[utils.get_counts_bob_qubit_idx(self.N)]
+        bob_measurement_result = utils.get_bit_from_counts(bitstring, utils.get_bob_idx(self.N), self.N)
 
         if bob_measurement_result == '0':
             return 1.0 # Eigenvalue 1

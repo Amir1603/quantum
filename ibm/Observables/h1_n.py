@@ -16,7 +16,7 @@ class H1_N(Energy_N):
         """Calculates eigenvalue of Z_{N-1} (+1 or -1) from measurement outcome."""
         try:
             # Get index for Bob's Z2 measurement result (should be 1 based on utils)
-            bob_creg = utils.get_counts_bob_creg_idx(self.N)
+            bob_creg = utils.get_bob_idx(self.N)
             z_meas_bit = utils.get_bit_from_counts(bitstring, bob_creg, self.N)
             z_eigenvalue = 1.0 if z_meas_bit == '0' else -1.0
             return z_eigenvalue

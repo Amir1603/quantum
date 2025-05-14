@@ -59,8 +59,8 @@ class Charge_N(Observable):
         Returns 1.0 if Z_{N-1}=+1 (measured '0'), 0.0 if Z_{N-1}=-1 (measured '1').
         """
         try:
-            # Bob's Z2 measurement is expected in classical register 1 (utils.get_counts_bob_creg_idx)
-            bob_creg_index = utils.get_counts_bob_creg_idx(self.N)
+            # Bob's Z2 measurement is expected in classical register 1 (utils.get_bob_idx)
+            bob_creg_index = utils.get_bob_idx(self.N)
             bob_measurement_bit = utils.get_bit_from_counts(bitstring, bob_creg_index, self.N)
 
             if bob_measurement_bit == '0':

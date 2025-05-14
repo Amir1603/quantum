@@ -12,8 +12,8 @@ class V_AB(Energy_N2):
         return "X"
 
     def get_value(self, bitstring: str):
-        bob_bit = bitstring[utils.get_counts_bob_qubit_idx(self.N)]
-        alice_bit = bitstring[utils.get_counts_alice_qubit_idx(self.N)]
+        bob_bit = utils.get_bit_from_counts(bitstring, utils.get_bob_idx(self.N), self.N)
+        alice_bit = utils.get_bit_from_counts(bitstring, utils.get_alice_idx(self.N), self.N)
 
         alice_val = 1 if alice_bit == '0' else -1
         bob_val = 1 if bob_bit == '0' else -1
