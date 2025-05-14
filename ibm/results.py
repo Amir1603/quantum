@@ -106,6 +106,9 @@ class Results:
 
 
     def _calculate_all_derived_observables(self, current_results: list):
+        # FIXME: This implementation runs over all derived observable and for
+        # each one it runs over all H1, V values. It should run just over matching
+        # configurations of the observables.
         """
         Iterates through all known derived observables and calculates their values.
         """
@@ -124,9 +127,7 @@ class Results:
              )
              grouped_results[key][res.observable.name] = res
 
-        # FIXME: These were part of the unique list, are they needed?
-        #        'N', 'h', 'k', 'theta'
-        derived_obs = Results._get_unique_derived_observables(['name'])
+        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'k', 'theta'])
         for observable in derived_obs:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue

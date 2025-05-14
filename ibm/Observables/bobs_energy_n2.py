@@ -58,6 +58,9 @@ class BobsEnergy_N2(Observable):
              print(f"Warning: Missing h or k parameters in component results for {self.name}.")
              return None, None
 
+        if (self.h, self.k) != (h, k):
+            return None, None
+
         # Calculate combined expectation value: h * <h1_b> + 2 * k * <v_ab>
         exp_val_h1 = h1_res.expectation_value
         exp_val_v = v_res.expectation_value
