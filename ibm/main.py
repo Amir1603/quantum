@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from conf import Conf
 from Observables import ObservableFactory
-from Calculators import TFIMCalculator, NumericalTFIM, AnalyticalTFIM
+from Calculators import NumericalTFIM, MyCalculatorTFIM, KazukiTFIM
 from runner import Runner
 from results import Results
 import plotting
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
 
-        tfim = AnalyticalTFIM(conf.N, conf.k, conf.h, conf) if args.run_analytical else NumericalTFIM(conf.N, conf.k, conf.h)
+        tfim = KazukiTFIM(conf.N, conf.k, conf.h, conf) if args.run_analytical else NumericalTFIM(conf.N, conf.k, conf.h)
 
         tfim.calc_all()
 

@@ -70,10 +70,10 @@ class BobsEnergy_N(Observable):
             print(f"Warning: J value is None for {self.name}. Cannot calculate derived value.")
             return None, None
 
-        # Calculate <H_B> = J * <X{self.N-2}X{self.N-1}> + <Z{self.N-1}>
+        # Calculate <H_B> = J * <X{self.N-2}X{self.N-1}> + h * <Z{self.N-1}>
         exp_val_v = v_res.expectation_value
         exp_val_h1 = h1_res.expectation_value
-        exp_val_hb = j_val * exp_val_v + exp_val_h1
+        exp_val_hb = j_val * exp_val_v + self.h * exp_val_h1
 
         # Calculate SEM for <H_B>
         sem_v = v_res.sem

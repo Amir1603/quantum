@@ -12,25 +12,30 @@ class AnalyticalTFIM(TFIMCalculator):
         super().__init__(N, J, h)
         self._conf = conf
 
+class MyCalculatorTFIM(AnalyticalTFIM):
+    def __init__(self, N, J, h, conf):
+        super().__init__(N, J, h, conf)
+
     def calc_all(self):
         # FIXME: Unused parameters for now? Complete when needed
         # self.E0 = -self.h / np.sqrt(self.h**2 + self.J**2) # Verify!
         self.E0 = None
         self.E1 = None
-        self.total_energy = None
         self.total_charge = None
-        self.theta_E2 = None
-        self.theta_q2 = None
 
         # Used parameters for the TFIM
-        self.bob_energy = -(self.h**2 + 2 * self.J**2) / np.sqrt(self.h**2 + self.J**2)
-        self.bob_charge = 0.5 * (1.0 - self.h / np.sqrt(self.h**2 + self.J**2))
-        self.theta_E1 = np.arcsin(
-                (self.h * self.J) / np.sqrt((self.h**2 + 2 * self.J**2)**2 + self.h**2 * self.J**2)
-            ) / 2
-        self.theta_q1 = np.arcsin(
-                (self.h * self.J) / np.sqrt((self.h**2 + 2 * self.J**2)**2 + self.h**2 * self.J**2)
-            ) / 2
+        self.total_energy = -np.sqrt(4 * self.h**2 + self.J**2)
+        self.bob_energy = -(2 * self.h**2 + self.J**2) / np.sqrt(4 * self.h**2 + self.J**2)
+        # self.bob_energy = -(self.h**2) / np.sqrt(self.h**2 + self.J**2)
+
+        alpha, _ = MyCalculatorTFIM._alpha_beta(self.h, self.J)
+        self.bob_charge = alpha**2
+
+        # self.theta_E1 = 0.5 * np.arctan((3 * self.h * self.J) / (-(2 * self.h**2 + self.J**2)))
+        self.theta_E1 = 0.5 * np.arctan(-2 * self.h/self.J)
+        self.theta_E2 = 0.5 * np.arctan(self.h / self.J)
+        self.theta_q1 = 0.5 * np.arctan(-self.J / (2*self.h))
+        self.theta_q2 = -self.theta_q1
 
         self._init_n2_tfim_states_and_density_matrices()
 
@@ -40,6 +45,19 @@ class AnalyticalTFIM(TFIMCalculator):
         The ground state is a pure state: |psi> = cos(gs_theta)|00> + sin(gs_theta)|11>.
         This method returns rho = |psi><psi|.
         """
+
+        alpha, beta = MyCalculatorTFIM._alpha_beta(self.h, self.J)
+        gs_vector = Statevector([alpha, 0, 0, beta])
+
+        self.gs0 = gs_vector
+        self.gs_rho = DensityMatrix(np.outer(gs_vector.data, np.conj(gs_vector.data)))
+
+        e1_vector = Statevector([0, 1/np.sqrt(2), -1/np.sqrt(2), 0])
+        self.ex1 = e1_vector
+        self.ex1_rho = DensityMatrix(np.outer(e1_vector.data, np.conj(e1_vector.data)))
+
+        return
+
         denominator = np.sqrt(self.h**2 + self.J**2)
         if np.isclose(denominator, 0):
             # This case (h=0, k=0) means H=0, so any state is a ground state with E=0.
@@ -142,3 +160,57 @@ class AnalyticalTFIM(TFIMCalculator):
         self.gs_rho = DensityMatrix(rho_error)
         self.ex1 = ex1_vector
         self.ex1_rho = ex1_rho
+
+    @staticmethod
+    def _alpha_beta(h, J):
+        sqrt_term = np.sqrt(4 * h**2 + J**2)
+        alpha = 2 * h - sqrt_term
+        beta = J
+        norm = np.sqrt(alpha**2 + beta**2)
+        alpha /= norm
+        beta /= norm
+
+        return alpha, beta
+
+class KazukiTFIM(AnalyticalTFIM):
+    """
+    Kazuki's TFIM class for N=2.
+    """
+    def __init__(self, N, J, h, conf):
+        super().__init__(N, J, h, conf)
+    
+    def calc_all(self):
+        # FIXME: Unused parameters for now? Complete when needed
+        # self.E0 = -self.h / np.sqrt(self.h**2 + self.J**2) # Verify!
+        self.E0 = None
+        self.E1 = None
+        self.total_charge = None
+        self.total_energy = None
+        self.theta_E2 = None
+        self.theta_q2 = None
+
+        # Used parameters for the TFIM
+        self.bob_energy = -(self.h**2 + 2 * self.J**2) / np.sqrt(self.h**2 + self.J**2)
+        self.bob_charge = 0.5 * (1.0 - self.h / np.sqrt(self.h**2 + self.J**2))
+
+        rotation_angle = np.arcsin(
+                (self.h * self.J) / np.sqrt((self.h**2 + 2 * self.J**2)**2 + self.h**2 * self.J**2)
+            ) / 2
+        self.theta_E1 = rotation_angle
+        self.theta_q1 = rotation_angle
+
+        self._init_n2_tfim_states_and_density_matrices()
+
+    def _init_n2_tfim_states_and_density_matrices(self):
+        denominator = np.sqrt(self.h**2 + self.J**2)
+        val_inside_sqrt = 1 - self.h / denominator
+        term_for_arccos = (1 / np.sqrt(2)) * np.sqrt(val_inside_sqrt)
+        gs_theta = -np.arccos(term_for_arccos)
+        gs_vector = Statevector([np.cos(gs_theta), 0, 0, np.sin(gs_theta)])
+
+        self.gs0 = gs_vector
+        self.gs_rho = DensityMatrix(np.outer(gs_vector.data, np.conj(gs_vector.data)))
+
+        e1_vector = Statevector([0, 1/np.sqrt(2), -1/np.sqrt(2), 0])
+        self.ex1 = e1_vector
+        self.ex1_rho = DensityMatrix(np.outer(e1_vector.data, np.conj(e1_vector.data)))
