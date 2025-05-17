@@ -1,5 +1,5 @@
 from .tfim_calculator import TFIMCalculator
 from .numerical_tfim import NumericalTFIM
-from .analytical_tfim import AnalyticalTFIM, MyCalculatorTFIM, KazukiTFIM
+from .analytical_tfim import AnalyticalTFIM
 
-__all__ = ["TFIMCalculator", "NumericalTFIM", "AnalyticalTFIM", "MyCalculatorTFIM", "KazukiTFIM"]
+__all__ = ["TFIMCalculator", "NumericalTFIM", "AnalyticalTFIM"]
