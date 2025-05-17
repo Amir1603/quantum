@@ -1,23 +1,22 @@
 from Calculators.tfim_calculator import TFIMCalculator
 from qiskit import QuantumCircuit
 from .observable import Observable
+from conf import Conf
 
-class Energy_N2(Observable):
-    def __init__(self, name, conf, calc: TFIMCalculator):
+class EnergyBase(Observable):
+    def __init__(self, name, conf: Conf, calc: TFIMCalculator):
         super().__init__(name, conf, calc)
-        if self.N != 2:
-             raise ValueError("Energy_N2 only supports N=2")
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """
-        Alice's measurement for Energy_N2.
+        Alice's  energy measurement.
         """
-        qc.h(alice_qubit)  # Apply Hadamard to ancillary qubit
+        qc.h(alice_qubit)
         qc.measure(alice_qubit, alice_creg)
 
     def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg, xor_alice_res):
         """
-        Bob's conditional operation for Energy_N2.
+        Bob's conditional operation (rotation).
         """
         theta = self._calc.theta_E1 if not self.theta else self.theta
 

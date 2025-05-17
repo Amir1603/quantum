@@ -387,7 +387,6 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         cmap (str, optional): Matplotlib colormap name. Defaults to 'viridis'.
         z_label (str, optional): Custom label for the colorbar. Defaults to z_param_path name.
 
-
     Returns:
         str: The path to the saved plot file, or None if no data plotted.
     """
@@ -417,16 +416,12 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         if filter_criteria:
             for f_key, f_val in filter_criteria.items():
                 val = get_nested_value(result_dict, f_key)
+
                 if isinstance(f_val, dict) and isinstance(val, dict):
                     if val != f_val: match = False; break
-                # Special check for apply_protocol (might be bool or derived from name)
-                elif f_key == 'apply_protocol' and isinstance(f_val, bool):
-                     derived_ap = 'no_protocol' not in obs_name # Infer from name if direct key absent
-                     actual_ap = get_nested_value(result_dict, 'apply_protocol')
-                     if actual_ap is None: actual_ap = derived_ap # Fallback
-                     if actual_ap != f_val: match=False; break
                 elif val != f_val:
                      match = False; break
+
             if not match: continue
 
         # Extract h, J, z values
@@ -489,19 +484,20 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
 
     # Set title and labels
     title = f"{title_prefix}: {cbar_label}"
+
     if observable_to_plot:
         title += f" for {observable_to_plot}"
+
     filter_strs = []
+
     if filter_criteria:
         # Nicer filter display
         for J, v in filter_criteria.items():
-             # Handle boolean apply_protocol display
-             if J == 'apply_protocol':
-                  filter_strs.append("Protocol ON" if v else "Protocol OFF")
-             else:
-                  filter_strs.append(f"{J.split('.')[-1]}={v}")
+            filter_strs.append(f"{J.split('.')[-1]}={v}")
+
     if filter_strs:
         title += f"\n(Filtered by: {'; '.join(filter_strs)})"
+
     ax.set_title(title)
     ax.set_xlabel(k_param_path.split('.')[-1] + " (J)") # Match Fig 8 axes
     ax.set_ylabel(h_param_path.split('.')[-1] + " (h)")
@@ -519,12 +515,6 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         # Make observable name filename-safe
         safe_obs_name = "".join(c if c.isalnum() else "_" for c in observable_to_plot).strip('_')
         filename_parts.append(safe_obs_name)
-    # Add simple filter info to filename
-    if filter_criteria:
-         if filter_criteria.get('apply_protocol') == True:
-             filename_parts.append("protocol_on")
-         elif filter_criteria.get('apply_protocol') == False:
-             filename_parts.append("protocol_off")
 
     filename = f"{'_'.join(filename_parts)}.png"
     filepath = os.path.join(output_dir, filename)
@@ -540,7 +530,7 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         return None
 
 
-def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, filter_criteria_plot, obs=['charge', 'bobs_energy_n2'], group_by=['observable']):
+def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, filter_criteria_plot, obs=['charge', 'E_B'], group_by=['observable']):
     # Define observables of interest for this plot
     selected_obs_plot = obs
 
@@ -561,7 +551,7 @@ def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_n
     return plot_exp_vs_p_filt
 
 
-def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, parameter_name, subplot_params, obs=['charge', 'bobs_energy_n2'], group_by=['observable'], filter_criteria={}):
+def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, parameter_name, subplot_params, obs=['charge', 'E_B'], group_by=['observable'], filter_criteria={}):
     try:
         plot_exp_vs_p_subplot = plot_expectation_vs_parameter_subplots(
             results_list=results_list,

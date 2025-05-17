@@ -1,45 +1,39 @@
-from conf import Conf
-from Calculators.tfim_calculator import TFIMCalculator
 from qiskit import QuantumCircuit
 from .observable import Observable
+from Calculators.tfim_calculator import TFIMCalculator
+from conf import Conf
 import utils
 
 class Charge(Observable):
-    def __init__(self, conf: Conf, apply_protocol: bool, calc: TFIMCalculator):
-        self.apply_protocol = apply_protocol
-        # FIXME: Include theta in the name for clarity when running sweeps?
-        #        protocol_tag = f'_theta{theta/np.pi:.2f}pi' if apply_protocol else '_no_protocol'
-        protocol_tag = '' if apply_protocol else '_no_protocol'
-        name = f'charge{protocol_tag}'
+    """
+    Observable for Bob's local charge density (rho_B ~ (I+Z)/2) for arbitrary N,
+    under the protocol optimized for energy (Alice measures X, Bob rotates Ry based on theta).
+    """
+    def __init__(self, conf: Conf, calc: TFIMCalculator):
+        name = f'charge'
+        super().__init__(name=name, conf=conf, calc=calc)
 
-        super().__init__(name, conf, calc)
-
-    def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
-        """
-        Alice measures current/chirality ~ sigma_x.
-        This requires measuring in the X basis (H + Z measure).
-        """
-        qc.h(alice_qubit)  # Apply Hadamard to measure in X basis
-        qc.measure(alice_qubit, alice_creg)
+    def apply_alice_measurement(self, qc: QuantumCircuit, alice_idx, alice_creg):
+        qc.h(alice_idx)
+        qc.measure(alice_idx, alice_idx)
 
     def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg, xor_alice_res):
         """
-        Bob's conditional operation based on Alice's X measurement (outcome m).
-        Operation is U_B(a) = Ry(a*theta), where a=+1 (m=0) or a=-1 (m=1).
-        We implement by applying Ry(-theta) if Alice measured '1' (a=-1).
+        Bob's conditional operation based on Alice's measurement (outcome c).
+        Operation is U_B(a) = Ry(a*theta), where a=+1 (c=0) or a=-1 (c=1).
         """
-        if self.apply_protocol:
-            theta = self._calc.theta_q1 if not self.theta else self.theta
+        theta = self._calc.theta_q1 if not self.theta else self.theta
 
-            # Apply Ry(-theta) if Alice measured '1'.
-            with qc.if_test((alice_creg, 1^xor_alice_res)):
-                qc.ry(-2 * theta, bob_qubit)
+        # Apply Ry(-theta) if Alice measured '1'.
+        with qc.if_test((alice_creg, 1^xor_alice_res)):
+            qc.ry(-2 * theta, bob_qubit)
 
     def get_bob_measurement_basis(self):
         """
         Bob measures charge density rho = (I + Z) / 2. Requires Z basis.
         """
-        return "Z"
+        bob_idx = utils.get_bob_idx(self.N)
+        return f"Z{bob_idx}"
 
     def get_value(self, bitstring: str):
         """
@@ -47,15 +41,17 @@ class Charge(Observable):
         rho|+> = 1|+> (Eigenvalue 1, measurement '0')
         rho|-> = 0|-> (Eigenvalue 0, measurement '1')
         """
-        bob_measurement_result = utils.get_bit_from_counts(bitstring, utils.get_bob_idx(self.N), self.N)
+        bob_idx = utils.get_bob_idx(self.N)
+        bob_measurement_bit = utils.get_bit_from_counts(bitstring, bob_idx, self.N)
 
-        if bob_measurement_result == '0':
-            return 1.0 # Eigenvalue 1
+        if bob_measurement_bit == '0':
+            return 1.0 # Z eigenvalue +1 -> charge density eigenvalue 1
         else:
-            return 0.0 # Eigenvalue 0
+            return 0.0 # Z eigenvalue -1 -> charge density eigenvalue 0
 
     def get_theoretical_gs_expectation_value(self):
         return self._calc.bob_charge
 
     def description(self):
-        return "charge = (I+Z)/2"
+        bob_idx = utils.get_bob_idx(self.N)
+        return f"Bob's Charge Density (I+Z{bob_idx})/2"

@@ -5,9 +5,8 @@ from .observable import Observable
 import utils
 
 class Current(Observable):
-    def __init__(self, conf: Conf, apply_protocol):
-        self.apply_protocol = apply_protocol
-        name = f'current{"" if apply_protocol else "_no_protocol"}'
+    def __init__(self, conf: Conf):
+        name = f'current'
 
         # Initialize Observable parent class
         super().__init__(name, conf)
@@ -25,10 +24,9 @@ class Current(Observable):
         Apply Ry(pi) if Alice measured '1' (m=1 -> eigenvalue a=-1).
         U_B(a) = Ry(a*pi)
         """
-        if self.apply_protocol:
-            # Apply Ry(pi) if the classical register (cond) is 1
-            with qc.if_test((alice_creg, 1^xor_alice_res)):
-                qc.ry(np.pi, bob_qubit)
+        # Apply Ry(pi) if the classical register (cond) is 1
+        with qc.if_test((alice_creg, 1^xor_alice_res)):
+            qc.ry(np.pi, bob_qubit)
 
     def get_bob_measurement_basis(self):
         """
