@@ -166,7 +166,7 @@ def plot_expectation_vs_parameter_subplots(results_list, x_param_path, y_param_p
         results_list (list): List of RunResult objects (or dicts).
         x_param_path (str): Dot notation path for the x-axis (e.g., 'noise_params.p_dephase').
         y_param_path (str): Dot notation path for the y-axis (e.g., 'expectation_value').
-        subplot_params (list): List of parameter paths used to create subplots (e.g., ['conf_params.h', 'conf_params.k']).
+        subplot_params (list): List of parameter paths used to create subplots (e.g., ['conf_params.h', 'conf_params.J']).
         output_dir (str): Directory to save the plot.
         error_param_path (str, optional): Dot notation path for error bars (e.g., 'sem').
         line_group_by (list, optional): Parameter paths to group lines within each subplot (e.g., ['observable_name']).
@@ -319,7 +319,7 @@ def plot_counts_histogram(counts, observable_name, output_dir, filename_prefix="
         observable_name (str): Name of the observable for titles/filenames.
         output_dir (str): Directory to save the plot.
         filename_prefix (str, optional): Prefix for the output plot filename. Defaults to "hist".
-        title_info(str, optional): Additional info for the title (e.g., h, k, p_dephase).
+        title_info(str, optional): Additional info for the title (e.g., h, J, p_dephase).
 
     Returns:
         str: The path to the saved plot file, or None if counts are empty.
@@ -372,12 +372,12 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
                        z_label=None # Optional custom label for the colorbar
                        ):
     """
-    Generates a heatmap of a z-parameter vs h and k parameters.
+    Generates a heatmap of a z-parameter vs h and J parameters.
 
     Args:
         results_list (list): List of RunResult objects (or dicts).
         h_param_path (str): Dot notation path to the h parameter (y-axis).
-        k_param_path (str): Dot notation path to the k parameter (x-axis).
+        k_param_path (str): Dot notation path to the J parameter (x-axis).
         z_param_path (str): Dot notation path to the parameter for the color intensity (z-axis).
         output_dir (str): Directory to save the plot.
         filter_criteria (dict, optional): Dictionary for initial filtering of results. Defaults to None.
@@ -429,13 +429,13 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
                      match = False; break
             if not match: continue
 
-        # Extract h, k, z values
+        # Extract h, J, z values
         h_val = get_nested_value(result_dict, h_param_path)
         k_val = get_nested_value(result_dict, k_param_path)
         z_val = get_nested_value(result_dict, z_param_path)
 
         if h_val is not None and k_val is not None and z_val is not None:
-            data_for_df.append({'h': h_val, 'k': k_val, 'z': z_val})
+            data_for_df.append({'h': h_val, 'J': k_val, 'z': z_val})
 
     if not data_for_df:
         print(f"Warning: No data matched the criteria for heatmap '{title_prefix}'. Filter: {filter_criteria}, Observable: {observable_to_plot}")
@@ -444,23 +444,23 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
     # --- Grid Preparation using Pandas ---
     df = pd.DataFrame(data_for_df)
 
-    # Handle potential duplicate (h, k) pairs by averaging z value
-    df_grouped = df.groupby(['h', 'k']).mean().reset_index()
+    # Handle potential duplicate (h, J) pairs by averaging z value
+    df_grouped = df.groupby(['h', 'J']).mean().reset_index()
 
     try:
-        # Pivot the data to create a grid: index=h, columns=k, values=z
-        heatmap_data = df_grouped.pivot(index='h', columns='k', values='z')
+        # Pivot the data to create a grid: index=h, columns=J, values=z
+        heatmap_data = df_grouped.pivot(index='h', columns='J', values='z')
     except Exception as e:
-        print(f"Error pivoting data for heatmap. Ensure h/k values form a grid. Error: {e}")
+        print(f"Error pivoting data for heatmap. Ensure h/J values form a grid. Error: {e}")
         # Try to provide more debug info
         print("Unique h values:", sorted(df_grouped['h'].unique()))
-        print("Unique k values:", sorted(df_grouped['k'].unique()))
-        print("Data count per (h,k) pair (should be 1 after grouping):")
-        print(df.groupby(['h', 'k']).size())
+        print("Unique J values:", sorted(df_grouped['J'].unique()))
+        print("Data count per (h,J) pair (should be 1 after grouping):")
+        print(df.groupby(['h', 'J']).size())
         return None
 
 
-    # Get sorted h and k values for axis labels/extent
+    # Get sorted h and J values for axis labels/extent
     h_coords = sorted(heatmap_data.index)
     k_coords = sorted(heatmap_data.columns)
 
@@ -494,16 +494,16 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
     filter_strs = []
     if filter_criteria:
         # Nicer filter display
-        for k, v in filter_criteria.items():
+        for J, v in filter_criteria.items():
              # Handle boolean apply_protocol display
-             if k == 'apply_protocol':
+             if J == 'apply_protocol':
                   filter_strs.append("Protocol ON" if v else "Protocol OFF")
              else:
-                  filter_strs.append(f"{k.split('.')[-1]}={v}")
+                  filter_strs.append(f"{J.split('.')[-1]}={v}")
     if filter_strs:
         title += f"\n(Filtered by: {'; '.join(filter_strs)})"
     ax.set_title(title)
-    ax.set_xlabel(k_param_path.split('.')[-1] + " (k)") # Match Fig 8 axes
+    ax.set_xlabel(k_param_path.split('.')[-1] + " (J)") # Match Fig 8 axes
     ax.set_ylabel(h_param_path.split('.')[-1] + " (h)")
 
     # Optional: Set ticks explicitly if needed, otherwise imshow uses extent
@@ -595,7 +595,7 @@ def plot_counts_hist(results_list, output_dir, obs='charge'):
                 is_target_hist = (
                     result.observable.name == obs and
                     get_nested_value(result, 'conf_params.h') == 1.0 and
-                    get_nested_value(result, 'conf_params.k') == 1.0 and
+                    get_nested_value(result, 'conf_params.J') == 1.0 and
                     get_nested_value(result, 'conf_params.p_dephase') == 0.0
                 )
 
@@ -603,9 +603,9 @@ def plot_counts_hist(results_list, output_dir, obs='charge'):
                 if is_target_hist and result.counts and hist_count < max_hists:
                     # Create descriptive info for the title and filename
                     h_val = get_nested_value(result, 'conf_params.h')
-                    k_val = get_nested_value(result, 'conf_params.k')
+                    k_val = get_nested_value(result, 'conf_params.J')
                     p_d_val = get_nested_value(result, 'conf_params.p_dephase')
-                    title_info = f"h={h_val}, k={k_val}, p_d={p_d_val}"
+                    title_info = f"h={h_val}, J={k_val}, p_d={p_d_val}"
 
                     hist_filename = plot_counts_histogram(
                         counts=result.counts,
@@ -632,13 +632,13 @@ def plot_heatmap(results_list, output_dir, obs='charge'):
     plot_heatmap = plot_heatmap_vs_hk(
         results_list=results_list,
         h_param_path='conf_params.h',
-        k_param_path='conf_params.k',
+        k_param_path='conf_params.J',
         z_param_path='expectation_value',
         output_dir=output_dir,
         observable_to_plot=obs,
         filter_criteria={},
         filename_prefix=f'heatmap_{obs}_expval',
-        title_prefix='Expectation Value vs (h, k)',
+        title_prefix='Expectation Value vs (h, J)',
         cmap='viridis',
         z_label=f'{obs} exp value'
     )
@@ -650,7 +650,7 @@ def draw_circuit(qc, output_dir, conf):
     if not conf.draw_circuit:
         return
 
-    qcs_dir = os.path.join(output_dir, 'qcs', f'h_{conf.h}_k_{conf.k}')
+    qcs_dir = os.path.join(output_dir, 'qcs', f'h_{conf.h}_J_{conf.J}')
     os.makedirs(qcs_dir, exist_ok=True)
     fig = circuit_drawer(qc, output='mpl', filename=os.path.join(qcs_dir, f'{qc.name}.png'))
     plt.close(fig)

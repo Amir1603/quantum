@@ -4,7 +4,7 @@ from .energy_n2 import Energy_N2
 from Calculators.tfim_calculator import TFIMCalculator
 
 class V_AB(Energy_N2):
-    """Observable for the interaction energy term 2k*X0X1."""
+    """Observable for the interaction energy term J*X0X1."""
     def __init__(self, conf: Conf, calc: TFIMCalculator):
         super().__init__("v", conf, calc)
 
@@ -22,4 +22,4 @@ class V_AB(Energy_N2):
         return alice_val * bob_val
 
     def description(self):
-        return "2k*X_0*X_1"
+        return "J*X_0*X_1"

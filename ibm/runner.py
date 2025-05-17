@@ -47,12 +47,12 @@ class Runner():
         self.noise_model = noise_model
 
     def init_run_level(self, conf: Conf, backend_name: str | None = None):
-         """ Initialize backend and noise for a specific configuration (h, k, delay etc.) """
+         """ Initialize backend and noise for a specific configuration (h, J, delay etc.) """
          self.backend = self.__choose_backend(backend_name, conf)
          self._create_noise_model(conf)
 
          print(f"\n--- Initialized Run Level ---")
-         print(f"  Conf: h={conf.h}, k={conf.k}, shots={conf.total_shots}, p_dephase={conf.p_dephase}, delay={conf.delay_time}")
+         print(f"  Conf: h={conf.h}, J={conf.J}, shots={conf.total_shots}, p_dephase={conf.p_dephase}, delay={conf.delay_time}")
 
          # Note: SamplerV2 might handle noise models differently or require AerProvider
          use_primitives = conf.run_sampler

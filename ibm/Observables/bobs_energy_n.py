@@ -65,20 +65,19 @@ class BobsEnergy_N(Observable):
             print(f"Warning: Missing component data for derived observable {self.name}")
             return None, None
 
-        j_val = self.k
-        if j_val is None:
+        if self.J is None:
             print(f"Warning: J value is None for {self.name}. Cannot calculate derived value.")
             return None, None
 
         # Calculate <H_B> = J * <X{self.N-2}X{self.N-1}> + h * <Z{self.N-1}>
         exp_val_v = v_res.expectation_value
         exp_val_h1 = h1_res.expectation_value
-        exp_val_hb = j_val * exp_val_v + self.h * exp_val_h1
+        exp_val_hb = self.J * exp_val_v + self.h * exp_val_h1
 
         # Calculate SEM for <H_B>
         sem_v = v_res.sem
         sem_h1 = h1_res.sem
-        sem_hb = np.sqrt((j_val * sem_v)**2 + sem_h1**2)
+        sem_hb = np.sqrt((self.J * sem_v)**2 + sem_h1**2)
 
         hb_gs = self._calc.bob_energy
 

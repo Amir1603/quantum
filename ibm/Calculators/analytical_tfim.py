@@ -14,7 +14,7 @@ class AnalyticalTFIM(TFIMCalculator):
 
 class MyCalculatorTFIM(AnalyticalTFIM):
     def __init__(self, N, J, h, conf):
-        super().__init__(N, 2*J, h, conf)
+        super().__init__(N, J, h, conf)
 
     def calc_all(self):
         # FIXME: Unused parameters for now? Complete when needed
@@ -39,6 +39,7 @@ class MyCalculatorTFIM(AnalyticalTFIM):
 
         # TODO - Go over rotation angle calculation and make sure it aligns with
         # Kazuki's calculated optimal rotation angle which yields the expected results.
+        # Kazuki's rotation angle is calculated using his parameter k, which is 2k=J in my definition.
         k = self.J / 2
         rotation_angle = np.arcsin(
                 (self.h * k) / np.sqrt((self.h**2 + 2 * k**2)**2 + self.h**2 * k**2)
@@ -56,59 +57,12 @@ class MyCalculatorTFIM(AnalyticalTFIM):
         """
 
         alpha, beta = MyCalculatorTFIM._alpha_beta(self.h, self.J)
-        gs_vector = Statevector([alpha, 0, 0, beta])
-
-        self.gs0 = gs_vector
-        self.gs_rho = DensityMatrix(np.outer(gs_vector.data, np.conj(gs_vector.data)))
-
-        e1_vector = Statevector([0, 1/np.sqrt(2), -1/np.sqrt(2), 0])
-        self.ex1 = e1_vector
-        self.ex1_rho = DensityMatrix(np.outer(e1_vector.data, np.conj(e1_vector.data)))
-
-        return
-
-        denominator = np.sqrt(self.h**2 + self.J**2)
-        if np.isclose(denominator, 0):
-            # This case (h=0, k=0) means H=0, so any state is a ground state with E=0.
-            # The formula for gs_theta would be ill-defined.
-            # You need to decide on a specific ground state or raise an error.
-            # The original code raised ZeroDivisionError.
-            raise ZeroDivisionError("N=2: h=k=0, gs_theta formula is ill-defined. Cannot determine a unique ground state via this formula.")
-
-        # Term for arccos: (1 / sqrt(2)) * sqrt(1 - h / sqrt(h^2 + k^2))
-        # Ensure argument for sqrt is non-negative
-        val_inside_sqrt = 1 - self.h / denominator
-        if val_inside_sqrt < 0 and not np.isclose(val_inside_sqrt, 0):
-            # This implies h_param / denominator > 1, which shouldn't happen if h_param, k_param are real
-            # and k_param != 0 or h_param != 0.
-            raise ValueError(f"Invalid value for sqrt calculation: h/denominator = {self.h/denominator} > 1.")
-        val_inside_sqrt = max(0, val_inside_sqrt) # Clamp to non-negative for safety
-
-        term_for_arccos = (1 / np.sqrt(2)) * np.sqrt(val_inside_sqrt)
-        
-        # Ensure argument for arccos is within [-1, 1]
-        term_for_arccos = np.clip(term_for_arccos, -1.0, 1.0)
-        
-        gs_theta = -np.arccos(term_for_arccos)
-
-        cos_t = np.cos(gs_theta)
-        sin_t = np.sin(gs_theta)
-
-        # The state vector is |gs> = [cos_t, 0, 0, sin_t]^T (for basis |00>, |01>, |10>, |11>)
-        gs = np.zeros(4, dtype=complex)
-        gs[0] = cos_t
-        gs[3] = sin_t
+        gs = [alpha, 0, 0, beta]
         gs_vector = Statevector(gs)
-
         rho_gs = DensityMatrix(gs_vector)
 
-        # First Excited State Vector: |E1> = (1/sqrt(2)) * (|01> - |10>)
-        # |E1> = 0*|00> + (1/sqrt(2))|01> - (1/sqrt(2))|10> + 0*|11>
-        e1 = np.zeros(4, dtype=complex)
-        e1[1] = 1 / np.sqrt(2)
-        e1[2] = -1 / np.sqrt(2)
+        e1 = [0, 1/np.sqrt(2), -1/np.sqrt(2), 0]
         ex1_vector = Statevector(e1)
-
         ex1_rho = DensityMatrix(ex1_vector)
 
         # Apply errors to the density matrix

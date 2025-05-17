@@ -21,8 +21,8 @@ class Observable:
         return self._conf.h
 
     @property
-    def k(self):
-        return self._conf.k
+    def J(self):
+        return self._conf.J
     
     @property
     def theta(self):

@@ -48,7 +48,7 @@ class Results:
 
             # Extract relevant conf parameters
             conf_params = {
-                'h': conf.h, 'k': conf.k, 'total_shots': conf.total_shots,
+                'h': conf.h, 'J': conf.J, 'total_shots': conf.total_shots,
                 'delay_time': conf.delay_time, 'N': conf.N,
                 'p_dephase': conf.p_dephase, 'theta': conf.theta,
                 'xor_alice_res': conf.xor_alice_res,
@@ -127,7 +127,7 @@ class Results:
              )
              grouped_results[key][res.observable.name] = res
 
-        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'k', 'theta'])
+        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'J', 'theta'])
         for observable in derived_obs:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue

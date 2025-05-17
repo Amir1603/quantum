@@ -36,4 +36,4 @@ class V_N(Energy_N):
             raise e # Or return 0.0
 
     def description(self):
-        return f"Measure X{self.N-2}*X{self.N-1} for arbitrary N QKD (Alice Basis: {self.alice_basis}, J={self.k})"
+        return f"Measure X{self.N-2}*X{self.N-1} for arbitrary N QKD (Alice Basis: {self.alice_basis}, J={self.J})"

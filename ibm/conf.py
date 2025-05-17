@@ -4,28 +4,29 @@ import numpy as np
 
 class Conf:
     @staticmethod
-    def generate_hk_combinations(conf, step=0.25, max_value=2):
+    def generate_hJ_combinations(conf, step=0.25, max_value=2):
         axis = np.arange(0, max_value + step, step)
-        hks = [(h, k) for h in axis for k in axis]
+        hJs = [(h, J) for h in axis for J in axis]
 
         confs = []
-        for h, k in hks:
+        for h, J in hJs:
             new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.h = h
-            new_conf.k = k
+            new_conf.J = J
             confs.append(new_conf)
         return confs
 
     @staticmethod
-    def generate_k_for_h(conf, num_points=50):
-        ks = np.linspace(0, 2.0, num_points).tolist()
+    def generate_J_for_h(conf, num_points=40):
+        max_J = 3.0
+        Js = np.linspace(max_J/num_points, max_J, num_points).tolist()
 
         confs = []
-        for k in ks:
+        for J in Js:
             new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.k = k
+            new_conf.J = J
             confs.append(new_conf)
         return confs
 
@@ -161,7 +162,7 @@ class Conf:
         self.N = N
 
         self.h = 1.0
-        self.k = 1.0
+        self.J = 1.0
         self.total_shots = 10000
         self.error_mitigation = False
         self.run_simulator = True
@@ -197,4 +198,4 @@ class Conf:
 
 
     def __repr__(self):
-        return f"<Conf h:{self.h} k:{self.k} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <N:{self.N}> <xor_alice_res:{self.xor_alice_res}> <p_classical_error:{self.p_classical_error}> <p_depol_error:{self.p_depol_error}> <p_bitflip_error:{self.p_bitflip_error}> <p_alice_phaseflip_error:{self.p_alice_phaseflip_error}> <p_bob_phaseflip_error:{self.p_bob_phaseflip_error}> <p_excited_mixture:{self.p_excited_mixture}> <p_excited_superposition_error:{self.p_excited_superposition_error}>"
+        return f"<Conf h:{self.h} J:{self.J} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <N:{self.N}> <xor_alice_res:{self.xor_alice_res}> <p_classical_error:{self.p_classical_error}> <p_depol_error:{self.p_depol_error}> <p_bitflip_error:{self.p_bitflip_error}> <p_alice_phaseflip_error:{self.p_alice_phaseflip_error}> <p_bob_phaseflip_error:{self.p_bob_phaseflip_error}> <p_excited_mixture:{self.p_excited_mixture}> <p_excited_superposition_error:{self.p_excited_superposition_error}>"
