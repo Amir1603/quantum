@@ -190,7 +190,7 @@ if __name__ == "__main__":
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
 
-        tfim = KazukiTFIM(conf.N, conf.k, conf.h, conf) if args.run_analytical else NumericalTFIM(conf.N, conf.k, conf.h)
+        tfim = MyCalculatorTFIM(conf.N, conf.k, conf.h, conf) if args.run_analytical else NumericalTFIM(conf.N, conf.k, conf.h)
 
         tfim.calc_all()
 

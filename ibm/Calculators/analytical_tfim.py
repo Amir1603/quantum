@@ -14,7 +14,7 @@ class AnalyticalTFIM(TFIMCalculator):
 
 class MyCalculatorTFIM(AnalyticalTFIM):
     def __init__(self, N, J, h, conf):
-        super().__init__(N, J, h, conf)
+        super().__init__(N, 2*J, h, conf)
 
     def calc_all(self):
         # FIXME: Unused parameters for now? Complete when needed
@@ -32,10 +32,19 @@ class MyCalculatorTFIM(AnalyticalTFIM):
         self.bob_charge = alpha**2
 
         # self.theta_E1 = 0.5 * np.arctan((3 * self.h * self.J) / (-(2 * self.h**2 + self.J**2)))
-        self.theta_E1 = 0.5 * np.arctan(-2 * self.h/self.J)
-        self.theta_E2 = 0.5 * np.arctan(self.h / self.J)
-        self.theta_q1 = 0.5 * np.arctan(-self.J / (2*self.h))
-        self.theta_q2 = -self.theta_q1
+        # self.theta_E1 = 0.5 * np.arctan(-2 * self.h/self.J)
+        # self.theta_E2 = 0.5 * np.arctan(self.h / self.J)
+        # self.theta_q1 = 0.5 * np.arctan(-self.J / (2*self.h))
+        # self.theta_q2 = -self.theta_q1
+
+        # TODO - Go over rotation angle calculation and make sure it aligns with
+        # Kazuki's calculated optimal rotation angle which yields the expected results.
+        k = self.J / 2
+        rotation_angle = np.arcsin(
+                (self.h * k) / np.sqrt((self.h**2 + 2 * k**2)**2 + self.h**2 * k**2)
+            ) / 2
+        self.theta_E1 = rotation_angle
+        self.theta_q1 = rotation_angle
 
         self._init_n2_tfim_states_and_density_matrices()
 
@@ -163,9 +172,9 @@ class MyCalculatorTFIM(AnalyticalTFIM):
 
     @staticmethod
     def _alpha_beta(h, J):
-        sqrt_term = np.sqrt(4 * h**2 + J**2)
-        alpha = 2 * h - sqrt_term
-        beta = J
+        Egs = -np.sqrt(4 * h**2 + J**2)
+        alpha = J
+        beta = Egs - 2 * h
         norm = np.sqrt(alpha**2 + beta**2)
         alpha /= norm
         beta /= norm
