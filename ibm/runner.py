@@ -77,10 +77,7 @@ class Runner():
         # Prepare the ground state
         obs.apply_ground_state(qc)
 
-        alice_creg_idx = utils.get_alice_idx(num_qubits)
-        bob_creg_idx = utils.get_bob_idx(num_qubits)
-
-        obs.apply_alice_measurement(qc, utils.get_alice_idx(num_qubits), alice_creg_idx)
+        obs.apply_alice_measurement(qc)
 
         # Idle Bob’s qubit
         if conf.delay_time and conf.delay_time > 0:
@@ -89,7 +86,7 @@ class Runner():
 
         # Bob's conditional operation
         # Pass the classical register/bit index Alice measured into
-        obs.apply_bob_operation(qc, utils.get_bob_idx(num_qubits), alice_creg_idx, conf.xor_alice_res)
+        obs.apply_bob_operation(qc, conf.xor_alice_res)
 
         # Bob's measurement basis
         bob_meas_basis = obs.get_bob_measurement_basis()
@@ -104,6 +101,7 @@ class Runner():
                 qc.sdg(bob_q_idx) # Apply S dagger
                 qc.h(bob_q_idx)
 
+            bob_creg_idx = utils.get_bob_idx(num_qubits)
             qc.measure(bob_q_idx, bob_creg_idx)
         else:
             intermed_q_idx = utils.get_bob_neighbor_idx(num_qubits)

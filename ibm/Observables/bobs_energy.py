@@ -19,12 +19,6 @@ class BobsEnergy(Observable):
         self._v_comp_name = "V_B"
         self.component_observables = [self._v_comp_name, self._h1_comp_name]
 
-    # --- No Circuit Methods Needed ---
-    def apply_ground_state(self, qc): pass
-    def apply_alice_measurement(self, qc, alice_qubit, alice_creg): pass
-    def apply_bob_operation(self, qc, bob_qubit, alice_creg, xor_alice_res): pass
-    def get_bob_measurement_basis(self): return None # Not directly measured
-
     # --- Value Extraction (Not Applicable from Bitstring) ---
     def get_value(self, bitstring: str):
         raise NotImplementedError(f"{self.name} is derived, not calculated from single bitstring.")

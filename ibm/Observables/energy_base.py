@@ -2,26 +2,32 @@ from Calculators.tfim_calculator import TFIMCalculator
 from qiskit import QuantumCircuit
 from .observable import Observable
 from conf import Conf
+import utils
 
 class EnergyBase(Observable):
     def __init__(self, name, conf: Conf, calc: TFIMCalculator):
         super().__init__(name, conf, calc)
 
-    def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
+    def apply_alice_measurement(self, qc: QuantumCircuit):
         """
-        Alice's  energy measurement.
+        Alice's energy measurement.
         """
-        qc.h(alice_qubit)
-        qc.measure(alice_qubit, alice_creg)
+        alice_idx = utils.get_alice_idx(self.N)
 
-    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg, xor_alice_res):
+        qc.h(alice_idx)
+        qc.measure(alice_idx, alice_idx)
+
+    def apply_bob_operation(self, qc: QuantumCircuit, xor_alice_res):
         """
         Bob's conditional operation (rotation).
         """
+        alice_idx = utils.get_alice_idx(self.N)
+        bob_idx = utils.get_bob_idx(self.N)
+
         theta = self._calc.theta_E1 if not self.theta else self.theta
 
-        with qc.if_test((alice_creg, 0^xor_alice_res)):
-            qc.ry(2 * theta, bob_qubit)
+        with qc.if_test((alice_idx, 0^xor_alice_res)):
+            qc.ry(2 * theta, bob_idx)
 
-        with qc.if_test((alice_creg, 1^xor_alice_res)):
-            qc.ry(-2 * theta, bob_qubit)
+        with qc.if_test((alice_idx, 1^xor_alice_res)):
+            qc.ry(-2 * theta, bob_idx)

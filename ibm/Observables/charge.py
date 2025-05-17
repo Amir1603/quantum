@@ -13,20 +13,25 @@ class Charge(Observable):
         name = f'charge'
         super().__init__(name=name, conf=conf, calc=calc)
 
-    def apply_alice_measurement(self, qc: QuantumCircuit, alice_idx, alice_creg):
+    def apply_alice_measurement(self, qc: QuantumCircuit):
+        alice_idx = utils.get_alice_idx(self.N)
+
         qc.h(alice_idx)
         qc.measure(alice_idx, alice_idx)
 
-    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg, xor_alice_res):
+    def apply_bob_operation(self, qc: QuantumCircuit, xor_alice_res):
         """
         Bob's conditional operation based on Alice's measurement (outcome c).
         Operation is U_B(a) = Ry(a*theta), where a=+1 (c=0) or a=-1 (c=1).
         """
+        alice_idx = utils.get_alice_idx(self.N)
+        bob_idx = utils.get_bob_idx(self.N)
+
         theta = self._calc.theta_q1 if not self.theta else self.theta
 
         # Apply Ry(-theta) if Alice measured '1'.
-        with qc.if_test((alice_creg, 1^xor_alice_res)):
-            qc.ry(-2 * theta, bob_qubit)
+        with qc.if_test((alice_idx, 1^xor_alice_res)):
+            qc.ry(-2 * theta, bob_idx)
 
     def get_bob_measurement_basis(self):
         """
