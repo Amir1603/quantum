@@ -5,30 +5,33 @@ from .observable import Observable
 import utils
 
 class Current(Observable):
-    def __init__(self, conf: Conf, apply_protocol):
-        self.apply_protocol = apply_protocol
-        name = f'current{"" if apply_protocol else "_no_protocol"}'
+    def __init__(self, conf: Conf):
+        name = f'current'
 
         # Initialize Observable parent class
         super().__init__(name, conf)
 
-    def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
+    def apply_alice_measurement(self, qc: QuantumCircuit):
         """
         Alice measures charge density (rho ~ Z).
         Measure Alice's qubit in the Z basis.
         """
-        qc.measure(alice_qubit, alice_creg) # Measure Z basis
+        alice_idx = utils.get_alice_idx(self.N)
 
-    def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit, alice_creg, xor_alice_res):
+        qc.measure(alice_idx, alice_idx)
+
+    def apply_bob_operation(self, qc: QuantumCircuit, xor_alice_res):
         """
         Bob's conditional operation based on Alice's Z measurement (outcome m).
         Apply Ry(pi) if Alice measured '1' (m=1 -> eigenvalue a=-1).
         U_B(a) = Ry(a*pi)
         """
-        if self.apply_protocol:
-            # Apply Ry(pi) if the classical register (cond) is 1
-            with qc.if_test((alice_creg, 1^xor_alice_res)):
-                qc.ry(np.pi, bob_qubit)
+        alice_idx = utils.get_alice_idx(self.N)
+        bob_idx = utils.get_bob_idx(self.N)
+
+        # Apply Ry(pi) if the classical register (cond) is 1
+        with qc.if_test((alice_idx, 1^xor_alice_res)):
+            qc.ry(np.pi, bob_idx)
 
     def get_bob_measurement_basis(self):
         """

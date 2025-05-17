@@ -29,7 +29,7 @@ class RunResult:
     correlation: float | None = None # Example: Z0Z1 correlation
 
     # --- Derived Flag ---
-    is_derived: bool = False # Flag for results like BobsEnergy_N2
+    is_derived: bool = False # Flag for results like BobsEnergy
 
     def __post_init__(self):
         # Ensure correct types if loading from JSON etc.

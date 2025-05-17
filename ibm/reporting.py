@@ -259,7 +259,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
         print(f"Error writing HTML report {filepath}: {e}")
 
 
-def generate_report(results_list, plot_filenames, output_dir, table_obs_report=['charge', 'charge_no_protocol', 'bobs_energy_n2']):
+def generate_report(results_list, plot_filenames, output_dir, table_obs_report=['charge', 'E_B']):
     table_configs_report = []
 
     generate_html_report(
