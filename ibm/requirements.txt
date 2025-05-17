@@ -1,6 +1,7 @@
 matplotlib
 pylatexenc
 pyyaml
+pytest
 qiskit
 qiskit-aer
 qiskit-ibm-provider

@@ -1,15 +1,13 @@
-import numpy as np
-from qiskit import QuantumCircuit, ClassicalRegister
+from Calculators.tfim_calculator import TFIMCalculator
+from qiskit import QuantumCircuit
 from .observable import Observable
 from conf import Conf
 
-class QKDBaseN3(Observable):
-    """Base class for N=3 QKD protocol measurement observables."""
-    def __init__(self, name_suffix: str, conf: Conf, alice_basis: str):
-        # Ensure Observable.__init__ sets self.J_param for N=3
-        super().__init__(f"qkd_{name_suffix}_n3_alice_{alice_basis.lower()}", conf)
+class Energy_N(Observable):
+    """Base class for arbitrary N QKD protocol measurement observables."""
+    def __init__(self, name_suffix: str, conf: Conf, alice_basis: str, calc: TFIMCalculator):
+        super().__init__(f"qkd_{name_suffix}_n_alice_{alice_basis.lower()}", conf, calc)
         self.alice_basis = alice_basis.upper()
-        if self.N != 3: raise ValueError(f"{self.__class__.__name__} only supports N=3")
         if self.alice_basis not in ['X', 'Y']: raise ValueError("Alice basis must be 'X' or 'Y'")
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit_idx: int, alice_creg):
@@ -23,7 +21,7 @@ class QKDBaseN3(Observable):
         qc.measure(alice_qubit_idx, alice_creg)
 
     def apply_bob_operation(self, qc: QuantumCircuit, bob_qubit_idx: int, alice_creg, xor_alice_res: int):
-        """Bob's conditional rotation on site 2 (N-1)."""
+        """Bob's conditional rotation on site N-1."""
         # Ensure theta is available
         if self.theta is None:
             # This should not happen if calculated in main.py, but add robustness

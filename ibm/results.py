@@ -48,7 +48,7 @@ class Results:
 
             # Extract relevant conf parameters
             conf_params = {
-                'h': conf.h, 'k': conf.k, 'total_shots': conf.total_shots,
+                'h': conf.h, 'J': conf.J, 'total_shots': conf.total_shots,
                 'delay_time': conf.delay_time, 'N': conf.N,
                 'p_dephase': conf.p_dephase, 'theta': conf.theta,
                 'xor_alice_res': conf.xor_alice_res,
@@ -101,10 +101,14 @@ class Results:
             if property_values not in seen:
                 seen.add(property_values)
                 unique_observables.append(obs)
+
         return unique_observables
 
 
     def _calculate_all_derived_observables(self, current_results: list):
+        # FIXME: This implementation runs over all derived observable and for
+        # each one it runs over all H1, V values. It should run just over matching
+        # configurations of the observables.
         """
         Iterates through all known derived observables and calculates their values.
         """
@@ -123,7 +127,7 @@ class Results:
              )
              grouped_results[key][res.observable.name] = res
 
-        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'k', 'theta'])
+        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'J', 'theta'])
         for observable in derived_obs:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue
@@ -224,8 +228,8 @@ class Results:
             # Map '0' -> +1, '1' -> -1 for Z measurement eigenvalue
             try:
                 # Use indices based on 'b1b0' format
-                outcome_q0 = 1.0 if bitstring[utils.get_counts_bob_qubit_idx(num_qubits)] == '0' else -1.0 # Bob's value
-                outcome_q1 = 1.0 if bitstring[utils.get_counts_alice_qubit_idx(num_qubits)] == '0' else -1.0 # Alice's value
+                outcome_q0 = 1.0 if utils.get_bit_from_counts(bitstring, utils.get_bob_idx(num_qubits), num_qubits) == '0' else -1.0 # Bob's value
+                outcome_q1 = 1.0 if utils.get_bit_from_counts(bitstring, utils.get_alice_idx(num_qubits), num_qubits) == '0' else -1.0 # Alice's value
                 correlation += outcome_q1 * outcome_q0 * count
             except IndexError:
                 print(f"Warning: Skipping bitstring '{bitstring}' in correlation calc due to index error.")

@@ -144,33 +144,33 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
                 html_content += f"<p>No results found matching the criteria for this table set ({filter_desc}).</p>"
                 continue
 
-            # Group by (h, k)
-            grouped_by_hk = defaultdict(list)
+            # Group by (h, J)
+            grouped_by_hJ = defaultdict(list)
             for res in table_data:
                  h_val = get_nested_value(res, 'conf_params.h')
-                 k_val = get_nested_value(res, 'conf_params.k')
-                 hk_key = (h_val, k_val)
-                 grouped_by_hk[hk_key].append(res)
+                 J_val = get_nested_value(res, 'conf_params.J')
+                 hJ_key = (h_val, J_val)
+                 grouped_by_hJ[hJ_key].append(res)
 
             # Sort columns
-            sorted_hk_keys = sorted(grouped_by_hk.keys(), key=lambda x: (x[0] if x[0] is not None else float('inf'), x[1] if x[1] is not None else float('inf')))
+            sorted_hJ_keys = sorted(grouped_by_hJ.keys(), key=lambda x: (x[0] if x[0] is not None else float('inf'), x[1] if x[1] is not None else float('inf')))
 
             # Get unique observables for rows
-            all_obs_in_table = sorted(list(set(res['observable'].name for hk_key in sorted_hk_keys for res in grouped_by_hk[hk_key])))
+            all_obs_in_table = sorted(list(set(res['observable'].name for hJ_key in sorted_hJ_keys for res in grouped_by_hJ[hJ_key])))
 
 
             # --- Generate Expectation Value Table ---
             html_content += f"<h3>Table {i*2+1}: Expectation Values ({filter_desc})</h3>"
             html_content += '<table class="config-table">'
             html_content += "<thead><tr><th>Observable</th>"
-            for h, k in sorted_hk_keys:
-                html_content += f"<th>(h={h}, k={k})<br>Expectation ± SEM</th>"
+            for h, J in sorted_hJ_keys:
+                html_content += f"<th>(h={h}, J={J})<br>Expectation ± SEM</th>"
             html_content += "</tr></thead>"
             html_content += "<tbody>"
             for obs_name in all_obs_in_table:
                  html_content += f"<tr><td>{obs_name}</td>"
-                 for hk_key in sorted_hk_keys:
-                     found_res = next((res for res in grouped_by_hk[hk_key] if res['observable'].name == obs_name), None)
+                 for hJ_key in sorted_hJ_keys:
+                     found_res = next((res for res in grouped_by_hJ[hJ_key] if res['observable'].name == obs_name), None)
                      if found_res:
                          exp_val_str = _format_value(found_res.get('expectation_value'))
                          sem_str = _format_value(found_res.get('sem'))
@@ -186,9 +186,9 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
             html_content += '<table class="config-table">' # Use the same class
             html_content += "<thead><tr><th>Observable</th>" # Header row start
 
-            # Add table headers for each (h, k) pair for susceptibility
-            for h, k in sorted_hk_keys:
-                html_content += f"<th>(h={h}, k={k})<br>Susceptibility</th>"
+            # Add table headers for each (h, J) pair for susceptibility
+            for h, J in sorted_hJ_keys:
+                html_content += f"<th>(h={h}, J={J})<br>Susceptibility</th>"
             html_content += "</tr></thead>"
             html_content += "<tbody>"
 
@@ -196,11 +196,11 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
             for obs_name in all_obs_in_table:
                  html_content += f"<tr><td>{obs_name}</td>" # Observable name cell
 
-                 # Fill in values for each (h, k) column for this observable
-                 for hk_key in sorted_hk_keys:
-                     # Find the result dictionary corresponding to this observable and (h,k)
+                 # Fill in values for each (h, J) column for this observable
+                 for hJ_key in sorted_hJ_keys:
+                     # Find the result dictionary corresponding to this observable and (h,J)
                      # Reusing the same 'found_res' logic pattern
-                     found_res = next((res for res in grouped_by_hk[hk_key] if res['observable'].name == obs_name), None)
+                     found_res = next((res for res in grouped_by_hJ[hJ_key] if res['observable'].name == obs_name), None)
 
                      if found_res:
                          sus_val = found_res.get('susceptibility')
@@ -259,7 +259,7 @@ def generate_html_report(results_list, plot_filenames, output_dir, report_filena
         print(f"Error writing HTML report {filepath}: {e}")
 
 
-def generate_report(results_list, plot_filenames, output_dir, table_obs_report=['charge', 'charge_no_protocol', 'total_energy']):
+def generate_report(results_list, plot_filenames, output_dir, table_obs_report=['charge', 'charge_no_protocol', 'bobs_energy_n2']):
     table_configs_report = []
 
     generate_html_report(

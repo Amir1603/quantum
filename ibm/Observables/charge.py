@@ -1,19 +1,18 @@
 from conf import Conf
-import numpy as np
+from Calculators.tfim_calculator import TFIMCalculator
 from qiskit import QuantumCircuit
 from .observable import Observable
 import utils
 
 class Charge(Observable):
-    def __init__(self, conf: Conf, apply_protocol: bool):
+    def __init__(self, conf: Conf, apply_protocol: bool, calc: TFIMCalculator):
         self.apply_protocol = apply_protocol
-        # TODO
-        ## Include theta in the name for clarity when running sweeps
-        #protocol_tag = f'_theta{theta/np.pi:.2f}pi' if apply_protocol else '_no_protocol'
+        # FIXME: Include theta in the name for clarity when running sweeps?
+        #        protocol_tag = f'_theta{theta/np.pi:.2f}pi' if apply_protocol else '_no_protocol'
         protocol_tag = '' if apply_protocol else '_no_protocol'
         name = f'charge{protocol_tag}'
 
-        super().__init__(name, conf)
+        super().__init__(name, conf, calc)
 
     def apply_alice_measurement(self, qc: QuantumCircuit, alice_qubit, alice_creg):
         """
@@ -30,9 +29,7 @@ class Charge(Observable):
         We implement by applying Ry(-theta) if Alice measured '1' (a=-1).
         """
         if self.apply_protocol:
-            theta = np.arcsin(
-                (self.h * self.k) / np.sqrt((self.h**2 + 2 * self.k**2)**2 + self.h**2 * self.k**2)
-            ) / 2 if not self.theta else self.theta
+            theta = self._calc.theta_q1 if not self.theta else self.theta
 
             # Apply Ry(-theta) if Alice measured '1'.
             with qc.if_test((alice_creg, 1^xor_alice_res)):
@@ -50,21 +47,15 @@ class Charge(Observable):
         rho|+> = 1|+> (Eigenvalue 1, measurement '0')
         rho|-> = 0|-> (Eigenvalue 0, measurement '1')
         """
-        bob_measurement_result = bitstring[utils.get_counts_bob_qubit_idx(self.N)]
+        bob_measurement_result = utils.get_bit_from_counts(bitstring, utils.get_bob_idx(self.N), self.N)
 
         if bob_measurement_result == '0':
             return 1.0 # Eigenvalue 1
         else:
             return 0.0 # Eigenvalue 0
 
-    def get_gs_expectation_value(self):
-        # Calculate <(I+Z1)/2>_gs = 0.5 * (1 + <Z1>_gs)
-        # For N=2 TFIM ground state, <Z1>_gs = -h / sqrt(h^2 + k^2)
-
-        # Calculate <(I+Z1)/2>_gs
-        gs_exp_val = 0.5 * (1.0 - self.h / np.sqrt(self.h**2 + self.k**2))
-
-        return gs_exp_val
+    def get_theoretical_gs_expectation_value(self):
+        return self._calc.bob_charge
 
     def description(self):
         return "charge = (I+Z)/2"

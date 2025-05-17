@@ -1,17 +1,18 @@
-import math
+import numpy as np
 from .observable import Observable
+from Calculators.tfim_calculator import TFIMCalculator
 
-class TotalEnergy(Observable):
+class BobsEnergy_N2(Observable):
     """
-    A derived observable representing H_B = h*Z1 + 2k*X0X1 for N=2 TFIM.
+    A derived observable representing H_B = h*Z1 + J*X0X1 for N=2 TFIM.
     It does not correspond to a direct circuit execution but is calculated
     from the results of H1_B and V_AB.
     """
-    def __init__(self, conf):
+    def __init__(self, conf, calc: TFIMCalculator):
         # Ensure N=2 for this observable
         if conf.N != 2:
-             raise ValueError("TotalEnergy observable is defined for N=2 only.")
-        super().__init__("total_energy", conf)
+             raise ValueError("BobsEnergy_N2 observable is defined for N=2 only.")
+        super().__init__("bobs_energy_n2", conf, calc)
         self.component_observables = ["h1", "v"]
 
     # --- No Circuit Methods Needed ---
@@ -22,15 +23,15 @@ class TotalEnergy(Observable):
 
     # --- Value Extraction (Not Applicable from Bitstring) ---
     def get_value(self, bitstring: str):
-        raise NotImplementedError("TotalEnergy is derived, not calculated from single bitstring.")
+        raise NotImplementedError("BobsEnergy_N2 is derived, not calculated from single bitstring.")
 
     # --- Post-Processing Calculations (Not Applicable Directly) ---
     def calculate_expectation_and_sem(self, counts: dict, total_shots: int):
-        raise NotImplementedError("TotalEnergy is derived from H1 and V results.")
+        raise NotImplementedError("BobsEnergy_N2 is derived from H1 and V results.")
 
     def calculate_derived_value_and_sem(self, component_results: dict):
         """
-        Calculates the TotalEnergy value and SEM from component results.
+        Calculates the BobsEnergy_N2 value and SEM from component results.
         Args:
             component_results (dict): {'h1': RunResult for H1_B, 'v': RunResult for V_AB}
                                        (Keys must match self.component_observables)
@@ -48,40 +49,42 @@ class TotalEnergy(Observable):
             # print(f"Warning: Missing component data for derived observable {self.name}")
             return None, None
 
-        # Get h and k parameters from conf stored in one of the results
+        # Get h and J parameters from conf stored in one of the results
         # Use getattr for safety in case conf object structure changes
         h = h1_res.conf_params.get('h_param', h1_res.conf_params.get('h'))
-        k = h1_res.conf_params.get('k_param', h1_res.conf_params.get('k'))
+        J = h1_res.conf_params.get('k_param', h1_res.conf_params.get('J'))
 
-        if h is None or k is None:
-             print(f"Warning: Missing h or k parameters in component results for {self.name}.")
+        if h is None or J is None:
+             print(f"Warning: Missing h or J parameters in component results for {self.name}.")
              return None, None
 
-        # Calculate combined expectation value: h * <h1_b> + 2 * k * <v_ab>
+        if (self.h, self.J) != (h, J):
+            return None, None
+
+        # Calculate combined expectation value: h * <h1_b> + J * <v_ab>
         exp_val_h1 = h1_res.expectation_value
         exp_val_v = v_res.expectation_value
-        total_exp_val = h * exp_val_h1 + 2 * k * exp_val_v
+        total_exp_val = h * exp_val_h1 + J * exp_val_v
 
-        # Calculate ground state energy for N=2 TFIM
-        gs_energy = -(h**2 + 2 * k**2) / math.sqrt(h**2 + k**2)
+        gs_energy = self._calc.bob_energy
 
         # Calculate final value relative to ground state in arbitrary units
         final_value = (total_exp_val - gs_energy) / abs(gs_energy)
 
-        # Calculate combined SEM for h*<h1> + 2k*<v>
-        # SEM = sqrt( Var(h*O1 + 2k*O2) / shots )
-        # Var(h*O1 + 2k*O2) ~ h^2*Var(O1) + (2k)^2*Var(O2) (assuming independence/low covariance)
-        # SEM = sqrt( h^2*Var(O1)/shots + (2k)^2*Var(O2)/shots )
-        # SEM = sqrt( h^2*SEM(O1)^2 + (2k)^2*SEM(O2)^2 )
+        # Calculate combined SEM for h*<h1> + J*<v>
+        # SEM = sqrt( Var(h*O1 + J*O2) / shots )
+        # Var(h*O1 + J*O2) ~ h^2*Var(O1) + (J)^2*Var(O2) (assuming independence/low covariance)
+        # SEM = sqrt( h^2*Var(O1)/shots + (J)^2*Var(O2)/shots )
+        # SEM = sqrt( h^2*SEM(O1)^2 + (J)^2*SEM(O2)^2 )
         sem_h1 = h1_res.sem
         sem_v = v_res.sem
-        total_sem = math.sqrt((h * sem_h1)**2 + (2 * k * sem_v)**2)
+        total_sem = np.sqrt((h * sem_h1)**2 + (J * sem_v)**2)
 
         return final_value, total_sem
 
     # --- Metadata ---
     def description(self):
-        return "E_B = h*Z1 + 2k*X0X1 for N=2"
+        return "E_B = h*Z1 + J*X0X1 for N=2"
 
     @staticmethod
     def is_derived_observable():

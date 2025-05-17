@@ -33,7 +33,8 @@ class Runner():
         if p_dephase and p_dephase != 0:
             dephase_error = noise.phase_damping_error(p_dephase)
             # Apply error more selectively if possible based on gate times and delay
-            noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'rz', 'sx', 'x']) # Example gates (Add 'cx'??)
+            # FIXME: Add 'cx'??
+            noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'rz', 'sx', 'x'])
 
         if p_cl_error and p_cl_error != 0:
             readout_error_on_alice = noise.ReadoutError([
@@ -41,17 +42,17 @@ class Runner():
                 [p_cl_error, 1.0 - p_cl_error]  # Probabilities when true state is |1>
             ])
             # Add this error ONLY to the measurement of Alice's qubit
-            noise_model.add_readout_error(readout_error_on_alice, [utils.get_alice_qubit_idx(conf.N)])
+            noise_model.add_readout_error(readout_error_on_alice, [utils.get_alice_idx(conf.N)])
 
         self.noise_model = noise_model
 
     def init_run_level(self, conf: Conf, backend_name: str | None = None):
-         """ Initialize backend and noise for a specific configuration (h, k, delay etc.) """
+         """ Initialize backend and noise for a specific configuration (h, J, delay etc.) """
          self.backend = self.__choose_backend(backend_name, conf)
          self._create_noise_model(conf)
 
          print(f"\n--- Initialized Run Level ---")
-         print(f"  Conf: h={conf.h}, k={conf.k}, shots={conf.total_shots}, p_dephase={conf.p_dephase}, delay={conf.delay_time}")
+         print(f"  Conf: h={conf.h}, J={conf.J}, shots={conf.total_shots}, p_dephase={conf.p_dephase}, delay={conf.delay_time}")
 
          # Note: SamplerV2 might handle noise models differently or require AerProvider
          use_primitives = conf.run_sampler
@@ -62,61 +63,41 @@ class Runner():
     def _qet_circuit(self, obs: Observable, conf: Conf):
         num_qubits = conf.N
 
-        # --- Determine required classical bits ---
-        if conf.N == 3:
-            # CONSISTENTLY use 3 classical bits for all N=3 simulation runs
-            # (Alice, Bob Z2, Intermediate Z1) even if not all are measured by the specific observable
-            num_clbits = 3
-        elif conf.N == 2:
-            # Logic for N=2 runs (e.g., 2 classical bits)
-            num_clbits = 2 # Adjust if needed for specific N=2 observables
-        else:
-            raise NotImplementedError(f"Unsupported N={conf.N} in _qet_circuit")
+        # Consistently use N classical bits for arbitrary N simulation runs
+        # even if not all are measured by the specific observable
+        num_clbits = conf.N
 
         # Define classical register indices based on utils (Alice=c0, BobZ2=c1, IntermedZ1=c2)
-        bob_z2_creg = utils.get_counts_bob_creg_idx(num_qubits)
-        intermed_z1_creg = utils.get_counts_intermediate_creg_idx(num_qubits) # Expect 2 (or None if N!=3)
+        bob_creg = utils.get_bob_idx(num_qubits)
+        bobs_neighbour_creg = utils.get_bob_neighbor_idx(num_qubits)
 
-        qc = QuantumCircuit(num_qubits, num_clbits) # Use determined num_clbits
+        qc = QuantumCircuit(num_qubits, num_clbits)
         qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
         obs.apply_ground_state(qc)
 
-        alice_creg_idx = utils.get_alice_qubit_idx(num_qubits)
-        bob_creg_idx = utils.get_bob_qubit_idx(num_qubits)
+        alice_creg_idx = utils.get_alice_idx(num_qubits)
+        bob_creg_idx = utils.get_bob_idx(num_qubits)
 
-        obs.apply_alice_measurement(qc, utils.get_alice_qubit_idx(num_qubits), alice_creg_idx)
+        obs.apply_alice_measurement(qc, utils.get_alice_idx(num_qubits), alice_creg_idx)
 
         # Idle Bob’s qubit
         if conf.delay_time and conf.delay_time > 0:
              # Ensure delay_time is in appropriate units (dt, sec). Assume dt for Aer.
-             qc.delay(conf.delay_time, utils.get_bob_qubit_idx(num_qubits), unit='dt')
+             qc.delay(conf.delay_time, utils.get_bob_idx(num_qubits), unit='dt')
 
         # Bob's conditional operation
         # Pass the classical register/bit index Alice measured into
-        obs.apply_bob_operation(qc, utils.get_bob_qubit_idx(num_qubits), alice_creg_idx, conf.xor_alice_res)
+        obs.apply_bob_operation(qc, utils.get_bob_idx(num_qubits), alice_creg_idx, conf.xor_alice_res)
 
         # Bob's measurement basis
         bob_meas_basis = obs.get_bob_measurement_basis()
-        bob_q_idx = utils.get_bob_qubit_idx(num_qubits)
+        bob_q_idx = utils.get_bob_idx(num_qubits)
 
-        if conf.N == 3:
-            intermed_q_idx = 1
-            if bob_meas_basis == "X1X2":
-                print(f"  Adding measurements for X1X2 (H on q1, q2; Measure q1->c{intermed_z1_creg}, q2->c{bob_z2_creg})")
-                qc.h(intermed_q_idx)
-                qc.h(bob_q_idx)
-                # Ensure using the correct classical bit objects/indices
-                qc.measure(intermed_q_idx, qc.clbits[intermed_z1_creg])
-                qc.measure(bob_q_idx, qc.clbits[bob_z2_creg])
-            elif bob_meas_basis == "Z2":
-                print(f"  Adding measurement for Z2 (Measure q2->c{bob_z2_creg})")
-                # Measure Bob into the correct classical bit
-                qc.measure(bob_q_idx, qc.clbits[bob_z2_creg])
-                # Note: clbit[intermed_z1_creg] (index 2) remains unused for this specific circuit run
-            # else: handle other N=3 cases?
-        elif conf.N == 2:
+        # TODO: Check if N=2 case is handled correctly -
+        # shouldn't the neighbour qubit be manipulated and measured as well?
+        if conf.N == 2:
             if bob_meas_basis == "X":
                 qc.h(bob_q_idx)
             elif bob_meas_basis == "Y":
@@ -124,6 +105,19 @@ class Runner():
                 qc.h(bob_q_idx)
 
             qc.measure(bob_q_idx, bob_creg_idx)
+        else:
+            intermed_q_idx = utils.get_bob_neighbor_idx(num_qubits)
+            if bob_meas_basis == f"X{conf.N-2}X{conf.N-1}":
+                print(f"  Adding measurements for X{conf.N-2}X{conf.N-1} (H on q1, q2; Measure q1->c{bobs_neighbour_creg}, q2->c{bob_creg})")
+                qc.h(intermed_q_idx)
+                qc.h(bob_q_idx)
+                # Ensure using the correct classical bit objects/indices
+                qc.measure(intermed_q_idx, qc.clbits[bobs_neighbour_creg])
+                qc.measure(bob_q_idx, qc.clbits[bob_creg])
+            elif bob_meas_basis == f"Z{conf.N-1}":
+                print(f"  Adding measurement for Z{conf.N-1} (Measure q2->c{bob_creg})")
+                # Measure Bob into the correct classical bit
+                qc.measure(bob_q_idx, qc.clbits[bob_creg])
 
         return qc
 
