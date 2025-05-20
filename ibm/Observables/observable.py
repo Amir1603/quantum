@@ -55,9 +55,6 @@ class Observable:
         """Prepares the ground state for the TFIM."""
         qc.append(SetDensityMatrix(self._calc.gs_rho), list(range(self.N)))
 
-        # Add a barrier for clarity in the circuit
-        qc.barrier()
-
     def _get_operator_matrix(self, pauli_string: str) -> np.ndarray | None:
         """Helper to get sparse matrix for a given Pauli string."""
         if len(pauli_string) != self.N:
