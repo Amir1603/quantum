@@ -33,8 +33,7 @@ class Runner():
         if p_dephase and p_dephase != 0:
             dephase_error = noise.phase_damping_error(p_dephase)
             # Apply error more selectively if possible based on gate times and delay
-            # FIXME: Add 'cx'??
-            noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'rz', 'sx', 'x'])
+            noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'h', 'ry', 'sdg', 'rx'])
 
         if p_cl_error and p_cl_error != 0:
             readout_error_on_alice = noise.ReadoutError([
