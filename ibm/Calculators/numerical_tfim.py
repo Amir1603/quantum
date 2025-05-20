@@ -75,42 +75,32 @@ class NumericalTFIM(TFIMCalculator):
         return total_energy, total_charge
 
     # Helper function to create a Pauli operator on a specific site
-    def _get_pauli_operator_on_site(op_char, site_idx, N, pauli_ops):
+    def _get_pauli_operator_on_site(op_char, site_idx, N):
         # pauli_ops is a dict {'I': I_op, 'X': X_op, ...}
         if not (0 <= site_idx < N):
             raise ValueError(f"Site index {site_idx} out of bounds for N={N}")
         
-        op_list = [pauli_ops[op_char] if i == site_idx else pauli_ops['I'] for i in range(N)]
+        op_list = [NumericalTFIM.pauli_ops[op_char] if i == site_idx else NumericalTFIM.pauli_ops['I'] for i in range(N)]
         
         full_operator = op_list[0]
         for i_op in range(1, N):
             full_operator = kron(full_operator, op_list[i_op], format="csc")
         return full_operator
 
-    # Helper function for two-site operators like X_i Z_j
-    def _get_two_site_operator(op1_char, site1_idx, op2_char, site2_idx, N, pauli_ops):
-        if not (0 <= site1_idx < N and 0 <= site2_idx < N):
-            raise ValueError(f"Site index out of bounds for N={N}")
+    # Helper function for multi-site operators like X_i Z_j or X_i X_j Z_k
+    def _get_multi_site_operator(ops_tuple_list, N):
+        op_tuple_list = [(NumericalTFIM.pauli_ops[char], idx) for char, idx in ops_tuple_list]
 
-        op1 = pauli_ops[op1_char]
-        op2 = pauli_ops[op2_char]
+        # Starting from identity operator on all sites
+        op_list = [NumericalTFIM.pauli_ops['I']] * N
 
-        if site1_idx == site2_idx: 
-            op_on_site = op1 @ op2 # Product on the same site
-            op_list = [op_on_site if i == site1_idx else pauli_ops['I'] for i in range(N)]
-        else: 
-            op_list = []
-            for i_op in range(N):
-                if i_op == site1_idx:
-                    op_list.append(op1)
-                elif i_op == site2_idx:
-                    op_list.append(op2)
-                else:
-                    op_list.append(pauli_ops['I'])
-        
+        for op, site in op_tuple_list:
+            op_list[site] = op_list[site] @ op
+
         full_operator = op_list[0]
         for i_op in range(1, N):
             full_operator = kron(full_operator, op_list[i_op], format="csc")
+
         return full_operator
 
     # Helper to compute expectation value <gs|Op|gs>
@@ -141,93 +131,33 @@ class NumericalTFIM(TFIMCalculator):
 
         alice_site = utils.get_alice_idx(self.N)
         bob_site = utils.get_bob_idx(self.N)
-        # bob_neighbor_site = N - 2 # Only defined if N >= 2
+        bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
-        # --- Theta_E1: Alice X0, Bob Y_{N-1} rot, P_B = hZ_{N-1} + JX_{N-2}X_{N-1} ---
-        # Numerator for tan(2*theta_E1):
-        # -h*(<X_{N-1}> + <X0 X_{N-1}>) - J*(<X_{N-2}Z_{N-1}> + <X0 X_{N-2}Z_{N-1}>)
-        # Denominator for tan(2*theta_E1):
-        #  h*(<Z_{N-1}> + <X0 Z_{N-1}>) + J*(<X_{N-2}X_{N-1}> + <X0 X_{N-2}X_{N-1}>)
+        op_X0 = NumericalTFIM._get_pauli_operator_on_site('X', alice_site, self.N) # Alice is X0
+        op_Xbob = NumericalTFIM._get_pauli_operator_on_site('X', bob_site, self.N)
+        op_Zbob = NumericalTFIM._get_pauli_operator_on_site('Z', bob_site, self.N)
+        op_Xbobneighbor_Zbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('Z', bob_site)], self.N)
+        op_Xbobneighbor_Xbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('X', bob_site)], self.N)
+        op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
+        op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', bob_site)], self.N)
+        op_X0_Xbobneighbor_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor_site), ('Z', bob_site)], self.N)
+        op_X0_Xbobneighbor_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor_site), ('X', bob_site)], self.N)
 
-        op_X_bob = NumericalTFIM._get_pauli_operator_on_site('X', bob_site, self.N, NumericalTFIM.pauli_ops)
-        op_Z_bob = NumericalTFIM._get_pauli_operator_on_site('Z', bob_site, self.N, NumericalTFIM.pauli_ops)
-        op_X0_Xbob = NumericalTFIM._get_two_site_operator('X', alice_site, 'X', bob_site, self.N, NumericalTFIM.pauli_ops)
-        op_X0_Zbob = NumericalTFIM._get_two_site_operator('X', alice_site, 'Z', bob_site, self.N, NumericalTFIM.pauli_ops)
-        op_X_alice = NumericalTFIM._get_pauli_operator_on_site('X', alice_site, self.N, NumericalTFIM.pauli_ops) # For X0 terms
+        Zbob_exp = NumericalTFIM._compute_expectation_value(op_Zbob, self.gs0)
+        Xbobneighbor_Xbob_exp = NumericalTFIM._compute_expectation_value(op_Xbobneighbor_Xbob, self.gs0)
+        X0_Xbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbob, self.gs0)
+        X0_Xbobneighbor_Zbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbobneighbor_Zbob, self.gs0)
 
-        # Terms for J part of P_B and P_C for E1
-        if self.N >= 2:
-            bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
-            op_Xn2_Zn1 = NumericalTFIM._get_two_site_operator('X', bob_neighbor_site, 'Z', bob_site, self.N, NumericalTFIM.pauli_ops)
-            op_Xn2_Xn1 = NumericalTFIM._get_two_site_operator('X', bob_neighbor_site, 'X', bob_site, self.N, NumericalTFIM.pauli_ops)
-            
-            # <X0 X_{N-2}Z_{N-1}>
-            # If alice_site (0) is same as bob_neighbor_site (N-2), i.e. N=2
-            if alice_site == bob_neighbor_site: # N=2 case
-                op_X0_Xn2_Zn1 = NumericalTFIM._get_pauli_operator_on_site('Z', bob_site, self.N, NumericalTFIM.pauli_ops) # X0*X0*ZN-1 = ZN-1
-                op_X0_Xn2_Xn1 = NumericalTFIM._get_pauli_operator_on_site('X', bob_site, self.N, NumericalTFIM.pauli_ops) # X0*X0*XN-1 = XN-1
-            else: # N > 2
-                op_X0_Xn2_Zn1 = op_X_alice @ op_Xn2_Zn1
-                op_X0_Xn2_Xn1 = op_X_alice @ op_Xn2_Xn1
+        num_theta_E1 = -self.h * X0_Xbob_exp + self.J * X0_Xbobneighbor_Zbob_exp
+        den_theta_E1 = self.h * Zbob_exp + self.J * Xbobneighbor_Xbob_exp
+        theta_E1 = 0.5 * np.arctan(num_theta_E1 / den_theta_E1)
 
-            exp_Xn2_Zn1 = NumericalTFIM._compute_expectation_value(op_Xn2_Zn1, self.gs0)
-            exp_X0_Xn2_Zn1 = NumericalTFIM._compute_expectation_value(op_X0_Xn2_Zn1, self.gs0)
-            exp_Xn2_Xn1 = NumericalTFIM._compute_expectation_value(op_Xn2_Xn1, self.gs0)
-            exp_X0_Xn2_Xn1 = NumericalTFIM._compute_expectation_value(op_X0_Xn2_Xn1, self.gs0)
-        else: # N=1, J terms are zero
-            exp_Xn2_Zn1, exp_X0_Xn2_Zn1, exp_Xn2_Xn1, exp_X0_Xn2_Xn1 = 0,0,0,0
+        num_theta_q1 = -X0_Xbob_exp
+        den_theta_q1 = Zbob_exp
+        theta_q1 = 0.5 * np.arctan(num_theta_q1 / den_theta_q1)
 
-
-        num_E1_h_part = -self.h * (NumericalTFIM._compute_expectation_value(op_X_bob, self.gs0) + \
-                                NumericalTFIM._compute_expectation_value(op_X0_Xbob, self.gs0))
-        num_E1_J_part = -self.J * (exp_Xn2_Zn1 + exp_X0_Xn2_Zn1) if self.N >=2 else 0
-        num_E1 = num_E1_h_part + num_E1_J_part
-        
-        den_E1_h_part = self.h * (NumericalTFIM._compute_expectation_value(op_Z_bob, self.gs0) + \
-                                NumericalTFIM._compute_expectation_value(op_X0_Zbob, self.gs0))
-        den_E1_J_part = self.J * (exp_Xn2_Xn1 + exp_X0_Xn2_Xn1) if self.N >=2 else 0
-        den_E1 = den_E1_h_part + den_E1_J_part
-        
-        theta_E1 = 0.5 * np.arctan2(num_E1, den_E1)
-
-        # --- Theta_E2: Alice Y0, Bob X_{N-1} rot, P_B effectively hZ_{N-1} for angle calc ---
-        # tan(2*theta_E2) = ( <Y_{N-1}> + <Y0 Y_{N-1}> ) / ( <Z_{N-1}> + <Y0 Z_{N-1}> )
-        # JX_{N-2}X_{N-1} part of P_B commutes with K_B=X_{N-1}, so doesn't affect angle.
-        op_Y_bob = NumericalTFIM._get_pauli_operator_on_site('Y', bob_site, self.N, NumericalTFIM.pauli_ops)
-        op_Y0_Ybob = NumericalTFIM._get_two_site_operator('Y', alice_site, 'Y', bob_site, self.N, NumericalTFIM.pauli_ops)
-        op_Y0_Zbob = NumericalTFIM._get_two_site_operator('Y', alice_site, 'Z', bob_site, self.N, NumericalTFIM.pauli_ops)
-
-        num_E2 = NumericalTFIM._compute_expectation_value(op_Y_bob, self.gs0) + \
-                NumericalTFIM._compute_expectation_value(op_Y0_Ybob, self.gs0)
-        den_E2 = NumericalTFIM._compute_expectation_value(op_Z_bob, self.gs0) + \
-                NumericalTFIM._compute_expectation_value(op_Y0_Zbob, self.gs0)
-        # Factor h_field cancels if not zero, so not explicitly multiplied here.
-        # If h_field is zero, Z_bob terms are zero, which is fine unless den_E2 becomes zero.
-        theta_E2 = 0.5 * np.arctan2(num_E2, den_E2)
-            
-        # --- Charge Angles (Unaffected by the change in P_B for energy) ---
-        # Theta_q1: Alice X0, Bob Y_{N-1} rot, measure Q_{N-1}
-        # tan(2*theta_q1) = ( <X_{N-1}> + <X_0 X_{N-1}> ) / ( 1 + <X_0> + <Z_{N-1}> + <X_0 Z_{N-1}> )
-        op_X_alice_val = NumericalTFIM._compute_expectation_value(op_X_alice, self.gs0)
-
-        num_q1 = NumericalTFIM._compute_expectation_value(op_X_bob, self.gs0) + \
-                NumericalTFIM._compute_expectation_value(op_X0_Xbob, self.gs0)
-        den_q1 = 1.0 + op_X_alice_val + \
-                NumericalTFIM._compute_expectation_value(op_Z_bob, self.gs0) + \
-                NumericalTFIM._compute_expectation_value(op_X0_Zbob, self.gs0)
-        theta_q1 = 0.5 * np.arctan2(num_q1, den_q1)
-
-        # Theta_q2: Alice Y0, Bob X_{N-1} rot, measure Q_{N-1}
-        # tan(2*theta_q2) = ( <Y_{N-1}> + <Y_0 Y_{N-1}> ) / ( 1 + <Y_0> + <Z_{N-1}> + <Y_0 Z_{N-1}> )
-        op_Y_alice = NumericalTFIM._get_pauli_operator_on_site('Y', alice_site, self.N, NumericalTFIM.pauli_ops)
-        op_Y_alice_val = NumericalTFIM._compute_expectation_value(op_Y_alice, self.gs0)
-
-        num_q2 = NumericalTFIM._compute_expectation_value(op_Y_bob, self.gs0) + \
-                NumericalTFIM._compute_expectation_value(op_Y0_Ybob, self.gs0)
-        den_q2 = 1.0 + op_Y_alice_val + \
-                NumericalTFIM._compute_expectation_value(op_Z_bob, self.gs0) + \
-                NumericalTFIM._compute_expectation_value(op_Y0_Zbob, self.gs0)
-        theta_q2 = 0.5 * np.arctan2(num_q2, den_q2)
+        # FIXME: Complete for other bases
+        theta_E2, theta_q2 = 0.0, 0.0
 
         return theta_E1, theta_E2, theta_q1, theta_q2
 
@@ -239,8 +169,8 @@ class NumericalTFIM(TFIMCalculator):
         bob_site = utils.get_bob_idx(self.N)
         bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
-        H_b = (self.h * NumericalTFIM._get_pauli_operator_on_site('Z', bob_site, self.N, NumericalTFIM.pauli_ops) +
-               self.J * NumericalTFIM._get_two_site_operator('X', bob_neighbor_site, 'X', bob_site, self.N, NumericalTFIM.pauli_ops))
+        H_b = (self.h * NumericalTFIM._get_pauli_operator_on_site('Z', bob_site, self.N) +
+               self.J * NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('X', bob_site)], self.N))
         Q_b = kron(eye(2**(self.N-1)), (NumericalTFIM.I + NumericalTFIM.Z) / 2)
 
         energy_bob = (gs.getH() @ (H_b @ gs)).toarray().real.item()

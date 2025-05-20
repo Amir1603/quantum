@@ -43,7 +43,7 @@ class TFIMCalculator:
     def apply_errors(self, conf):
         # Apply errors to the density matrix
         p_err = 0
-        rho_err = np.zeros((4, 4), dtype=complex)
+        rho_err = np.zeros((2**conf.N, 2**conf.N), dtype=complex)
 
         if conf.p_depol_error != 0:
             rho_bob_reduced = partial_trace(self.gs_rho, [utils.get_bob_idx(self.N)])

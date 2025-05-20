@@ -1,5 +1,5 @@
 import numpy as np
-from .analytical_tfim import MyCalculatorTFIM
+from .analytical_tfim import AnalyticalTFIM
 from .numerical_tfim import NumericalTFIM
 import pytest
 
@@ -36,7 +36,7 @@ def atfim():
             self.p_excited_superposition_error = 0.0
 
     conf = Conf()
-    atfim = MyCalculatorTFIM(N, J, h, conf)
+    atfim = AnalyticalTFIM(N, J, h)
 
     atfim.calc_all()
 

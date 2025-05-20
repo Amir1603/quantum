@@ -34,21 +34,12 @@ class AnalyticalTFIM(TFIMCalculator):
         alpha, _ = AnalyticalTFIM._alpha_beta(self.h, self.J)
         self.bob_charge = alpha**2
 
-        # self.theta_E1 = 0.5 * np.arctan((3 * self.h * self.J) / (-(2 * self.h**2 + self.J**2)))
-        # self.theta_E1 = 0.5 * np.arctan(-2 * self.h/self.J)
-        # self.theta_E2 = 0.5 * np.arctan(self.h / self.J)
-        # self.theta_q1 = 0.5 * np.arctan(-self.J / (2*self.h))
-        # self.theta_q2 = -self.theta_q1
-
-        # TODO - Go over rotation angle calculation and make sure it aligns with
-        # Kazuki's calculated optimal rotation angle which yields the expected results.
-        # Kazuki's rotation angle is calculated using his parameter k, which is 2k=J in my definition.
         k = self.J / 2
-        rotation_angle = np.arcsin(
+        self.theta_E1 = np.arcsin(
                 (self.h * k) / np.sqrt((self.h**2 + 2 * k**2)**2 + self.h**2 * k**2)
             ) / 2
-        self.theta_E1 = rotation_angle
-        self.theta_q1 = rotation_angle
+
+        self.theta_q1 = 0.5 * np.arctan(-self.J / (2 * self.h))
 
         self._init_n2_tfim_states_and_density_matrices()
 
