@@ -40,8 +40,12 @@ class Observable:
         raise NotImplementedError()
 
     def get_bob_measurement_basis(self):
-        """Return 'X', 'Y', or 'Z' (or list for multi-qubit)"""
+        """Return 'X', 'Y', or 'Z'"""
         raise NotImplementedError()
+
+    def get_bob_neighbour_measurement_basis(self):
+        # By default and most cases, Bob's neghbour should not be measured
+        return None
 
     def get_value(self, bitstring: str):
         """Calculate the observable's value for a given measurement bitstring."""

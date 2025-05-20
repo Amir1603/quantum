@@ -12,14 +12,15 @@ class V_B(EnergyBase):
         super().__init__(name="V_B", conf=conf, calc=calc)
 
     def get_bob_measurement_basis(self):
-        # FIXME: Update simulation for general N?
-        if self.N == 2:
-            return "X"
-        else:
-            bob_idx = utils.get_bob_idx(self.N)
-            bobs_beighbor_idx = utils.get_bob_neighbor_idx(self.N)
+        return "X"
 
-            return f"X{bobs_beighbor_idx}X{bob_idx}"
+    def get_bob_neighbour_measurement_basis(self):
+        if self.N == 2:
+            # For N=2, Bob's neghbour is Alice's site,
+            # so no special treatment or measurement should be done.
+            return None
+        else:
+            return "X"
 
     def get_value(self, bitstring: str):
         bob_bit = utils.get_bit_from_counts(bitstring, utils.get_bob_idx(self.N), self.N)
