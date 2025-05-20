@@ -24,8 +24,6 @@ class TFIMCalculator:
         self.ex1 = None
         self.gs_rho = None
         self.ex1_rho = None
-        self.total_energy = None
-        self.total_charge = None
         self.bob_energy = None
         self.bob_charge = None
         self.theta_E1 = None

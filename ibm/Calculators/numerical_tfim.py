@@ -30,7 +30,6 @@ class NumericalTFIM(TFIMCalculator):
         self.gs_rho = NumericalTFIM._compute_density_matrix(self.gs0)
         self.ex1_rho = NumericalTFIM._compute_density_matrix(self.ex1)
 
-        self.total_energy, self.total_charge = self._compute_gs_total_energy_and_charge()
         self.bob_energy, self.bob_charge = self._compute_bob_gs_energy_and_charge()
         self.theta_E1, self.theta_E2, self.theta_q1, self.theta_q2 = self._compute_optimal_rotation_angles()
 
@@ -59,20 +58,6 @@ class NumericalTFIM(TFIMCalculator):
     # Density Matrix Calculation
     def _compute_density_matrix(state):
         return np.outer(state, np.conj(state))
-
-    # Total Energy and Charge Calculation
-    def _compute_gs_total_energy_and_charge(self):
-        total_energy = NumericalTFIM._compute_expectation_value(self.H, self.gs0)
-
-        Q_total = sum(
-            kron(eye(2**i), kron((NumericalTFIM.I + NumericalTFIM.Z) / 2, eye(2**(self.N - i - 1))))
-            for i in range(self.N)
-        )
-
-        # Compute total charge as the expectation value of the charge operator
-        total_charge = NumericalTFIM._compute_expectation_value(Q_total, self.gs0)
-
-        return total_energy, total_charge
 
     # Helper function to create a Pauli operator on a specific site
     def _get_pauli_operator_on_site(op_char, site_idx, N):

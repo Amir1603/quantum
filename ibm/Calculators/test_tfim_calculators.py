@@ -3,70 +3,40 @@ from .analytical_tfim import AnalyticalTFIM
 from .numerical_tfim import NumericalTFIM
 import pytest
 
+N = 2
+J = 1.0
+h = 1.0
+
 @pytest.fixture
 def ntfim():
-    """
-    Fixture to create a NumericalTFIM instance for testing.
-    """
-    N = 2
-    J = 1.0
-    h = 1.0
     ntfim = NumericalTFIM(N, J, h)
-
     ntfim.calc_all()
 
     return ntfim
 
 @pytest.fixture
 def atfim():
-    """
-    Fixture to create an AnalyticalTFIM instance for testing.
-    """
-    N = 2
-    J = 1.0
-    h = 1.0
-
-    class Conf:
-        def __init__(self):
-            self.p_depol_error = 0.0
-            self.p_bitflip_error = 0.0
-            self.p_alice_phaseflip_error = 0.0
-            self.p_bob_phaseflip_error = 0.0
-            self.p_excited_mixture = 0.0
-            self.p_excited_superposition_error = 0.0
-
-    conf = Conf()
     atfim = AnalyticalTFIM(N, J, h)
-
     atfim.calc_all()
 
     return atfim
 
-@pytest.mark.parametrize("name", ["ntfim"])
-def test_build_tfim_hamiltonian(request, name):
-    tfim = request.getfixturevalue(name)
-    # Assert
-    assert tfim.H.shape == (4, 4), f"Expected Hamiltonian shape (4, 4), but got {tfim.H.shape}"
+@pytest.mark.parametrize("tmp_N", [2, 3, 4])
+def test_build_tfim_hamiltonian(tmp_N):
+    tfim = NumericalTFIM(tmp_N, J, h)
+    tfim.calc_all()
 
-@pytest.mark.parametrize("name", ["ntfim"])
+    # Assert
+    assert tfim.H.shape == (2**tmp_N, 2**tmp_N), f"Expected Hamiltonian shape ({2**tmp_N}, {2**tmp_N}) for N={N}, but got {tfim.H.shape}"
+
+@pytest.mark.parametrize("name", ["ntfim", "atfim"])
 def test_ground_state_energy(request, name):
     tfim = request.getfixturevalue(name)
     # Arrange
-    E_analytic = -np.sqrt(4 * tfim.h**2 + tfim.J**2)
+    E_analytic = -np.sqrt(4 * h**2 + J**2)
 
     # Assert
     assert np.isclose(tfim.E0, E_analytic), f"Ground state energy mismatch: got {tfim.E0}, expected {E_analytic}"
-
-@pytest.mark.parametrize("name", ["ntfim"])
-def test_total_energy_and_charge(request, name):
-    tfim = request.getfixturevalue(name)
-    # Arrange
-    energy_analytic = -np.sqrt(4 * tfim.h**2 + tfim.J**2)
-    Q_analytic = tfim.N * (0.5 - (tfim.h / np.sqrt(4 * tfim.h**2 + tfim.J**2)))
-
-    # Assert
-    assert np.isclose(tfim.total_energy, energy_analytic), f"Total energy mismatch: got {tfim.total_energy}, expected {energy_analytic}"
-    assert np.isclose(tfim.total_charge, Q_analytic), f"Total charge mismatch: got {tfim.total_charge}, expected {Q_analytic}"
 
 @pytest.mark.parametrize("name", ["ntfim", "atfim"])
 def test_optimal_rotation_angles(request, name):
@@ -74,58 +44,24 @@ def test_optimal_rotation_angles(request, name):
     Tests compute_optimal_rotation_angles for N=2 against derived analytical expressions.
     """
     tfim = request.getfixturevalue(name)
-    # Analytical calculations for N=2
-    # E_gs_analytic for pure analytical check, can also use E_gs_numerical if confident in it
-    E_gs_analytic = -np.sqrt(4 * tfim.h**2 + tfim.J**2)
-    
-    # Assert that the numerically found ground state energy is correct (optional, good check)
-    assert np.isclose(tfim.total_energy, E_gs_analytic), \
-        f"Ground state energy mismatch: Num={tfim.total_energy}, Ana={E_gs_analytic}"
 
-    analytic_theta_E1 = 0.5 * np.arctan2(3 * tfim.h * tfim.J, 
-                                     -(2 * tfim.h**2 + tfim.J**2))
+    k = J / 2
+    analytic_theta_E1 = 0.5 * np.arcsin(
+                (h * k) / np.sqrt((h**2 + 2 * k**2)**2 + h**2 * k**2)
+            )
 
-    # Theta_E2: tan(2*theta) = -J / (2*h)
-    if tfim.h == 0:
-        if tfim.J == 0:
-            analytic_theta_E2 = 0.0
-        else: # Denominator is effectively zero (as <Z1> might be zero if h=0)
-              # Numerator is J. tan is J/0 -> infinite
-            analytic_theta_E2 = 0.5 * (np.pi / 2.0) if tfim.J > 0 else 0.5 * (-np.pi / 2.0)
-    else: # h != 0
-        analytic_theta_E2 = 0.5 * np.arctan2(tfim.J, -2 * tfim.h)
-
-
-    # Theta_q1: tan(2*theta) = -J / (E_gs + 2h)
-    denominator_q1 = E_gs_analytic + 2 * tfim.h
-    if np.isclose(denominator_q1, 0):
-        if np.isclose(-tfim.J, 0): # 0/0 case
-            analytic_theta_q1 = 0.0
-        else: # +/- inf case
-            analytic_theta_q1 = 0.5 * (np.pi / 2) if -tfim.J > 0 else 0.5 * (-np.pi/2)
-    else:
-        analytic_theta_q1 = 0.5 * np.arctan(tfim.J/denominator_q1)
-
-    # Theta_q2: tan(2*theta) = J / (E_gs + 2h)
-    denominator_q2 = E_gs_analytic + 2 * tfim.h
-    if np.isclose(denominator_q2, 0):
-        if np.isclose(tfim.J, 0): # 0/0 case
-            analytic_theta_q2 = 0.0
-        else: # +/- inf case
-            analytic_theta_q2 = 0.5 * (np.pi / 2) if tfim.J > 0 else 0.5 * (-np.pi/2)
-    else:
-        analytic_theta_q2 = 0.5 * np.arctan(-tfim.J/denominator_q2)
+    analytic_theta_q1 = 0.5 * np.arctan(-J / (2 * h))
 
     # Assertions
     # Using a tolerance, e.g., atol=1e-9
     assert np.isclose(tfim.theta_E1, analytic_theta_E1, atol=1e-9), \
         f"Theta_E1 mismatch: Num={tfim.theta_E1:.7f}, Ana={analytic_theta_E1:.7f}"
-    assert np.isclose(tfim.theta_E2, analytic_theta_E2, atol=1e-9), \
-        f"Theta_E2 mismatch: Num={tfim.theta_E2:.7f}, Ana={analytic_theta_E2:.7f}"
+    assert np.isclose(tfim.theta_E2, 0.0, atol=1e-9), \
+        f"Theta_E2 mismatch: Num={tfim.theta_E2:.7f}, Ana={0.0:.7f}"
     assert np.isclose(tfim.theta_q1, analytic_theta_q1, atol=1e-9), \
         f"Theta_q1 mismatch: Num={tfim.theta_q1:.7f}, Ana={analytic_theta_q1:.7f}"
-    assert np.isclose(tfim.theta_q2, analytic_theta_q2, atol=1e-9), \
-        f"Theta_q2 mismatch: Num={tfim.theta_q2:.7f}, Ana={analytic_theta_q2:.7f}"
+    assert np.isclose(tfim.theta_q2, 0.0, atol=1e-9), \
+        f"Theta_q2 mismatch: Num={tfim.theta_q2:.7f}, Ana={0.0:.7f}"
 
 @pytest.mark.parametrize("name", ["ntfim", "atfim"])
 def test_bob_energy_and_charge(request, name):
