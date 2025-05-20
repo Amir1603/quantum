@@ -37,8 +37,7 @@ class Charge(Observable):
         """
         Bob measures charge density rho = (I + Z) / 2. Requires Z basis.
         """
-        bob_idx = utils.get_bob_idx(self.N)
-        return f"Z{bob_idx}"
+        return "Z"
 
     def get_value(self, bitstring: str):
         """

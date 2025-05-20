@@ -10,8 +10,7 @@ class H1_B(EnergyBase):
 
     def get_bob_measurement_basis(self):
         """Indicates the runner needs to measure Z at Bob's site directly."""
-        bob_idx = utils.get_bob_idx(self.N)
-        return f"Z{bob_idx}"
+        return "Z"
 
     def get_value(self, bitstring: str):
         """Calculates eigenvalue of Z at Bob's site (+1 or -1) from measurement outcome."""
