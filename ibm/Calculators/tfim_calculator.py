@@ -24,8 +24,6 @@ class TFIMCalculator:
         self.ex1 = None
         self.gs_rho = None
         self.ex1_rho = None
-        self.total_energy = None
-        self.total_charge = None
         self.bob_energy = None
         self.bob_charge = None
         self.theta_E1 = None
@@ -43,7 +41,7 @@ class TFIMCalculator:
     def apply_errors(self, conf):
         # Apply errors to the density matrix
         p_err = 0
-        rho_err = np.zeros((4, 4), dtype=complex)
+        rho_err = np.zeros((2**conf.N, 2**conf.N), dtype=complex)
 
         if conf.p_depol_error != 0:
             rho_bob_reduced = partial_trace(self.gs_rho, [utils.get_bob_idx(self.N)])
