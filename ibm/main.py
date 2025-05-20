@@ -10,14 +10,6 @@ import plotting
 import reporting
 from qiskit_ibm_runtime import QiskitRuntimeService
 
-
-run_time_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-output_dir = f'artifacts/{run_time_str}'
-os.makedirs(output_dir, exist_ok=True)
-
-# Create Results instance with output directory
-res = Results(run_time_str, output_dir)
-
 def print_run_plan(confs):
     print('#########################################################')
     print(f'Configurations to run: {len(confs)}')
@@ -111,6 +103,7 @@ if __name__ == "__main__":
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
     parser.add_argument('--run-analytical', action='store_true', help="Run in analytical calculations mode instead of numerical")
+    parser.add_argument('--output-dir', '-o', required=False, help="Set output directory")
     parser.add_argument('-N', type=int, default=2, help="Choose value for N - the number of sites in chain")
 
     error_group = parser.add_mutually_exclusive_group(required=False)
@@ -176,6 +169,15 @@ if __name__ == "__main__":
     print(f"Generated {len(confs)} configurations to run.")
     print_run_plan(confs) # Display the plan based on the configurations list
     input("Press Enter to continue...") # Optional confirmation step
+
+    run_time_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    dir_name = args.output_dir if args.output_dir else run_time_str
+
+    output_dir = f'artifacts/{dir_name}'
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Create Results instance with output directory
+    res = Results(output_dir)
 
     # --- Observable Setup ---
     observable_factory = ObservableFactory()

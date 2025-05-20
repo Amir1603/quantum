@@ -11,8 +11,7 @@ from Observables import ObservableFactory, Observable
 from conf import Conf
 
 class Results:
-    def __init__(self, run_time, output_dir):
-        self.run_time = run_time
+    def __init__(self, output_dir):
         # Directory to save results file and plots
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
