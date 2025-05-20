@@ -19,7 +19,7 @@ do
     do
         dir="N$N-Numerical-$err"
         echo "Running: $dir"
-        echo | python main.py -Js  -N $N --$err -o $dir
+        echo | python main.py -Js 7 -N $N --$err -o $dir
 
         if [ "$N" -eq 2 ]; then
             dir="N$N-Analytical-$err"
