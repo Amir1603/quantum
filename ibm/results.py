@@ -28,10 +28,11 @@ class Results:
             (conf, obs, backend_name, noise_params, counts, total_shots, job_id)
         )
 
-    def process_results(self):
+    def process_results(self, derived_obs: List[Observable]):
         """Processes raw results, calculates values, and handles derived observables."""
         print("Processing raw results...")
-        self.processed_results = []
+
+        current_results = []
 
         # --- Process Directly Simulated Observables ---
         for conf, observable, backend_name, noise_params, counts, total_shots, job_id in self._raw_results_buffer:
@@ -76,16 +77,18 @@ class Results:
                 correlation=correlation,
                 is_derived=False
             )
-            self.processed_results.append(run_result)
+            current_results.append(run_result)
+
+        self.processed_results.extend(current_results)
 
         # --- Calculate Derived Observables ---
-        self._calculate_all_derived_observables(self.processed_results)
+        self._calculate_all_derived_observables(current_results, derived_obs)
 
         # Clear buffer after processing
         self._raw_results_buffer = []
-        print(f"Processing complete. {len(self.processed_results)} results generated.")
+        print(f"Processing complete. {len(current_results)} results generated.")
 
-    def _get_unique_derived_observables(unique_properties: List[str]):
+    def _get_unique_derived_observables(unique_properties: List[str], derived_obs):
         """
         Filters observables to ensure uniqueness based on a combination of properties.
 
@@ -94,7 +97,7 @@ class Results:
         """
         seen = set()
         unique_observables = []
-        for obs in ObservableFactory().derived_observables:
+        for obs in derived_obs:
             # Create a tuple of the specified properties
             property_values = tuple(getattr(obs, prop, None) for prop in unique_properties)
             if property_values not in seen:
@@ -104,10 +107,7 @@ class Results:
         return unique_observables
 
 
-    def _calculate_all_derived_observables(self, current_results: list):
-        # FIXME: This implementation runs over all derived observable and for
-        # each one it runs over all H1, V values. It should run just over matching
-        # configurations of the observables.
+    def _calculate_all_derived_observables(self, current_results: list, derived_obs: List[Observable]):
         """
         Iterates through all known derived observables and calculates their values.
         """
@@ -126,7 +126,7 @@ class Results:
              )
              grouped_results[key][res.observable.name] = res
 
-        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'J', 'theta'])
+        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'J', 'theta'], derived_obs)
         for observable in derived_obs:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue

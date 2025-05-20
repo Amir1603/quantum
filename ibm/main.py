@@ -197,7 +197,7 @@ if __name__ == "__main__":
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones
-        simulatable_obs_list = observable_factory.create_observables(conf, tfim)
+        simulatable_obs_list, derived_obs = observable_factory.create_observables(conf, tfim)
 
         # Initialize Runner (or re-init if backend/noise changes significantly)
         # Pass only the list of observables to simulate
@@ -211,9 +211,11 @@ if __name__ == "__main__":
 
         print(f"\n--- Finished Configuration {i+1}/{len(confs)} ---")
 
+        # Process run results
+        res.process_results(derived_obs)
+
     # --- Post-Processing ---
     print("\n--- Post-Processing Results ---")
-    res.process_results() # Calculate metrics, derive observables
 
     # --- Save Processed Results ---
     res.save_results("processed_results.json")
