@@ -97,13 +97,13 @@ def report_and_plot(results_obj: Results, args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Quantum Teleportation Simulation")
 
+    parser.add_argument('--J-for-h', '-Js', required=False, type=int, help="Run multiple values of J configurations for a specific h value")
     parser.add_argument('--all-hJ', action='store_true', help="Run all coupling pairs configurations")
-    parser.add_argument('--all-J-for-h', action='store_true', help="Run all J configurations for a specific h value")
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
     parser.add_argument('--run-analytical', action='store_true', help="Run in analytical calculations mode instead of numerical")
-    parser.add_argument('--output-dir', '-o', required=False, help="Set output directory")
+    parser.add_argument('--output-dir', '-o', required=False, type=str, help="Set output directory")
     parser.add_argument('-N', type=int, default=2, help="Choose value for N - the number of sites in chain")
 
     error_group = parser.add_mutually_exclusive_group(required=False)
@@ -132,8 +132,8 @@ if __name__ == "__main__":
 
     if args.all_hJ:
         confs = [conf for c in confs for conf in Conf.generate_hJ_combinations(c)]
-    elif args.all_J_for_h:
-        confs = [conf for c in confs for conf in Conf.generate_J_for_h(c)]
+    elif args.J_for_h:
+        confs = [conf for c in confs for conf in Conf.generate_J_for_h(c, num_points=args.J_for_h)]
 
     if args.all_dephase:
         confs = [conf for c in confs for conf in Conf.generate_p_dephase_values(c)]

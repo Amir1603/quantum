@@ -5,16 +5,26 @@ Ns=(2 3 4)
 
 for N in "${Ns[@]}"
 do
+    dir="N$N-Numerical"
+    echo "Running: $dir"
+    python main.py --both-alice-values -Js 40 -N $N -o $dir
+
+    if [ "$N" -eq 2 ]; then
+        dir="N$N-Analytical"
+        echo "Running: $dir"
+        python main.py --run-analytical --both-alice-values -Js 40 -N $N -o $dir
+    fi
+
     for err in "${errors[@]}"
     do
         dir="N$N-Numerical-$err"
         echo "Running: $dir"
-        python main.py --all-J-for-h --both-alice-values -N $N --$err -o $dir
+        python main.py -Js  -N $N --$err -o $dir
 
         if [ "$N" -eq 2 ]; then
             dir="N$N-Analytical-$err"
             echo "Running: $dir"
-            python main.py --all-J-for-h --both-alice-values --run-analytical -N $N --$err -o $dir
+            python main.py --run-analytical -Js 7 -N $N --$err -o $dir
         fi
     done
 done
