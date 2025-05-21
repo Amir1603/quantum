@@ -88,7 +88,7 @@ class Runner():
             elif bob_neighbour_meas_basis == "Z":
                 pass # For measuting Z we do nothing
             else:
-                raise ValueError("Unknown measurement basis for Bob!")
+                raise ValueError("Unknown measurement basis for Bob's neighbour!")
 
             qc.measure(bobs_neighbour_idx, bobs_neighbour_idx)
 

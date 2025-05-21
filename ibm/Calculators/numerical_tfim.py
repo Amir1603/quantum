@@ -46,6 +46,7 @@ class NumericalTFIM(TFIMCalculator):
             for j in range(self.N):
                 term = kron(term, NumericalTFIM.Z if j == i else NumericalTFIM.I)
             H += self.h * term
+
         return H
 
     # Ground State and First Excited State Calculation
@@ -118,15 +119,10 @@ class NumericalTFIM(TFIMCalculator):
         bob_site = utils.get_bob_idx(self.N)
         bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
-        op_X0 = NumericalTFIM._get_pauli_operator_on_site('X', alice_site, self.N) # Alice is X0
-        op_Xbob = NumericalTFIM._get_pauli_operator_on_site('X', bob_site, self.N)
         op_Zbob = NumericalTFIM._get_pauli_operator_on_site('Z', bob_site, self.N)
-        op_Xbobneighbor_Zbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('Z', bob_site)], self.N)
         op_Xbobneighbor_Xbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('X', bob_site)], self.N)
         op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
-        op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', bob_site)], self.N)
         op_X0_Xbobneighbor_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor_site), ('Z', bob_site)], self.N)
-        op_X0_Xbobneighbor_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor_site), ('X', bob_site)], self.N)
 
         Zbob_exp = NumericalTFIM._compute_expectation_value(op_Zbob, self.gs0)
         Xbobneighbor_Xbob_exp = NumericalTFIM._compute_expectation_value(op_Xbobneighbor_Xbob, self.gs0)
