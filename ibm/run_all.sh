@@ -22,11 +22,11 @@ do
         if [ "$N" -eq 2 ]; then
             dir="N$N-Analytical-$err"
             echo "Running: $dir"
-            echo | python main.py --run-analytical -Js 7 -N $N --$err -o $dir
+            echo | python main.py --run-analytical -Js 4 -N $N --$err -o $dir
         else
             dir="N$N-Numerical-$err"
             echo "Running: $dir"
-            echo | python main.py -Js 7 -N $N --$err -o $dir
+            echo | python main.py -Js 4 -N $N --$err -o $dir
         fi
     done
 done
