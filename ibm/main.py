@@ -10,14 +10,6 @@ import plotting
 import reporting
 from qiskit_ibm_runtime import QiskitRuntimeService
 
-
-run_time_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-output_dir = f'artifacts/{run_time_str}'
-os.makedirs(output_dir, exist_ok=True)
-
-# Create Results instance with output directory
-res = Results(run_time_str, output_dir)
-
 def print_run_plan(confs):
     print('#########################################################')
     print(f'Configurations to run: {len(confs)}')
@@ -42,58 +34,55 @@ def report_and_plot(results_obj: Results, args):
         return
 
     # --- Plotting ---
-    if args.N == 2:
-        filter = {}
-        # filter = {'conf_params.xor_alice_res': 0}
+    filter = {}
+    # filter = {'conf_params.xor_alice_res': 0}
 
-        energy_file = None
-        charge_file = None
+    energy_file = None
+    charge_file = None
+    h1_file = None
+    v_file = None
 
-        if args.classical_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.J'])
-        elif args.depolarization_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['charge'], group_by=['conf_params.J'])
-        elif args.bit_flip_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
-        elif args.alice_phase_flip_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
-        elif args.bob_phase_flip_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
-        elif args.excited_mixture_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['charge'], group_by=['conf_params.J'])
-        elif args.excited_superposition_errors:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['charge'], group_by=['conf_params.J'])
+    if args.classical_errors:
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['E_B'], group_by=['conf_params.J'])
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.J'])
+    elif args.depolarization_errors:
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['E_B'], group_by=['conf_params.J'])
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['charge'], group_by=['conf_params.J'])
+    elif args.bit_flip_errors:
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['E_B'], group_by=['conf_params.J'])
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
+    elif args.alice_phase_flip_errors:
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['E_B'], group_by=['conf_params.J'])
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
+    elif args.bob_phase_flip_errors:
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['E_B'], group_by=['conf_params.J'])
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
+    elif args.excited_mixture_errors:
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['E_B'], group_by=['conf_params.J'])
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['charge'], group_by=['conf_params.J'])
+    elif args.excited_superposition_errors:
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['E_B'], group_by=['conf_params.J'])
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['charge'], group_by=['conf_params.J'])
 
-        if args.both_alice_values:
-            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['E_B'], group_by=['conf_params.xor_alice_res'])
-            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
+    if args.both_alice_values:
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['E_B'], group_by=['conf_params.xor_alice_res'])
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
+        h1_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['H1_B'], group_by=['conf_params.xor_alice_res'])
+        v_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['V_B'], group_by=['conf_params.xor_alice_res'])
 
-        if energy_file: plot_filenames.append(energy_file)
-        if charge_file: plot_filenames.append(charge_file)
+    if energy_file: plot_filenames.append(energy_file)
+    if charge_file: plot_filenames.append(charge_file)
+    if h1_file: plot_filenames.append(h1_file)
+    if v_file: plot_filenames.append(v_file)
 
-        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['E_B'], group_by=['conf_params.xor_alice_res'])
-        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.xor_alice_res'])
-
-    else:
-        filter = {}
-        file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
-        if file_name: plot_filenames.append(file_name)
-
-        file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['E_B'], group_by=['conf_params.xor_alice_res'])
-        if file_name: plot_filenames.append(file_name)
+    # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['E_B'], group_by=['conf_params.xor_alice_res'])
+    # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.xor_alice_res'])
 
     # filter = {'conf_params.h': 1.0, 'conf_params.J': 1.0}
     # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_dephase')
     # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'p_dephase')
 
-    # files = plotting.plot_counts_hist()
+    # files = plotting.plot_counts_hist(results_list, output_dir, obs=['H1_B', 'V_B', 'charge'], target_J=2.1)
     # plot_filenames.extend(files)
 
     # file_name = plotting.plot_heatmap(results_list, output_dir)
@@ -105,12 +94,13 @@ def report_and_plot(results_obj: Results, args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Quantum Teleportation Simulation")
 
+    parser.add_argument('--J-for-h', '-Js', required=False, type=int, help="Run multiple values of J configurations for a specific h value")
     parser.add_argument('--all-hJ', action='store_true', help="Run all coupling pairs configurations")
-    parser.add_argument('--all-J-for-h', action='store_true', help="Run all J configurations for a specific h value")
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
     parser.add_argument('--run-analytical', action='store_true', help="Run in analytical calculations mode instead of numerical")
+    parser.add_argument('--output-dir', '-o', required=False, type=str, help="Set output directory")
     parser.add_argument('-N', type=int, default=2, help="Choose value for N - the number of sites in chain")
 
     error_group = parser.add_mutually_exclusive_group(required=False)
@@ -139,8 +129,8 @@ if __name__ == "__main__":
 
     if args.all_hJ:
         confs = [conf for c in confs for conf in Conf.generate_hJ_combinations(c)]
-    elif args.all_J_for_h:
-        confs = [conf for c in confs for conf in Conf.generate_J_for_h(c)]
+    elif args.J_for_h:
+        confs = [conf for c in confs for conf in Conf.generate_J_for_h(c, num_points=args.J_for_h)]
 
     if args.all_dephase:
         confs = [conf for c in confs for conf in Conf.generate_p_dephase_values(c)]
@@ -177,6 +167,15 @@ if __name__ == "__main__":
     print_run_plan(confs) # Display the plan based on the configurations list
     input("Press Enter to continue...") # Optional confirmation step
 
+    run_time_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    dir_name = args.output_dir if args.output_dir else run_time_str
+
+    output_dir = f'artifacts/{dir_name}'
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Create Results instance with output directory
+    res = Results(output_dir)
+
     # --- Observable Setup ---
     observable_factory = ObservableFactory()
 
@@ -195,7 +194,7 @@ if __name__ == "__main__":
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones
-        simulatable_obs_list = observable_factory.create_observables(conf, tfim)
+        simulatable_obs_list, derived_obs = observable_factory.create_observables(conf, tfim)
 
         # Initialize Runner (or re-init if backend/noise changes significantly)
         # Pass only the list of observables to simulate
@@ -209,9 +208,11 @@ if __name__ == "__main__":
 
         print(f"\n--- Finished Configuration {i+1}/{len(confs)} ---")
 
+        # Process run results
+        res.process_results(derived_obs)
+
     # --- Post-Processing ---
     print("\n--- Post-Processing Results ---")
-    res.process_results() # Calculate metrics, derive observables
 
     # --- Save Processed Results ---
     res.save_results("processed_results.json")

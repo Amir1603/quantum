@@ -573,7 +573,7 @@ def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, pa
         print(f"Error during subplot generation: {e}")
 
 
-def plot_counts_hist(results_list, output_dir, obs='charge'):
+def plot_counts_hist(results_list, output_dir, obs=['charge'], target_J=1.0):
     try:
         print("\n--- Generating Example Histograms ---")
         hist_count = 0
@@ -583,10 +583,9 @@ def plot_counts_hist(results_list, output_dir, obs='charge'):
         for result in results_list:
                 # Define criteria for which runs to generate histograms
                 is_target_hist = (
-                    result.observable.name == obs and
+                    result.observable.name in obs and
                     get_nested_value(result, 'conf_params.h') == 1.0 and
-                    get_nested_value(result, 'conf_params.J') == 1.0 and
-                    get_nested_value(result, 'conf_params.p_dephase') == 0.0
+                    get_nested_value(result, 'conf_params.J') == target_J
                 )
 
                 # Check if counts data exists and if it matches the target criteria
@@ -594,8 +593,8 @@ def plot_counts_hist(results_list, output_dir, obs='charge'):
                     # Create descriptive info for the title and filename
                     h_val = get_nested_value(result, 'conf_params.h')
                     k_val = get_nested_value(result, 'conf_params.J')
-                    p_d_val = get_nested_value(result, 'conf_params.p_dephase')
-                    title_info = f"h={h_val}, J={k_val}, p_d={p_d_val}"
+
+                    title_info = f"h={h_val}, J={k_val}"
 
                     hist_filename = plot_counts_histogram(
                         counts=result.counts,

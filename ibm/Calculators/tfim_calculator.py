@@ -1,9 +1,17 @@
 import utils
 import numpy as np
 import cmath
+from scipy.sparse import kron, eye, csc_matrix
 from qiskit.quantum_info import Statevector, DensityMatrix, partial_trace
 
 class TFIMCalculator:
+    # Pauli Matrices
+    I = csc_matrix(np.array([[1, 0], [0, 1]], dtype=complex))
+    X = csc_matrix(np.array([[0, 1], [1, 0]], dtype=complex))
+    Y = csc_matrix(np.array([[0, -1j], [1j, 0]], dtype=complex))
+    Z = csc_matrix(np.array([[1, 0], [0, -1]], dtype=complex))
+    pauli_ops = {'I': I, 'X': X, 'Y': Y, 'Z': Z}
+
     def __init__(self, N, J, h):
         """
         Initialize the NumericalTFIM class with parameters for the transverse field Ising model.
@@ -37,7 +45,24 @@ class TFIMCalculator:
         This method should be overridden by subclasses to perform specific calculations.
         """
         raise NotImplementedError("Subclasses should implement this method.")
-    
+
+    # Helper function to create a Pauli operator on a specific site
+    def _get_pauli_operator_on_site(op_char, site_idx, N):
+        # TODO: Understand why?!?!
+        site_idx = N - 1 - site_idx
+
+        # pauli_ops is a dict {'I': I_op, 'X': X_op, ...}
+        if not (0 <= site_idx < N):
+            raise ValueError(f"Site index {site_idx} out of bounds for N={N}")
+
+        op_list = [TFIMCalculator.pauli_ops[op_char] if i == site_idx else TFIMCalculator.pauli_ops['I'] for i in range(N)]
+
+        full_operator = op_list[0]
+        for i_op in range(1, N):
+            full_operator = kron(full_operator, op_list[i_op], format="csc")
+
+        return full_operator
+
     def apply_errors(self, conf):
         # Apply errors to the density matrix
         p_err = 0
@@ -52,17 +77,23 @@ class TFIMCalculator:
             p_err = conf.p_depol_error
 
         if conf.p_bitflip_error != 0:
-            X_bob = np.kron(np.array([[0, 1], [1, 0]]), np.eye(2))
+            bob_idx = utils.get_bob_idx(conf.N)
+            X_bob = TFIMCalculator._get_pauli_operator_on_site('X', bob_idx, conf.N)
+
             rho_err = X_bob @ self.gs_rho.data @ X_bob
             p_err = conf.p_bitflip_error
 
         if conf.p_alice_phaseflip_error != 0:
-            Z_alice = np.kron(np.eye(2), np.array([[1, 0], [0, -1]]))
+            alice_idx = utils.get_alice_idx(conf.N)
+            Z_alice = TFIMCalculator._get_pauli_operator_on_site('Z', alice_idx, conf.N)
+
             rho_err = Z_alice @ self.gs_rho.data @ Z_alice
             p_err = conf.p_alice_phaseflip_error
 
         if conf.p_bob_phaseflip_error != 0:
-            Z_bob = np.kron(np.array([[1, 0], [0, -1]]), np.eye(2))
+            bob_idx = utils.get_bob_idx(conf.N)
+            Z_bob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_idx, conf.N)
+
             rho_err = Z_bob @ self.gs_rho.data @ Z_bob
             p_err = conf.p_bob_phaseflip_error
 

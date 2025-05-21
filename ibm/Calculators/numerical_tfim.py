@@ -2,16 +2,10 @@ import numpy as np
 from scipy.sparse import kron, eye, csc_matrix
 from scipy.sparse.linalg import eigsh
 import utils
+from qiskit.quantum_info import Statevector, DensityMatrix
 from .tfim_calculator import TFIMCalculator
 
 class NumericalTFIM(TFIMCalculator):
-    # Pauli Matrices
-    I = csc_matrix(np.array([[1, 0], [0, 1]], dtype=complex))
-    X = csc_matrix(np.array([[0, 1], [1, 0]], dtype=complex))
-    Y = csc_matrix(np.array([[0, -1j], [1j, 0]], dtype=complex))
-    Z = csc_matrix(np.array([[1, 0], [0, -1]], dtype=complex))
-    pauli_ops = {'I': I, 'X': X, 'Y': Y, 'Z': Z}
-
     def __init__(self, N, J, h):
         super().__init__(N, J, h)
         self.H = self._build_tfim_hamiltonian()
@@ -24,7 +18,9 @@ class NumericalTFIM(TFIMCalculator):
                density matrix of the ground state, total energy, total charge,
                expectation values of Z and XX operators.
         """
-        self.E0, self.gs0, self.E1, self.ex1 = self._compute_lowest_states()
+        self.E0, gs0, self.E1, ex1 = self._compute_lowest_states()
+
+        self.gs0, self.ex1 = Statevector(gs0), Statevector(ex1)
 
         # Compute density matrices
         self.gs_rho = NumericalTFIM._compute_density_matrix(self.gs0)
@@ -39,13 +35,14 @@ class NumericalTFIM(TFIMCalculator):
         for i in range(self.N-1):
             term = 1
             for j in range(self.N):
-                term = kron(term, NumericalTFIM.X if j == i or j == i + 1 else NumericalTFIM.I)
+                term = kron(term, TFIMCalculator.X if j == i or j == i + 1 else TFIMCalculator.I)
             H += self.J * term
         for i in range(self.N):
             term = 1
             for j in range(self.N):
-                term = kron(term, NumericalTFIM.Z if j == i else NumericalTFIM.I)
+                term = kron(term, TFIMCalculator.Z if j == i else TFIMCalculator.I)
             H += self.h * term
+
         return H
 
     # Ground State and First Excited State Calculation
@@ -57,27 +54,15 @@ class NumericalTFIM(TFIMCalculator):
 
     # Density Matrix Calculation
     def _compute_density_matrix(state):
-        return np.outer(state, np.conj(state))
-
-    # Helper function to create a Pauli operator on a specific site
-    def _get_pauli_operator_on_site(op_char, site_idx, N):
-        # pauli_ops is a dict {'I': I_op, 'X': X_op, ...}
-        if not (0 <= site_idx < N):
-            raise ValueError(f"Site index {site_idx} out of bounds for N={N}")
-        
-        op_list = [NumericalTFIM.pauli_ops[op_char] if i == site_idx else NumericalTFIM.pauli_ops['I'] for i in range(N)]
-        
-        full_operator = op_list[0]
-        for i_op in range(1, N):
-            full_operator = kron(full_operator, op_list[i_op], format="csc")
-        return full_operator
+        return DensityMatrix(state)
 
     # Helper function for multi-site operators like X_i Z_j or X_i X_j Z_k
     def _get_multi_site_operator(ops_tuple_list, N):
-        op_tuple_list = [(NumericalTFIM.pauli_ops[char], idx) for char, idx in ops_tuple_list]
+        # TODO: Understand if and why this should be `idx -> N-1-idx`
+        op_tuple_list = [(TFIMCalculator.pauli_ops[char], N - 1 - idx) for char, idx in ops_tuple_list]
 
         # Starting from identity operator on all sites
-        op_list = [NumericalTFIM.pauli_ops['I']] * N
+        op_list = [TFIMCalculator.pauli_ops['I']] * N
 
         for op, site in op_tuple_list:
             op_list[site] = op_list[site] @ op
@@ -90,7 +75,7 @@ class NumericalTFIM(TFIMCalculator):
 
     # Helper to compute expectation value <gs|Op|gs>
     def _compute_expectation_value(op_matrix, gs):
-        gs_col_sparse = csc_matrix(gs.reshape(-1, 1))
+        gs_col_sparse = csc_matrix(gs.data.reshape(-1, 1))
         if not isinstance(op_matrix, csc_matrix):
             op_matrix = csc_matrix(op_matrix)
         val = gs_col_sparse.conj().T @ op_matrix @ gs_col_sparse
@@ -118,15 +103,10 @@ class NumericalTFIM(TFIMCalculator):
         bob_site = utils.get_bob_idx(self.N)
         bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
-        op_X0 = NumericalTFIM._get_pauli_operator_on_site('X', alice_site, self.N) # Alice is X0
-        op_Xbob = NumericalTFIM._get_pauli_operator_on_site('X', bob_site, self.N)
-        op_Zbob = NumericalTFIM._get_pauli_operator_on_site('Z', bob_site, self.N)
-        op_Xbobneighbor_Zbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('Z', bob_site)], self.N)
+        op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
         op_Xbobneighbor_Xbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('X', bob_site)], self.N)
         op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
-        op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', bob_site)], self.N)
         op_X0_Xbobneighbor_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor_site), ('Z', bob_site)], self.N)
-        op_X0_Xbobneighbor_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor_site), ('X', bob_site)], self.N)
 
         Zbob_exp = NumericalTFIM._compute_expectation_value(op_Zbob, self.gs0)
         Xbobneighbor_Xbob_exp = NumericalTFIM._compute_expectation_value(op_Xbobneighbor_Xbob, self.gs0)
@@ -149,14 +129,14 @@ class NumericalTFIM(TFIMCalculator):
     # Bob's Energy and Charge Expectation Calculation
 
     def _compute_bob_gs_energy_and_charge(self):
-        gs = csc_matrix(self.gs0.reshape(-1, 1))
+        gs = csc_matrix(self.gs0.data.reshape(-1, 1))
 
         bob_site = utils.get_bob_idx(self.N)
         bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
-        H_b = (self.h * NumericalTFIM._get_pauli_operator_on_site('Z', bob_site, self.N) +
+        H_b = (self.h * TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N) +
                self.J * NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('X', bob_site)], self.N))
-        Q_b = kron(eye(2**(self.N-1)), (NumericalTFIM.I + NumericalTFIM.Z) / 2)
+        Q_b = kron(eye(2**(self.N-1)), (TFIMCalculator.I + TFIMCalculator.Z) / 2)
 
         energy_bob = (gs.getH() @ (H_b @ gs)).toarray().real.item()
         charge_bob = (gs.getH() @ (Q_b @ gs)).toarray().real.item()

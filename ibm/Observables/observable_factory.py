@@ -17,10 +17,8 @@ class Singleton(type):
 
 
 class ObservableFactory(metaclass=Singleton):
-    def __init__(self):
-        self.derived_observables = []
+    def create_observables(self, conf: Conf, calc: TFIMCalculator) -> tuple[list[Observable], list[Observable]]:
+        obs = [H1_B(conf, calc), V_B(conf, calc), Charge(conf, calc)]
+        derived_obs = [BobsEnergy(conf, calc)]
 
-    def create_observables(self, conf: Conf, calc: TFIMCalculator) -> list[Observable]:
-        self.derived_observables.append(BobsEnergy(conf, calc))
-
-        return [H1_B(conf, calc), V_B(conf, calc), Charge(conf, calc)]
+        return obs, derived_obs
