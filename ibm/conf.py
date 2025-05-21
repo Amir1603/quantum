@@ -19,7 +19,7 @@ class Conf:
 
     @staticmethod
     def generate_J_for_h(conf, num_points=40):
-        max_J = 3.0
+        max_J = 4.0
         Js = np.linspace(max_J/num_points, max_J, num_points).tolist()
 
         confs = []
@@ -136,7 +136,7 @@ class Conf:
 
     @staticmethod
     def generate_excited_mixture_error(conf, num_points=11):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
+        probs = np.linspace(0.0, 0.2, num_points).tolist()
 
         confs = []
         for p in probs:
@@ -148,7 +148,7 @@ class Conf:
 
     @staticmethod
     def generate_excited_superposition_error(conf, num_points=11):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
+        probs = np.linspace(0.0, 0.5, num_points).tolist()
 
         confs = []
         for p in probs:

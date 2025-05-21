@@ -39,6 +39,8 @@ def report_and_plot(results_obj: Results, args):
 
     energy_file = None
     charge_file = None
+    h1_file = None
+    v_file = None
 
     if args.classical_errors:
         energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['E_B'], group_by=['conf_params.J'])
