@@ -102,7 +102,6 @@ class NumericalTFIM(TFIMCalculator):
 
         alice_site = utils.get_alice_idx(self.N)
         bob_site = utils.get_bob_idx(self.N)
-        bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
         op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
         op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
@@ -128,12 +127,12 @@ class NumericalTFIM(TFIMCalculator):
     def _compute_bob_gs_energy_and_charge(self):
         gs = csc_matrix(self.gs0.data.reshape(-1, 1))
 
+        alice_site = utils.get_alice_idx(self.N)
         bob_site = utils.get_bob_idx(self.N)
-        bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
         H_b = (self.h * TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N) +
-               self.J * NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('X', bob_site)], self.N))
-        Q_b = kron(eye(2**(self.N-1)), (TFIMCalculator.I + TFIMCalculator.Z) / 2)
+               self.J * NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N))
+        Q_b = kron((TFIMCalculator.I + TFIMCalculator.Z) / 2, eye(2**(self.N-1)))
 
         energy_bob = (gs.getH() @ (H_b @ gs)).toarray().real.item()
         charge_bob = (gs.getH() @ (Q_b @ gs)).toarray().real.item()
