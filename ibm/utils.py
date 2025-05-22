@@ -26,9 +26,6 @@ def get_nested_value(data, path_str):
 def get_alice_idx(N):
     return 0
 
-def get_bob_neighbor_idx(N):
-    return N - 2
-
 def get_bob_idx(N):
     return N - 1
 

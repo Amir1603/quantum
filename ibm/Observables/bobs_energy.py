@@ -30,9 +30,9 @@ class BobsEnergy(Observable):
     # --- Metadata ---
     def description(self):
         bob_idx = utils.get_bob_idx(self.N)
-        bobs_beighbor_idx = utils.get_bob_neighbor_idx(self.N)
+        alice_idx = utils.get_alice_idx(self.N)
 
-        return f"Derived E_B = <J*X{bobs_beighbor_idx}X{bob_idx} + Z{bob_idx}> - <H_B>_gs for N={self.N}"
+        return f"Derived E_B = <J*X{alice_idx}X{bob_idx} + Z{bob_idx}> - <H_B>_gs for N={self.N}"
 
     @staticmethod
     def is_derived_observable():
