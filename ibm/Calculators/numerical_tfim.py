@@ -32,11 +32,12 @@ class NumericalTFIM(TFIMCalculator):
     # Hamiltonian Construction for TFIM
     def _build_tfim_hamiltonian(self):
         H = csc_matrix((2**self.N, 2**self.N), dtype=complex)
-        for i in range(self.N-1):
+        for i in range(1, self.N):
             term = 1
             for j in range(self.N):
-                term = kron(term, TFIMCalculator.X if j == i or j == i + 1 else TFIMCalculator.I)
+                term = kron(term, TFIMCalculator.X if j == i or j == 0 else TFIMCalculator.I)
             H += self.J * term
+
         for i in range(self.N):
             term = 1
             for j in range(self.N):
@@ -101,20 +102,15 @@ class NumericalTFIM(TFIMCalculator):
 
         alice_site = utils.get_alice_idx(self.N)
         bob_site = utils.get_bob_idx(self.N)
-        bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
-        op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
-        op_Xbobneighbor_Xbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('X', bob_site)], self.N)
         op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
-        op_X0_Xbobneighbor_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor_site), ('Z', bob_site)], self.N)
+        op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
 
         Zbob_exp = NumericalTFIM._compute_expectation_value(op_Zbob, self.gs0)
-        Xbobneighbor_Xbob_exp = NumericalTFIM._compute_expectation_value(op_Xbobneighbor_Xbob, self.gs0)
         X0_Xbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbob, self.gs0)
-        X0_Xbobneighbor_Zbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbobneighbor_Zbob, self.gs0)
 
-        num_theta_E1 = -self.h * X0_Xbob_exp + self.J * X0_Xbobneighbor_Zbob_exp
-        den_theta_E1 = self.h * Zbob_exp + self.J * Xbobneighbor_Xbob_exp
+        num_theta_E1 = -self.h * X0_Xbob_exp + self.J * Zbob_exp
+        den_theta_E1 = self.h * Zbob_exp + self.J * X0_Xbob_exp
         theta_E1 = 0.5 * np.arctan(num_theta_E1 / den_theta_E1)
 
         num_theta_q1 = -X0_Xbob_exp
@@ -131,12 +127,12 @@ class NumericalTFIM(TFIMCalculator):
     def _compute_bob_gs_energy_and_charge(self):
         gs = csc_matrix(self.gs0.data.reshape(-1, 1))
 
+        alice_site = utils.get_alice_idx(self.N)
         bob_site = utils.get_bob_idx(self.N)
-        bob_neighbor_site = utils.get_bob_neighbor_idx(self.N)
 
         H_b = (self.h * TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N) +
-               self.J * NumericalTFIM._get_multi_site_operator([('X', bob_neighbor_site), ('X', bob_site)], self.N))
-        Q_b = kron(eye(2**(self.N-1)), (TFIMCalculator.I + TFIMCalculator.Z) / 2)
+               self.J * NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N))
+        Q_b = kron((TFIMCalculator.I + TFIMCalculator.Z) / 2, eye(2**(self.N-1)))
 
         energy_bob = (gs.getH() @ (H_b @ gs)).toarray().real.item()
         charge_bob = (gs.getH() @ (Q_b @ gs)).toarray().real.item()

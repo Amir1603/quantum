@@ -61,9 +61,6 @@ class Runner():
 
     def _apply_measurements(self, obs: Observable, qc: QuantumCircuit, num_qubits: int):
         bob_idx = utils.get_bob_idx(num_qubits)
-        bobs_neighbour_idx = utils.get_bob_neighbor_idx(num_qubits)
-
-        bob_neighbour_meas_basis = obs.get_bob_neighbour_measurement_basis()
         bob_meas_basis = obs.get_bob_measurement_basis()
 
         if bob_meas_basis == "X":
@@ -77,20 +74,6 @@ class Runner():
             raise ValueError("Unknown measurement basis for Bob!")
 
         qc.measure(bob_idx, bob_idx)
-
-        # Ignore Bob's neghbour site if it is None
-        if bob_neighbour_meas_basis:
-            if bob_neighbour_meas_basis == "X":
-                qc.h(bobs_neighbour_idx)
-            elif bob_neighbour_meas_basis == "Y":
-                qc.sdg(bobs_neighbour_idx) # Apply S dagger
-                qc.h(bobs_neighbour_idx)
-            elif bob_neighbour_meas_basis == "Z":
-                pass # For measuting Z we do nothing
-            else:
-                raise ValueError("Unknown measurement basis for Bob's neighbour!")
-
-            qc.measure(bobs_neighbour_idx, bobs_neighbour_idx)
 
     def _qet_circuit(self, obs: Observable, conf: Conf):
         num_qubits = conf.N
