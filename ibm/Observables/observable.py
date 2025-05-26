@@ -1,7 +1,7 @@
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
+from qiskit.circuit.library import StatePreparation
 from qiskit_aer.library import SetDensityMatrix
-from scipy.sparse.linalg import eigsh
 import numpy as np
 from conf import Conf
 from Calculators.tfim_calculator import TFIMCalculator
@@ -47,9 +47,14 @@ class Observable:
         """Calculate the observable's value for a given measurement bitstring."""
         raise NotImplementedError()
 
-    def apply_ground_state(self, qc: QuantumCircuit):
+    def apply_ground_state(self, qc: QuantumCircuit, use_density_matrix: bool):
         """Prepares the ground state for the TFIM."""
-        qc.append(SetDensityMatrix(self._calc.gs_rho), list(range(self.N)))
+        qubits = list(range(self.N))
+
+        prep = SetDensityMatrix(self._calc.gs_rho) if use_density_matrix \
+                    else StatePreparation(self._calc.gs0)
+
+        qc.append(prep, qubits)
 
     def _get_operator_matrix(self, pauli_string: str) -> np.ndarray | None:
         """Helper to get sparse matrix for a given Pauli string."""

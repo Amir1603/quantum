@@ -75,7 +75,7 @@ class Runner():
 
         qc.measure(bob_idx, bob_idx)
 
-    def _qet_circuit(self, obs: Observable, conf: Conf):
+    def _qet_circuit(self, obs: Observable, conf: Conf, is_simulator: bool):
         num_qubits = conf.N
 
         # Consistently use N classical bits for arbitrary N simulation runs
@@ -87,7 +87,7 @@ class Runner():
         qc.name = f'{obs.name}_qc'
 
         # Prepare the ground state
-        obs.apply_ground_state(qc)
+        obs.apply_ground_state(qc, use_density_matrix=is_simulator)
 
         obs.apply_alice_measurement(qc)
 
@@ -154,25 +154,24 @@ class Runner():
         """Executes simulation/run for a single observable and adds raw result."""
 
         print(f"  Executing: {obs.name}")
-        qc = self._qet_circuit(obs, conf)
-        plotting.draw_circuit(qc, results.output_dir, conf)
-
         counts = {}
         job_id = None
         backend_name_used = self.backend.name
         noise_params_used = {'p_dephase': conf.p_dephase} if conf.p_dephase else {}
-        run_type = 'unknown'
-
 
         if conf.run_simulator:
-            run_type = 'simulator'
+            qc = self._qet_circuit(obs, conf, is_simulator=True)
+            plotting.draw_circuit(qc, results.output_dir, conf)
+
             counts, job_id = self._run_sim(qc, conf.total_shots)
             # Add raw results immediately
             if counts:
                  results.add_raw_result(conf, obs, backend_name_used, noise_params_used, counts, conf.total_shots, job_id)
 
         if conf.run_sampler:
-            run_type = 'sampler'
+            qc = self._qet_circuit(obs, conf, is_simulator=False)
+            plotting.draw_circuit(qc, results.output_dir, conf)
+
             # Ensure backend is suitable for Sampler (not AerSimulator unless provider setup allows)
             if isinstance(self.backend, AerSimulator):
                  print(f"Warning: Skipping Sampler run for {obs.name} on AerSimulator. Use a real backend or configure AerProvider.")
