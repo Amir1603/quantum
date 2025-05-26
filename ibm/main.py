@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     if confs[0].run_all or confs[0].run_sampler:
         print("Initializing QiskitRuntimeService()")
-        service = QiskitRuntimeService()
+        service = QiskitRuntimeService(name="amiryona-tau")
     else:
         service = None
 

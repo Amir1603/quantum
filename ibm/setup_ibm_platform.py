@@ -2,8 +2,18 @@ from qiskit_ibm_runtime import QiskitRuntimeService
 
 # Save an IBM Quantum account and set it as your default account.
 QiskitRuntimeService.save_account(
-    channel="ibm_quantum",
-    token="e9344a377d64f71cd337bf0ccfa9553f76ddcbf0573b42fcf5bf3ffb2f57dc7f5f48f055fd9fa918871dfa09dd9577a7009a36f33f965076d0130dfa985bd755",
+    channel="ibm_cloud",
+
+    # amiryona@mail.tau.ac.il
+    instance="crn:v1:bluemix:public:quantum-computing:us-east:a/520e7150f9cf4984aba778477ab14bb9:bb690880-6936-43b0-93b1-d780be5a7b84::",
+    token="xI71GPjFW6oVfClPxXX8QaxiwIXnCex1H-hmm2fjhRRo",
+    name="amiryona-tau",
+
+    # yonaamir@gmail.com
+    # instance="crn:v1:bluemix:public:quantum-computing:us-east:a/92adc7cbe49a453d8112c867c9ee21a6:7ea25023-8d5c-42b3-b6db-0be958ef929b::",
+    # token="pQEdEQlNKTo9cn_6SWTEWQhqiuau3xYVk-j8F_X05eAb",
+    # name="yonaamir",
+
     set_as_default=True,
     # Use `overwrite=True` if you're updating your token.
     overwrite=True,
