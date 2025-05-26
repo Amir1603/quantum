@@ -26,8 +26,5 @@ class EnergyBase(Observable):
 
         theta = self._calc.theta_E1 if not self.theta else self.theta
 
-        with qc.if_test((alice_idx, 0^xor_alice_res)):
-            qc.ry(2 * theta, bob_idx)
-
-        with qc.if_test((alice_idx, 1^xor_alice_res)):
-            qc.ry(-2 * theta, bob_idx)
+        qc.ry(2 * theta, bob_idx).c_if(alice_idx, 0^xor_alice_res)
+        qc.ry(-2 * theta, bob_idx).c_if(alice_idx, 1^xor_alice_res)
