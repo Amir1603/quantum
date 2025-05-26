@@ -25,9 +25,17 @@ class EnergyBase(Observable):
         bob_idx = utils.get_bob_idx(self.N)
 
         theta = self._calc.theta_E1 if not self.theta else self.theta
+        angle = -2 * theta if xor_alice_res == 0 else 2 * theta
 
-        with qc.if_test((alice_idx, 0^xor_alice_res)):
-            qc.ry(2 * theta, bob_idx)
-
-        with qc.if_test((alice_idx, 1^xor_alice_res)):
-            qc.ry(-2 * theta, bob_idx)
+        # Apply the controlled rotation based on Alice's measurement.
+        # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
+        # => We use a workaround suggested by Kazuki.
+        qc.cry(angle, alice_idx, bob_idx)
+        qc.x(alice_idx)
+        qc.cry(-angle, alice_idx, bob_idx)
+        qc.x(alice_idx)
+        # This is equivalent to:
+        ###  with qc.if_test((alice_idx, 0^xor_alice_res)):
+        ###     qc.ry(2 * theta, bob_idx)
+        ### with qc.if_test((alice_idx, 1^xor_alice_res)):
+        ###     qc.ry(-2 * theta, bob_idx)

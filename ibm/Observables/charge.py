@@ -29,9 +29,20 @@ class Charge(Observable):
 
         theta = self._calc.theta_q1 if not self.theta else self.theta
 
-        # Apply Ry(-theta) if Alice measured '1'.
-        with qc.if_test((alice_idx, 1^xor_alice_res)):
-            qc.ry(-2 * theta, bob_idx)
+        # Apply the controlled rotation based on Alice's measurement.
+        # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
+        # => We use a workaround suggested by Kazuki.
+        if xor_alice_res == 0:
+            qc.x(alice_idx)
+
+        qc.cry(-2 * theta, alice_idx, bob_idx)
+
+        if xor_alice_res == 0:
+            qc.x(alice_idx)
+
+        # This is equivalent to:
+        ###  with qc.if_test((alice_idx, 1^xor_alice_res)):
+        ###     qc.ry(-2 * theta, bob_idx)
 
     def get_bob_measurement_basis(self):
         """
