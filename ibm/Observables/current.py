@@ -30,7 +30,8 @@ class Current(Observable):
         bob_idx = utils.get_bob_idx(self.N)
 
         # Apply Ry(pi) if the classical register (cond) is 1
-        qc.ry(np.pi, bob_idx).c_if(alice_idx, 1^xor_alice_res)
+        with qc.if_test((alice_idx, 1^xor_alice_res)):
+            qc.ry(np.pi, bob_idx)
 
     def get_bob_measurement_basis(self):
         """
