@@ -4,8 +4,8 @@ import numpy as np
 
 class AnalyticalTFIM(TFIMCalculator):
     def __init__(self, N, J, h):
-        if N != 2:
-            raise ValueError("AnalyticalTFIM only supports N=2")
+        if N != 1:
+            raise ValueError("AnalyticalTFIM only supports 2-site chaing (N=1)")
 
         super().__init__(N, J, h)
 
@@ -43,7 +43,7 @@ class AnalyticalTFIM(TFIMCalculator):
 
     def _init_n2_tfim_states_and_density_matrices(self):
         """
-        Calculates the ground state density matrix for the TFIM with N=2.
+        Calculates the ground state density matrix for the TFIM with N=1.
         The ground state is a pure state: |psi> = cos(gs_theta)|00> + sin(gs_theta)|11>.
         This method returns rho = |psi><psi|.
         """

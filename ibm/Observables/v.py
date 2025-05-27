@@ -18,8 +18,8 @@ class V_B(EnergyBase):
         bob_idx = utils.get_bob_idx(self.N)
         alice_idx = utils.get_alice_idx(self.N)
 
-        bob_bit = utils.get_bit_from_counts(bitstring, bob_idx, self.N)
-        alice_bit = utils.get_bit_from_counts(bitstring, alice_idx, self.N)
+        bob_bit = utils.get_bit_from_counts(bitstring, bob_idx, self.N+1)
+        alice_bit = utils.get_bit_from_counts(bitstring, alice_idx, self.N+1)
 
         alice_val = 1 if alice_bit == '0' else -1
         bob_val = 1 if bob_bit == '0' else -1

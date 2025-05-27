@@ -57,7 +57,7 @@ class Charge(Observable):
         rho|-> = 0|-> (Eigenvalue 0, measurement '1')
         """
         bob_idx = utils.get_bob_idx(self.N)
-        bob_measurement_bit = utils.get_bit_from_counts(bitstring, bob_idx, self.N)
+        bob_measurement_bit = utils.get_bit_from_counts(bitstring, bob_idx, self.N+1)
 
         if bob_measurement_bit == '0':
             return 1.0 # Z eigenvalue +1 -> charge density eigenvalue 1

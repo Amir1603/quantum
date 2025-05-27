@@ -3,7 +3,7 @@ from .analytical_tfim import AnalyticalTFIM
 from .numerical_tfim import NumericalTFIM
 import pytest
 
-N = 2
+N = 1
 J = 1.0
 h = 1.0
 
@@ -21,13 +21,13 @@ def atfim():
 
     return atfim
 
-@pytest.mark.parametrize("tmp_N", [2, 3, 4])
+@pytest.mark.parametrize("tmp_N", [1, 2, 3])
 def test_build_tfim_hamiltonian(tmp_N):
     tfim = NumericalTFIM(tmp_N, J, h)
     tfim.calc_all()
 
     # Assert
-    assert tfim.H.shape == (2**tmp_N, 2**tmp_N), f"Expected Hamiltonian shape ({2**tmp_N}, {2**tmp_N}) for N={N}, but got {tfim.H.shape}"
+    assert tfim.H.shape == (2**(tmp_N+1), 2**(tmp_N+1)), f"Expected Hamiltonian shape ({2**(tmp_N+1)}, {2**(tmp_N+1)}) for N={N}, but got {tfim.H.shape}"
 
 @pytest.mark.parametrize("name", ["ntfim", "atfim"])
 def test_ground_state_energy(request, name):
@@ -41,16 +41,16 @@ def test_ground_state_energy(request, name):
 @pytest.mark.parametrize("name", ["ntfim", "atfim"])
 def test_optimal_rotation_angles(request, name):
     """
-    Tests compute_optimal_rotation_angles for N=2 against derived analytical expressions.
+    Tests compute_optimal_rotation_angles for N=1 against derived analytical expressions.
     """
     tfim = request.getfixturevalue(name)
 
     k = J / 2
     analytic_theta_E1 = 0.5 * np.arcsin(
-                (h * k) / np.sqrt((h**2 + 2 * k**2)**2 + h**2 * k**2)
+                (-h * k) / np.sqrt((h**2 + 2 * k**2)**2 + h**2 * k**2)
             )
 
-    analytic_theta_q1 = 0.5 * np.arctan(-J / (2 * h))
+    analytic_theta_q1 = 0.5 * np.arctan(J / (2 * h))
 
     # Assertions
     # Using a tolerance, e.g., atol=1e-9

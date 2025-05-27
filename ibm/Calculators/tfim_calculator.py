@@ -49,16 +49,16 @@ class TFIMCalculator:
     # Helper function to create a Pauli operator on a specific site
     def _get_pauli_operator_on_site(op_char, site_idx, N):
         # TODO: Understand why?!?!
-        site_idx = N - 1 - site_idx
+        site_idx = N - site_idx
 
         # pauli_ops is a dict {'I': I_op, 'X': X_op, ...}
-        if not (0 <= site_idx < N):
+        if not (0 <= site_idx <= N):
             raise ValueError(f"Site index {site_idx} out of bounds for N={N}")
 
-        op_list = [TFIMCalculator.pauli_ops[op_char] if i == site_idx else TFIMCalculator.pauli_ops['I'] for i in range(N)]
+        op_list = [TFIMCalculator.pauli_ops[op_char] if i == site_idx else TFIMCalculator.pauli_ops['I'] for i in range(N+1)]
 
         full_operator = op_list[0]
-        for i_op in range(1, N):
+        for i_op in range(1, N+1):
             full_operator = kron(full_operator, op_list[i_op], format="csc")
 
         return full_operator
@@ -66,7 +66,7 @@ class TFIMCalculator:
     def apply_errors(self, conf):
         # Apply errors to the density matrix
         p_err = 0
-        rho_err = np.zeros((2**conf.N, 2**conf.N), dtype=complex)
+        rho_err = np.zeros((2**(conf.N+1), 2**(conf.N+1)), dtype=complex)
 
         if conf.p_depol_error != 0:
             rho_bob_reduced = partial_trace(self.gs_rho, [utils.get_bob_idx(self.N)])
