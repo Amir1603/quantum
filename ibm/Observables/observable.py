@@ -49,7 +49,7 @@ class Observable:
 
     def apply_ground_state(self, qc: QuantumCircuit, use_density_matrix: bool):
         """Prepares the ground state for the TFIM."""
-        qubits = list(range(self.N))
+        qubits = list(range(self.N+1))
 
         prep = SetDensityMatrix(self._calc.gs_rho) if use_density_matrix \
                     else StatePreparation(self._calc.gs0)
@@ -58,7 +58,7 @@ class Observable:
 
     def _get_operator_matrix(self, pauli_string: str) -> np.ndarray | None:
         """Helper to get sparse matrix for a given Pauli string."""
-        if len(pauli_string) != self.N:
+        if len(pauli_string) != self.N+1:
             raise ValueError(f"Pauli string '{pauli_string}' length mismatch N={self.N}")
         try:
             op = SparsePauliOp(pauli_string)

@@ -101,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
     parser.add_argument('--run-analytical', action='store_true', help="Run in analytical calculations mode instead of numerical")
     parser.add_argument('--output-dir', '-o', required=False, type=str, help="Set output directory")
-    parser.add_argument('-N', type=int, default=2, help="Choose value for N - the number of sites in chain")
+    parser.add_argument('-N', type=int, default=1, help="Choose value for N - the number of sites (in addition to Alice) in chain")
 
     error_group = parser.add_mutually_exclusive_group(required=False)
 
@@ -115,8 +115,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.run_analytical and args.N != 2:
-        raise ValueError("Only N=2 is supported for analytical simulations. Remove `--run-analytical` for other values.")
+    if args.run_analytical and args.N != 1:
+        raise ValueError("Only N=1 is supported for analytical simulations. Remove `--run-analytical` for other values.")
 
     # --- Configuration Loading ---
     confs = [Conf(args.N)]

@@ -59,8 +59,8 @@ class Runner():
          # Keep AerSimulator separate for explicit simulator runs
          self.simulator = AerSimulator(noise_model=self.noise_model)
 
-    def _apply_measurements(self, obs: Observable, qc: QuantumCircuit, num_qubits: int):
-        bob_idx = utils.get_bob_idx(num_qubits)
+    def _apply_measurements(self, obs: Observable, qc: QuantumCircuit, N: int):
+        bob_idx = utils.get_bob_idx(N)
         bob_meas_basis = obs.get_bob_measurement_basis()
 
         if bob_meas_basis == "X":
@@ -76,11 +76,11 @@ class Runner():
         qc.measure(bob_idx, bob_idx)
 
     def _qet_circuit(self, obs: Observable, conf: Conf, is_simulator: bool):
-        num_qubits = conf.N
+        num_qubits = conf.N+1
 
         # Consistently use N classical bits for arbitrary N simulation runs
         # even if not all are measured by the specific observable
-        num_clbits = conf.N
+        num_clbits = conf.N+1
 
 
         qc = QuantumCircuit(num_qubits, num_clbits)
@@ -94,14 +94,14 @@ class Runner():
         # Idle Bob’s qubit
         if conf.delay_time and conf.delay_time > 0:
             # Ensure delay_time is in appropriate units (dt, sec). Assume dt for Aer.
-            bob_idx = utils.get_bob_idx(num_qubits)
+            bob_idx = utils.get_bob_idx(conf.N)
             qc.delay(conf.delay_time, bob_idx, unit='dt')
 
         # Bob's conditional operation
         # Pass the classical register/bit index Alice measured into
         obs.apply_bob_operation(qc, conf.xor_alice_res)
 
-        self._apply_measurements(obs, qc, num_qubits)
+        self._apply_measurements(obs, qc, conf.N)
 
         return qc
 

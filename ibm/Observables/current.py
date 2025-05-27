@@ -51,7 +51,7 @@ class Current(Observable):
         - Intended state |+i>_Y -> (Sdg, H) -> |0> -> Measured '0' -> Eigenvalue +1
         - Intended state |-i>_Y -> (Sdg, H) -> |1> -> Measured '1' -> Eigenvalue -1
         """
-        bob_measurement_result = utils.get_bit_from_counts(bitstring, utils.get_bob_idx(self.N), self.N)
+        bob_measurement_result = utils.get_bit_from_counts(bitstring, utils.get_bob_idx(self.N), self.N+1)
 
         if bob_measurement_result == '0':
             return 1.0  # Corresponds to eigenvalue +1 of Y operator
