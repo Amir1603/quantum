@@ -20,7 +20,7 @@ class Conf:
     @staticmethod
     def generate_J_for_h(conf, num_points=40):
         max_J = 4.0
-        Js = np.linspace(max_J/num_points, max_J, num_points).tolist()
+        Js = np.linspace(0, max_J, num_points).tolist()
 
         confs = []
         for J in Js:
