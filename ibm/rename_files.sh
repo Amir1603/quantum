@@ -3,7 +3,7 @@
 cd artifacts
 
 # Create destination folder
-output_folder="All"
+output_folder="ToUpload"
 mkdir -p "$output_folder"
 
 # Loop through all directories like a1-b1-c1
