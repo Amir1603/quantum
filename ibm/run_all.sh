@@ -13,6 +13,6 @@ do
     do
         dir="N$N-$err"
         echo "Running: $dir"
-        echo | python main.py -Js 4 -N $N --$err -o $dir --avoid_J0
+        echo | python main.py -Js 4 --avoid-J0 -N $N --$err -o $dir
     done
 done
