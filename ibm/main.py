@@ -95,7 +95,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Quantum Teleportation Simulation")
 
     parser.add_argument('--J-for-h', '-Js', required=False, type=int, help="Run multiple values of J configurations for a specific h value")
-    parser.add_argument('--avoid-J0', action='store_true', type=int, help="Avoid starting enumerating J values from 0")
+    parser.add_argument('--avoid-J0', action='store_true', help="Avoid starting enumerating J values from 0")
     parser.add_argument('--all-hJ', action='store_true', help="Run all coupling pairs configurations")
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
     parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
