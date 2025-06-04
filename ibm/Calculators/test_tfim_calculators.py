@@ -47,7 +47,7 @@ def test_optimal_rotation_angles(request, name):
 
     k = J / 2
     analytic_theta_E1 = 0.5 * np.arcsin(
-                (-h * k) / np.sqrt((h**2 + 2 * k**2)**2 + h**2 * k**2)
+                (h * k) / np.sqrt((h**2 + 2 * k**2)**2 + h**2 * k**2)
             )
 
     analytic_theta_q1 = 0.5 * np.arctan(J / (2 * h))

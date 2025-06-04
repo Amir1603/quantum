@@ -31,7 +31,7 @@ class AnalyticalTFIM(TFIMCalculator):
 
         k = self.J / 2
         self.theta_E1 = np.arcsin(
-                (-self.h * k) / np.sqrt((self.h**2 + 2 * k**2)**2 + self.h**2 * k**2)
+                (self.h * k) / np.sqrt((self.h**2 + 2 * k**2)**2 + self.h**2 * k**2)
             ) / 2
 
         self.theta_q1 = 0.5 * np.arctan(self.J / (2 * self.h))

@@ -18,9 +18,10 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_J_for_h(conf, num_points=40):
+    def generate_J_for_h(conf, num_points=40, avoid_0=False):
         max_J = 4.0
-        Js = np.linspace(0, max_J, num_points).tolist()
+        min_J = max_J/num_points if avoid_0 else 0.0
+        Js = np.linspace(min_J, max_J, num_points).tolist()
 
         confs = []
         for J in Js:

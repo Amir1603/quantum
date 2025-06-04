@@ -98,7 +98,9 @@ class NumericalTFIM(TFIMCalculator):
         Zbob_exp = NumericalTFIM._compute_expectation_value(op_Zbob, self.gs0)
         X0_Xbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbob, self.gs0)
 
-        num_theta_E1 = self.h * X0_Xbob_exp - self.J * Zbob_exp
+        #TODO: Minus compared to calculations? Go over again... Maybe related to the definition of P_A = 1 +- mu*X_0?
+        # What about the Charge's rotation angle sign? There it seem to not affect the result.
+        num_theta_E1 = -self.h * X0_Xbob_exp + self.J * Zbob_exp
         den_theta_E1 = self.h * Zbob_exp + self.J * X0_Xbob_exp
         theta_E1 = 0.5 * np.arctan(num_theta_E1 / den_theta_E1)
 
