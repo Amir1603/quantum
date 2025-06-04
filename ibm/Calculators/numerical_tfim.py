@@ -129,3 +129,27 @@ class NumericalTFIM(TFIMCalculator):
         charge_bob = (gs.getH() @ (Q_b @ gs)).toarray().real.item()
 
         return energy_bob, charge_bob
+
+    def get_expectation_values(self):
+        alice_site = utils.get_alice_idx(self.N)
+        bob_site = utils.get_bob_idx(self.N)
+
+        op_X0 = TFIMCalculator._get_pauli_operator_on_site('X', alice_site, self.N)
+        op_Xbob = TFIMCalculator._get_pauli_operator_on_site('X', bob_site, self.N)
+        op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
+        op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
+        op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', bob_site)], self.N)
+
+        X0_exp = NumericalTFIM._compute_expectation_value(op_X0, self.gs0)
+        Xbob_exp = NumericalTFIM._compute_expectation_value(op_Xbob, self.gs0)
+        Zbob_exp = NumericalTFIM._compute_expectation_value(op_Zbob, self.gs0)
+        X0_Xbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbob, self.gs0)
+        X0_Zbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Zbob, self.gs0)
+
+        return {
+            'X0': X0_exp,
+            'Xbob': Xbob_exp,
+            'Zbob': Zbob_exp,
+            'X0_Xbob': X0_Xbob_exp,
+            'X0_Zbob': X0_Zbob_exp
+        }
