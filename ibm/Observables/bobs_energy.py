@@ -11,12 +11,12 @@ class BobsEnergy(Observable):
     teleported energy in arbitrary units E_B = (<H_B> - <H_B>_gs)/<H_B>_gs.
     Calculated from results of V (<XX>) and H1 (<Z>).
     """
-    def __init__(self, conf: Conf, calc: TFIMCalculator):
-        name = "E_B"
-        super().__init__(name, conf, calc)
+    def __init__(self, user_idx: int, conf: Conf, calc: TFIMCalculator):
+        name = f"E_{user_idx}"
+        super().__init__(name, user_idx, conf, calc)
 
-        self._h1_comp_name = "H1_B"
-        self._v_comp_name = "V_B"
+        self._h1_comp_name = f"H1_{user_idx}"
+        self._v_comp_name = f"V_{user_idx}"
         self.component_observables = [self._v_comp_name, self._h1_comp_name]
 
     # --- Value Extraction (Not Applicable from Bitstring) ---
@@ -29,10 +29,9 @@ class BobsEnergy(Observable):
 
     # --- Metadata ---
     def description(self):
-        bob_idx = utils.get_bob_idx(self.N)
         alice_idx = utils.get_alice_idx(self.N)
 
-        return f"Derived E_B = <J*X{alice_idx}X{bob_idx} + Z{bob_idx}> - <H_B>_gs for N={self.N}"
+        return f"Derived E_B = <J*X{alice_idx}X{self.user_idx} + Z{self.user_idx}> - <H_B>_gs for N={self.N}"
 
     @staticmethod
     def is_derived_observable():
@@ -76,7 +75,7 @@ class BobsEnergy(Observable):
         exp_val_v = v_res.expectation_value
         exp_val_hb = h * exp_val_h1 + J * exp_val_v
 
-        gs_energy = self._calc.bob_energy
+        gs_energy = self._calc.energy[self.user_idx]
 
         # Calculate final value relative to ground state in arbitrary units
         final_value = (exp_val_hb - gs_energy) / abs(gs_energy)

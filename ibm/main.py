@@ -9,6 +9,7 @@ from results import Results
 import plotting
 import reporting
 from qiskit_ibm_runtime import QiskitRuntimeService
+import utils
 
 def print_run_plan(confs):
     print('#########################################################')
@@ -42,51 +43,55 @@ def report_and_plot(results_obj: Results, args):
     h1_file = None
     v_file = None
 
-    if args.classical_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.J'])
-    elif args.depolarization_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['charge'], group_by=['conf_params.J'])
-    elif args.bit_flip_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
-    elif args.alice_phase_flip_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
-    elif args.bob_phase_flip_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
-    elif args.excited_mixture_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['charge'], group_by=['conf_params.J'])
-    elif args.excited_superposition_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['charge'], group_by=['conf_params.J'])
+    indices = [utils.get_charlie_idx(args.N), utils.get_bob_idx(args.N)]
 
-    if args.both_alice_values:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['E_B'], group_by=['conf_params.xor_alice_res'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
-        h1_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['H1_B'], group_by=['conf_params.xor_alice_res'])
-        v_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['V_B'], group_by=['conf_params.xor_alice_res'])
+    for idx in indices:
 
-    if energy_file: plot_filenames.append(energy_file)
-    if charge_file: plot_filenames.append(charge_file)
-    if h1_file: plot_filenames.append(h1_file)
-    if v_file: plot_filenames.append(v_file)
+        if args.classical_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=[f'E_{idx}'], group_by=['conf_params.J'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=[f'charge{idx}'], group_by=['conf_params.J'])
+        elif args.depolarization_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=[f'E_{idx}'], group_by=['conf_params.J'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=[f'charge{idx}'], group_by=['conf_params.J'])
+        elif args.bit_flip_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=[f'E_{idx}'], group_by=['conf_params.J'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=[f'charge{idx}'], group_by=['conf_params.J'])
+        elif args.alice_phase_flip_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=[f'E_{idx}'], group_by=['conf_params.J'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=[f'charge{idx}'], group_by=['conf_params.J'])
+        elif args.bob_phase_flip_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=[f'E_{idx}'], group_by=['conf_params.J'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=[f'charge{idx}'], group_by=['conf_params.J'])
+        elif args.excited_mixture_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=[f'E_{idx}'], group_by=['conf_params.J'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=[f'charge{idx}'], group_by=['conf_params.J'])
+        elif args.excited_superposition_errors:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=[f'E_{idx}'], group_by=['conf_params.J'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=[f'charge{idx}'], group_by=['conf_params.J'])
 
-    # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['E_B'], group_by=['conf_params.xor_alice_res'])
-    # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.xor_alice_res'])
+        if args.both_alice_values:
+            energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=[f'E_{idx}'], group_by=['conf_params.xor_alice_res'])
+            charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=[f'charge{idx}'], group_by=['conf_params.xor_alice_res'])
+            # h1_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=[f'H1_{idx}'], group_by=['conf_params.xor_alice_res'])
+            # v_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=[f'V_{idx}'], group_by=['conf_params.xor_alice_res'])
 
-    # filter = {'conf_params.h': 1.0, 'conf_params.J': 1.0}
-    # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_dephase')
-    # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'p_dephase')
+        if energy_file: plot_filenames.append(energy_file)
+        if charge_file: plot_filenames.append(charge_file)
+        # if h1_file: plot_filenames.append(h1_file)
+        # if v_file: plot_filenames.append(v_file)
 
-    # files = plotting.plot_counts_hist(results_list, output_dir, obs=['H1_B', 'V_B', 'charge'], target_J=2.1)
-    # plot_filenames.extend(files)
+        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['E_B'], group_by=['conf_params.xor_alice_res'])
+        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.xor_alice_res'])
 
-    # file_name = plotting.plot_heatmap(results_list, output_dir)
-    # plot_filenames.append(file_name)
+        # filter = {'conf_params.h': 1.0, 'conf_params.J': 1.0}
+        # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_dephase')
+        # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'p_dephase')
+
+        # files = plotting.plot_counts_hist(results_list, output_dir, obs=['H1_B', 'V_B', 'charge'], target_J=2.1)
+        # plot_filenames.extend(files)
+
+        # file_name = plotting.plot_heatmap(results_list, output_dir)
+        # plot_filenames.append(file_name)
 
     reporting.generate_report(results_list, plot_filenames, output_dir, [])
 
@@ -225,3 +230,8 @@ if __name__ == "__main__":
 
     report_and_plot(res, args)
     print("\n--- Simulation and Analysis Complete ---")
+
+# TODO: This is a list for adding Charlie in addition to Bob - 
+# 1) Make sure everything in handled correctly for different N values (for example - for N=1, there is no charlie)
+# 2) Clean and solve specific TODOs where handling now specifically for Bob's index.
+# 3) Consider and think if Charlie and Bob should be simulated together in the same circuit instead of different simulations?

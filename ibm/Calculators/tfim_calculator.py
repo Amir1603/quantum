@@ -32,10 +32,10 @@ class TFIMCalculator:
         self.ex1 = None
         self.gs_rho = None
         self.ex1_rho = None
-        self.bob_energy = None
-        self.bob_charge = None
-        self.theta_E1 = None
-        self.theta_q1 = None
+        self.energy = {}
+        self.charge = {}
+        self.theta_E1 = {}
+        self.theta_q1 = {}
 
     def calc_all(self):
         """
@@ -62,6 +62,7 @@ class TFIMCalculator:
 
         return full_operator
 
+    # TODO: Currently specific to Bob's site - not general for user in arbitrary location in chain.
     def apply_errors(self, conf):
         # Apply errors to the density matrix
         p_err = 0

@@ -9,9 +9,9 @@ class Charge(Observable):
     Observable for Bob's local charge density (rho_B ~ (I+Z)/2) for arbitrary N,
     under the protocol optimized for energy (Alice measures X, Bob rotates Ry based on theta).
     """
-    def __init__(self, conf: Conf, calc: TFIMCalculator):
-        name = f'charge'
-        super().__init__(name=name, conf=conf, calc=calc)
+    def __init__(self, user_idx: int, conf: Conf, calc: TFIMCalculator):
+        name = f'charge{user_idx}'
+        super().__init__(name=name, user_idx=user_idx, conf=conf, calc=calc)
 
     def apply_alice_measurement(self, qc: QuantumCircuit):
         alice_idx = utils.get_alice_idx(self.N)
@@ -21,13 +21,12 @@ class Charge(Observable):
 
     def apply_bob_operation(self, qc: QuantumCircuit, xor_alice_res):
         """
-        Bob's conditional operation based on Alice's measurement (outcome c).
+        Conditional operation based on Alice's measurement (outcome c).
         Operation is U_B(a) = Ry(a*theta), where a=+1 (c=0) or a=-1 (c=1).
         """
         alice_idx = utils.get_alice_idx(self.N)
-        bob_idx = utils.get_bob_idx(self.N)
 
-        theta = self._calc.theta_q1 if not self.theta else self.theta
+        theta = self._calc.theta_q1[self.user_idx] if not self.theta else self.theta
 
         # Apply the controlled rotation based on Alice's measurement.
         # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
@@ -35,7 +34,7 @@ class Charge(Observable):
         if xor_alice_res == 0:
             qc.x(alice_idx)
 
-        qc.cry(-2 * theta, alice_idx, bob_idx)
+        qc.cry(-2 * theta, alice_idx, self.user_idx)
 
         if xor_alice_res == 0:
             qc.x(alice_idx)
@@ -56,8 +55,7 @@ class Charge(Observable):
         rho|+> = 1|+> (Eigenvalue 1, measurement '0')
         rho|-> = 0|-> (Eigenvalue 0, measurement '1')
         """
-        bob_idx = utils.get_bob_idx(self.N)
-        bob_measurement_bit = utils.get_bit_from_counts(bitstring, bob_idx, self.N+1)
+        bob_measurement_bit = utils.get_bit_from_counts(bitstring, self.user_idx, self.N+1)
 
         if bob_measurement_bit == '0':
             return 1.0 # Z eigenvalue +1 -> charge density eigenvalue 1
@@ -65,8 +63,7 @@ class Charge(Observable):
             return 0.0 # Z eigenvalue -1 -> charge density eigenvalue 0
 
     def get_theoretical_gs_expectation_value(self):
-        return self._calc.bob_charge
+        return self._calc.charge[self.user_idx]
 
     def description(self):
-        bob_idx = utils.get_bob_idx(self.N)
-        return f"Bob's Charge Density (I+Z{bob_idx})/2"
+        return f"Local Charge Density (I+Z{self.user_idx})/2"

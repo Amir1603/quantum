@@ -8,10 +8,11 @@ from Calculators.tfim_calculator import TFIMCalculator
 
 
 class Observable:
-    def __init__(self, name, conf: Conf, calc: TFIMCalculator):
+    def __init__(self, name, user_idx: int, conf: Conf, calc: TFIMCalculator):
         self.name = name
         self._conf = conf
         self._calc = calc
+        self.user_idx = user_idx
 
         # Cache for ground state vector to avoid recomputing
         self._gs_vector_cache = {}

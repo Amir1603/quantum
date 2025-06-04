@@ -60,20 +60,20 @@ class Runner():
          self.simulator = AerSimulator(noise_model=self.noise_model)
 
     def _apply_measurements(self, obs: Observable, qc: QuantumCircuit, N: int):
-        bob_idx = utils.get_bob_idx(N)
+        user_idx = obs.user_idx
         bob_meas_basis = obs.get_bob_measurement_basis()
 
         if bob_meas_basis == "X":
-            qc.h(bob_idx)
+            qc.h(user_idx)
         elif bob_meas_basis == "Y":
-            qc.sdg(bob_idx) # Apply S dagger
-            qc.h(bob_idx)
+            qc.sdg(user_idx) # Apply S dagger
+            qc.h(user_idx)
         elif bob_meas_basis == "Z":
             pass # For measuting Z we do nothing
         else:
             raise ValueError("Unknown measurement basis for Bob!")
 
-        qc.measure(bob_idx, bob_idx)
+        qc.measure(user_idx, user_idx)
 
     def _qet_circuit(self, obs: Observable, conf: Conf, is_simulator: bool):
         num_qubits = conf.N+1
@@ -94,6 +94,7 @@ class Runner():
         # Idle Bob’s qubit
         if conf.delay_time and conf.delay_time > 0:
             # Ensure delay_time is in appropriate units (dt, sec). Assume dt for Aer.
+            # TODO: Currently specific to Bob's site - not general for user in arbitrary location in chain.
             bob_idx = utils.get_bob_idx(conf.N)
             qc.delay(conf.delay_time, bob_idx, unit='dt')
 

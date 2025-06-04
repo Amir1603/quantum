@@ -208,6 +208,7 @@ class Results:
             print(f"Error loading results from {filepath}: {e}")
             self.processed_results = []
 
+    # TODO: Currently specific to Bob's site - not general for user in arbitrary location in chain.
     @staticmethod
     def calculate_correlation(counts: dict, num_qubits: int):
         if not counts: return 0.0

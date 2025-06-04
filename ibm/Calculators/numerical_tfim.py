@@ -36,8 +36,11 @@ class NumericalTFIM(TFIMCalculator):
 
         self._raw_exp_vals = self.get_expectation_values()
 
-        self.bob_energy, self.bob_charge = self._compute_bob_gs_energy_and_charge()
-        self.theta_E1, self.theta_q1 = self._compute_optimal_rotation_angles()
+        indices = [utils.get_charlie_idx(self.N), utils.get_bob_idx(self.N)]
+
+        for idx in indices:
+            self.energy[idx], self.charge[idx] = self._compute_bob_gs_energy_and_charge(idx)
+            self.theta_E1[idx], self.theta_q1[idx] = self._compute_optimal_rotation_angles(idx)
 
     # Hamiltonian Construction for TFIM
     def _build_tfim_hamiltonian(self):
@@ -94,13 +97,13 @@ class NumericalTFIM(TFIMCalculator):
         return val[0,0].real
 
     # Optimal Rotation Angles for Energy and Charge
-    def _compute_optimal_rotation_angles(self):
+    def _compute_optimal_rotation_angles(self, user_site: int):
         """
         Computes optimal rotation angles for general N.
         For energy, Bob's local energy is P_B = h*Z_N + J*X_0X_N.
         For charge, Bob's local charge is Q_B = (I+Z_N)/2.
         """
-        exp_vals = self.get_expectation_values()
+        exp_vals = self.get_expectation_values(user_site)
 
         num_theta_E1 = self.h * exp_vals.X0_Xbob - self.J * exp_vals.Zbob
         den_theta_E1 = self.h * exp_vals.Zbob + self.J * exp_vals.X0_Xbob
@@ -115,22 +118,33 @@ class NumericalTFIM(TFIMCalculator):
         return theta_E1, theta_q1
 
     # Bob's Energy and Charge Expectation Calculation
-
-    def _compute_bob_gs_energy_and_charge(self):
+    def _compute_bob_gs_energy_and_charge(self, user_site: int):
         energy_bob = self.h * self._raw_exp_vals.Zbob + self.J * self._raw_exp_vals.X0_Xbob
         charge_bob = 0.5 * (1 + self._raw_exp_vals.Zbob)
-
         return energy_bob, charge_bob
+    #TODO: Refactor to return the values in the site_idx site
+    # def _compute_bob_gs_energy_and_charge(self, user_site: int):
+    #     gs = csc_matrix(self.gs0.data.reshape(-1, 1))
 
-    def get_expectation_values(self):
+    #     alice_site = utils.get_alice_idx(self.N)
+
+    #     H_b = (self.h * TFIMCalculator._get_pauli_operator_on_site('Z', user_site, self.N) +
+    #            self.J * NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', user_site)], self.N))
+    #     Q_b = kron((TFIMCalculator.I + TFIMCalculator.Z) / 2, eye(2**(self.N)))
+
+    #     energy_bob = (gs.getH() @ (H_b @ gs)).toarray().real.item()
+    #     charge_bob = (gs.getH() @ (Q_b @ gs)).toarray().real.item()
+
+    #     return energy_bob, charge_bob
+
+    def get_expectation_values(self, user_site: int):
         alice_site = utils.get_alice_idx(self.N)
-        bob_site = utils.get_bob_idx(self.N)
 
         op_X0 = TFIMCalculator._get_pauli_operator_on_site('X', alice_site, self.N)
-        op_Xbob = TFIMCalculator._get_pauli_operator_on_site('X', bob_site, self.N)
-        op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
-        op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
-        op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', bob_site)], self.N)
+        op_Xbob = TFIMCalculator._get_pauli_operator_on_site('X', user_site, self.N)
+        op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', user_site)], self.N)
+        op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', user_site, self.N)
+        op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', user_site)], self.N)
 
         X0_exp = NumericalTFIM._compute_expectation_value(op_X0, self.gs0)
         Xbob_exp = NumericalTFIM._compute_expectation_value(op_Xbob, self.gs0)

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from Calculators import NumericalTFIM
+import utils
 
 # Collect and deduplicate legend handles and labels
 def get_unique_legend(ax_array):
@@ -50,7 +51,7 @@ if __name__ == "__main__":
             ntfim = NumericalTFIM(N, J, h)
             ntfim.calc_all()
 
-            exp_vals = ntfim.get_expectation_values()
+            exp_vals = ntfim.get_expectation_values(utils.get_bob_idx(N))
 
             X0.append(exp_vals.X0)
             Xbob.append(exp_vals.Xbob)
