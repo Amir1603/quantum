@@ -56,27 +56,27 @@ if __name__ == "__main__":
 
             exp_vals = ntfim.get_expectation_values()
 
-            X0.append(exp_vals['X0'])
-            Xbob.append(exp_vals['Xbob'])
-            Zbob.append(exp_vals['Zbob'])
-            X0_Xbob.append(exp_vals['X0_Xbob'])
-            X0_Zbob.append(exp_vals['X0_Zbob'])
+            X0.append(exp_vals.X0)
+            Xbob.append(exp_vals.Xbob)
+            Zbob.append(exp_vals.Zbob)
+            X0_Xbob.append(exp_vals.X0_Xbob)
+            X0_Zbob.append(exp_vals.X0_Zbob)
 
-            HB = h*exp_vals['Zbob'] + J*exp_vals['X0_Xbob']
-            QB = 0.5 * (1 + exp_vals['Zbob'])
+            HB = h*exp_vals.Zbob + J*exp_vals.X0_Xbob
+            QB = 0.5 * (1 + exp_vals.Zbob)
 
-            A = exp_vals['Zbob']**2 + exp_vals['Xbob']**2 + exp_vals['X0_Xbob']**2 + exp_vals['X0_Zbob']**2
-            Bp = exp_vals['Zbob']*exp_vals['X0_Zbob'] + exp_vals['Xbob']*exp_vals['X0_Xbob']
-            Bm = exp_vals['Zbob']*exp_vals['X0_Zbob'] - exp_vals['Xbob']*exp_vals['X0_Xbob']
+            A = exp_vals.Zbob**2 + exp_vals.Xbob**2 + exp_vals.X0_Xbob**2 + exp_vals.X0_Zbob**2
+            Bp = exp_vals.Zbob*exp_vals.X0_Zbob + exp_vals.Xbob*exp_vals.X0_Xbob
+            Bm = exp_vals.Zbob*exp_vals.X0_Zbob - exp_vals.Xbob*exp_vals.X0_Xbob
 
             HBb0c0 = 0.5*np.sqrt((h**2 + J**2)*(A + 2*Bp))
             HBb1c1 = 0.5*np.sqrt((h**2 + J**2)*(A - 2*Bp))
             HBb0c1 = -0.5*np.sqrt((h**2 + J**2)*(A + 2*Bp))
             HBb1c0 = -0.5*np.sqrt((h**2 + J**2)*(A - 2*Bp))
-            QBb0c0 = 0.25*(1 + exp_vals['X0'] + np.sqrt(A + 2*Bp))
-            QBb1c1 = 0.25*(1 - exp_vals['X0'] - np.sqrt(A - 2*Bp))
-            QBb0c1 = 0.25*(1 + exp_vals['X0'] - np.sqrt(A + 2*Bp))
-            QBb1c0 = 0.25*(1 - exp_vals['X0'] + np.sqrt(A - 2*Bp))
+            QBb0c0 = 0.25*(1 + exp_vals.X0 + np.sqrt(A + 2*Bp))
+            QBb1c1 = 0.25*(1 - exp_vals.X0 - np.sqrt(A - 2*Bp))
+            QBb0c1 = 0.25*(1 + exp_vals.X0 - np.sqrt(A + 2*Bp))
+            QBb1c0 = 0.25*(1 - exp_vals.X0 + np.sqrt(A - 2*Bp))
 
             Hb0c0.append((HBb0c0 - HB) / HB)
             Hb1c1.append((HBb1c1 - HB) / HB)
