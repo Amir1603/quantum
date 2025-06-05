@@ -65,6 +65,7 @@ if __name__ == "__main__":
             HB = h*exp_vals.Zbob + J*exp_vals.X0_Xbob
             QB = 0.5 * (1 + exp_vals.Zbob)
 
+            #FIXME: Update operators calculations after finalizing documentation cleanup
             A = exp_vals.Zbob**2 + exp_vals.Xbob**2 + exp_vals.X0_Xbob**2 + exp_vals.X0_Zbob**2
             Bp = exp_vals.Zbob*exp_vals.X0_Zbob + exp_vals.Xbob*exp_vals.X0_Xbob
             Bm = exp_vals.Zbob*exp_vals.X0_Zbob - exp_vals.Xbob*exp_vals.X0_Xbob
