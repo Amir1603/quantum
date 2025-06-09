@@ -32,13 +32,15 @@ class Charge(Observable):
         # Apply the controlled rotation based on Alice's measurement.
         # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
         # => We use a workaround suggested by Kazuki.
-        if xor_alice_res == 0:
-            qc.x(alice_idx)
+        angle = 2 * theta if xor_alice_res == 0 else -2 * theta
 
-        qc.cry(-2 * theta, alice_idx, bob_idx)
-
-        if xor_alice_res == 0:
-            qc.x(alice_idx)
+        # Apply the controlled rotation based on Alice's measurement.
+        # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
+        # => We use a workaround suggested by Kazuki.
+        qc.cry(angle, alice_idx, bob_idx)
+        qc.x(alice_idx)
+        qc.cry(-angle, alice_idx, bob_idx)
+        qc.x(alice_idx)
 
         # This is equivalent to:
         ###  with qc.if_test((alice_idx, 1^xor_alice_res)):
