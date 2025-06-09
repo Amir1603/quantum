@@ -34,8 +34,10 @@ class NumericalTFIM(TFIMCalculator):
         self.gs_rho = NumericalTFIM._compute_density_matrix(self.gs0)
         self.ex1_rho = NumericalTFIM._compute_density_matrix(self.ex1)
 
+        self._raw_exp_vals = self.get_expectation_values()
+
         self.bob_energy, self.bob_charge = self._compute_bob_gs_energy_and_charge()
-        self.theta_E1, self.theta_E2, self.theta_q1, self.theta_q2 = self._compute_optimal_rotation_angles()
+        self.theta_E1, self.theta_q1 = self._compute_optimal_rotation_angles()
 
     # Hamiltonian Construction for TFIM
     def _build_tfim_hamiltonian(self):
@@ -99,35 +101,23 @@ class NumericalTFIM(TFIMCalculator):
         """
         exp_vals = self.get_expectation_values()
 
-        #TODO: Minus compared to calculations? Go over again... Maybe related to the definition of P_A = 1 +- mu*X_0?
-        # What about the Charge's rotation angle sign? There it seem to not affect the result.
-        num_theta_E1 = -self.h * exp_vals.X0_Xbob + self.J * exp_vals.Zbob
+        num_theta_E1 = self.h * exp_vals.X0_Xbob - self.J * exp_vals.Zbob
         den_theta_E1 = self.h * exp_vals.Zbob + self.J * exp_vals.X0_Xbob
-        theta_E1 = 0.5 * np.arctan(num_theta_E1 / den_theta_E1)
+        # The minus sign in the denomenator doesn't affect the ratio, but just for choosign the right quadrant.
+        theta_E1 = 0.5 * np.arctan2(num_theta_E1, -den_theta_E1)
 
         num_theta_q1 = exp_vals.X0_Xbob
         den_theta_q1 = exp_vals.Zbob
-        theta_q1 = 0.5 * np.arctan(num_theta_q1 / den_theta_q1)
+        # The minus signs don't affect the ratio, but just for choosign the right quadrant.
+        theta_q1 = 0.5 * np.arctan2(-num_theta_q1, -den_theta_q1)
 
-        # FIXME: Complete for other bases
-        theta_E2, theta_q2 = 0.0, 0.0
-
-        return theta_E1, theta_E2, theta_q1, theta_q2
+        return theta_E1, theta_q1
 
     # Bob's Energy and Charge Expectation Calculation
 
     def _compute_bob_gs_energy_and_charge(self):
-        gs = csc_matrix(self.gs0.data.reshape(-1, 1))
-
-        alice_site = utils.get_alice_idx(self.N)
-        bob_site = utils.get_bob_idx(self.N)
-
-        H_b = (self.h * TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N) +
-               self.J * NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N))
-        Q_b = kron((TFIMCalculator.I + TFIMCalculator.Z) / 2, eye(2**(self.N)))
-
-        energy_bob = (gs.getH() @ (H_b @ gs)).toarray().real.item()
-        charge_bob = (gs.getH() @ (Q_b @ gs)).toarray().real.item()
+        energy_bob = self.h * self._raw_exp_vals.Zbob + self.J * self._raw_exp_vals.X0_Xbob
+        charge_bob = 0.5 * (1 + self._raw_exp_vals.Zbob)
 
         return energy_bob, charge_bob
 

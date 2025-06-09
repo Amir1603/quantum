@@ -35,9 +35,7 @@ class TFIMCalculator:
         self.bob_energy = None
         self.bob_charge = None
         self.theta_E1 = None
-        self.theta_E2 = None
         self.theta_q1 = None
-        self.theta_q2 = None
 
     def calc_all(self):
         """

@@ -21,7 +21,6 @@ class AnalyticalTFIM(TFIMCalculator):
         return alpha, beta
 
     def calc_all(self):
-        # Used parameters for the TFIM
         self.E0 = -np.sqrt(4 * self.h**2 + self.J**2)
         self.bob_energy = -(2 * self.h**2 + self.J**2) / np.sqrt(4 * self.h**2 + self.J**2)
         self.E1 = -self.J
@@ -34,10 +33,7 @@ class AnalyticalTFIM(TFIMCalculator):
                 (self.h * k) / np.sqrt((self.h**2 + 2 * k**2)**2 + self.h**2 * k**2)
             ) / 2
 
-        self.theta_q1 = 0.5 * np.arctan(self.J / (2 * self.h))
-
-        # FIXME: Complete after analyzing other Alice basis
-        self.theta_E2, self.theta_q2 = 0.0, 0.0
+        self.theta_q1 = 0.5 * np.arctan2(self.J, 2 * self.h)
 
         self._init_n2_tfim_states_and_density_matrices()
 
