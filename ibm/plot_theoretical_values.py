@@ -17,7 +17,7 @@ def get_unique_legend(ax_array):
     return unique_handles, unique_labels
 
 if __name__ == "__main__":
-    Ns = [1, 2, 3, 4, 5, 6]
+    Ns = [1, 2, 3, 4]
     Js = np.linspace(0.0, 4.0, 100).tolist()
     h = 1.0
 
@@ -27,13 +27,13 @@ if __name__ == "__main__":
     for ax in raw_axis.flat:
         ax.set_title("", fontsize=10)
 
-    # Teleported figure - 4 subplots
-    tel_figure, tel_axis = plt.subplots(2, 2, figsize=(10, 6))
+    # Teleported figure
+    tel_figure, tel_axis = plt.subplots(2, len(Ns), figsize=(10, 6))
     tel_figure.subplots_adjust(right=0.8)
     for ax in tel_axis.flat:
         ax.set_title("", fontsize=10)
 
-    for N in Ns:
+    for i, N in enumerate(Ns):
 
         X0 = []
         Xbob = []
@@ -41,14 +41,10 @@ if __name__ == "__main__":
         X0_Xbob = []
         X0_Zbob = []
 
-        Hb0c0 = []
-        Hb1c1 = []
-        Hb0c1 = []
-        Hb1c0 = []
-        Qb0c0 = []
-        Qb1c1 = []
-        Qb0c1 = []
-        Qb1c0 = []
+        HB_a0 = []
+        HB_a1 = []
+        QB_a0 = []
+        QB_a1 = []
 
         for J in Js:
             ntfim = NumericalTFIM(N, J, h)
@@ -65,28 +61,22 @@ if __name__ == "__main__":
             HB = h*exp_vals.Zbob + J*exp_vals.X0_Xbob
             QB = 0.5 * (1 + exp_vals.Zbob)
 
-            #FIXME: Update operators calculations after finalizing documentation cleanup
-            A = exp_vals.Zbob**2 + exp_vals.Xbob**2 + exp_vals.X0_Xbob**2 + exp_vals.X0_Zbob**2
-            Bp = exp_vals.Zbob*exp_vals.X0_Zbob + exp_vals.Xbob*exp_vals.X0_Xbob
-            Bm = exp_vals.Zbob*exp_vals.X0_Zbob - exp_vals.Xbob*exp_vals.X0_Xbob
+            N_H = -np.sqrt((h**2 + J**2)*(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2))
+            N_q = -np.sqrt(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2)
 
-            HBb0c0 = 0.5*np.sqrt((h**2 + J**2)*(A + 2*Bp))
-            HBb1c1 = 0.5*np.sqrt((h**2 + J**2)*(A - 2*Bp))
-            HBb0c1 = -0.5*np.sqrt((h**2 + J**2)*(A + 2*Bp))
-            HBb1c0 = -0.5*np.sqrt((h**2 + J**2)*(A - 2*Bp))
-            QBb0c0 = 0.25*(1 + exp_vals.X0 + np.sqrt(A + 2*Bp))
-            QBb1c1 = 0.25*(1 - exp_vals.X0 - np.sqrt(A - 2*Bp))
-            QBb0c1 = 0.25*(1 + exp_vals.X0 - np.sqrt(A + 2*Bp))
-            QBb1c0 = 0.25*(1 - exp_vals.X0 + np.sqrt(A - 2*Bp))
+            HB_a0_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 + (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
+            HB_a1_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 - (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
 
-            Hb0c0.append((HBb0c0 - HB) / HB)
-            Hb1c1.append((HBb1c1 - HB) / HB)
-            Hb0c1.append((HBb0c1 - HB) / HB)
-            Hb1c0.append((HBb1c0 - HB) / HB)
-            Qb0c0.append((QBb0c0 - QB) / QB)
-            Qb1c1.append((QBb1c1 - QB) / QB)
-            Qb0c1.append((QBb0c1 - QB) / QB)
-            Qb1c0.append((QBb1c0 - QB) / QB)
+            QB_a0_tilde = 0.5 + (exp_vals.Zbob**2 + exp_vals.X0_Xbob**2) / (2 * N_q)
+            QB_a1_tilde = 0.5 + (exp_vals.Zbob**2 - exp_vals.X0_Xbob**2) / (2 * N_q)
+
+            HB_a0.append((HB_a0_tilde - HB) / abs(HB))
+            HB_a1.append((HB_a1_tilde - HB) / abs(HB))
+
+            # QB is only defined for J != 0
+            if J != 0:
+                QB_a0.append((QB_a0_tilde - QB) / abs(QB))
+                QB_a1.append((QB_a1_tilde - QB) / abs(QB))
 
         raw_axis[0, 0].plot(Js, Xbob, label=f'N={N}')
         raw_axis[0, 0].set_title("Xbob")
@@ -99,19 +89,14 @@ if __name__ == "__main__":
         raw_axis[0, 2].plot(Js, X0, label=f'N={N}')
         raw_axis[0, 2].set_title("X0")
 
-        tel_axis[0, 0].plot(Js, Hb0c0, label=f'c=0, N={N}')
-        tel_axis[0, 0].plot(Js, Hb0c1, label=f'c=1, N={N}')
-        tel_axis[0, 0].set_title("HB (b = 0)")
-        tel_axis[1, 0].plot(Js, Hb1c0, label=f'c=0, N={N}')
-        tel_axis[1, 0].plot(Js, Hb1c1, label=f'c=1, N={N}')
-        tel_axis[1, 0].set_title("HB (b = 1)")
+        tel_axis[0, i].plot(Js, HB_a0, label=f'a=0')
+        tel_axis[0, i].plot(Js, HB_a1, label=f'a=1')
+        tel_axis[0, i].set_title("HB")
 
-        tel_axis[0, 1].plot(Js, Qb0c0, label=f'c=0, N={N}')
-        tel_axis[0, 1].plot(Js, Qb0c1, label=f'c=1, N={N}')
-        tel_axis[0, 1].set_title("QB (b = 0)")
-        tel_axis[1, 1].plot(Js, Qb1c0, label=f'c=0, N={N}')
-        tel_axis[1, 1].plot(Js, Qb1c1, label=f'c=1, N={N}')
-        tel_axis[1, 1].set_title("QB (b = 1)")
+        # Remove J=0 from QB as it is not defined there
+        tel_axis[1, i].plot(Js[1:], QB_a0, label=f'a=0')
+        tel_axis[1, i].plot(Js[1:], QB_a1, label=f'a=1')
+        tel_axis[1, i].set_title("QB")
 
     # Remove unused subplot from raw_axis (bottom right)
     raw_figure.delaxes(raw_axis[1, 2])  # remove the 6th placeholder
