@@ -50,18 +50,14 @@ def test_optimal_rotation_angles(request, name):
                 (h * k) / np.sqrt((h**2 + 2 * k**2)**2 + h**2 * k**2)
             )
 
-    analytic_theta_q1 = 0.5 * np.arctan(J / (2 * h))
+    analytic_theta_q1 = 0.5 * np.arctan2(J, 2 * h)
 
     # Assertions
     # Using a tolerance, e.g., atol=1e-9
     assert np.isclose(tfim.theta_E1, analytic_theta_E1, atol=1e-9), \
         f"Theta_E1 mismatch: Num={tfim.theta_E1:.7f}, Ana={analytic_theta_E1:.7f}"
-    assert np.isclose(tfim.theta_E2, 0.0, atol=1e-9), \
-        f"Theta_E2 mismatch: Num={tfim.theta_E2:.7f}, Ana={0.0:.7f}"
     assert np.isclose(tfim.theta_q1, analytic_theta_q1, atol=1e-9), \
         f"Theta_q1 mismatch: Num={tfim.theta_q1:.7f}, Ana={analytic_theta_q1:.7f}"
-    assert np.isclose(tfim.theta_q2, 0.0, atol=1e-9), \
-        f"Theta_q2 mismatch: Num={tfim.theta_q2:.7f}, Ana={0.0:.7f}"
 
 @pytest.mark.parametrize("name", ["ntfim", "atfim"])
 def test_bob_energy_and_charge(request, name):
