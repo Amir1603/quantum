@@ -100,7 +100,7 @@ class NumericalTFIM(TFIMCalculator):
         For energy, Bob's local energy is P_B = h*Z_N + J*X_0X_N.
         For charge, Bob's local charge is Q_B = (I+Z_N)/2.
         """
-        exp_vals = self.get_expectation_values()
+        exp_vals = self._raw_exp_vals
 
         num_theta_E1 = self.h * exp_vals.X0_Xbob - self.J * exp_vals.Zbob
         den_theta_E1 = self.h * exp_vals.Zbob + self.J * exp_vals.X0_Xbob
@@ -115,7 +115,6 @@ class NumericalTFIM(TFIMCalculator):
         return theta_E1, theta_q1
 
     # Bob's Energy and Charge Expectation Calculation
-
     def _compute_bob_gs_energy_and_charge(self):
         energy_bob = self.h * self._raw_exp_vals.Zbob + self.J * self._raw_exp_vals.X0_Xbob
         charge_bob = 0.5 * (1 + self._raw_exp_vals.Zbob)
