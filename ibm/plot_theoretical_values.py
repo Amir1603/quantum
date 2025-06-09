@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from Calculators import NumericalTFIM
+import utils
 
 # Collect and deduplicate legend handles and labels
 def get_unique_legend(ax_array):
@@ -76,8 +77,8 @@ if __name__ == "__main__":
 
             # QB is only defined for J != 0
             if J != 0:
-                QB_a0.append((QB_a0_tilde - QB) / abs(QB))
-                QB_a1.append((QB_a1_tilde - QB) / abs(QB))
+                QB_a0.append(utils.normalized_difference(QB_a0_tilde, QB))
+                QB_a1.append(utils.normalized_difference(QB_a1_tilde, QB))
 
         raw_axis[0, 0].plot(Js, Xbob, label=f'N={N}')
         raw_axis[0, 0].set_title("Xbob")
