@@ -34,6 +34,7 @@ if __name__ == "__main__":
         ax.set_title("", fontsize=10)
 
     for i, N in enumerate(Ns):
+        print(f"Calculating for N={N}...")
 
         X0 = []
         Xbob = []
@@ -91,12 +92,12 @@ if __name__ == "__main__":
 
         tel_axis[0, i].plot(Js, HB_a0, label=f'a=0')
         tel_axis[0, i].plot(Js, HB_a1, label=f'a=1')
-        tel_axis[0, i].set_title("HB")
+        tel_axis[0, i].set_title(f"HB N={N}")
 
         # Remove J=0 from QB as it is not defined there
         tel_axis[1, i].plot(Js[1:], QB_a0, label=f'a=0')
         tel_axis[1, i].plot(Js[1:], QB_a1, label=f'a=1')
-        tel_axis[1, i].set_title("QB")
+        tel_axis[1, i].set_title(f"QB N={N}")
 
     # Remove unused subplot from raw_axis (bottom right)
     raw_figure.delaxes(raw_axis[1, 2])  # remove the 6th placeholder
