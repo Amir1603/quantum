@@ -5,6 +5,14 @@ import utils
 from qiskit.quantum_info import Statevector, DensityMatrix
 from .tfim_calculator import TFIMCalculator
 
+class ExpectationValues:
+    def __init__(self):
+        self.X0 = None
+        self.Xbob = None
+        self.Zbob = None
+        self.X0_Xbob = None
+        self.X0_Zbob = None
+
 class NumericalTFIM(TFIMCalculator):
     def __init__(self, N, J, h):
         super().__init__(N, J, h)
@@ -89,23 +97,16 @@ class NumericalTFIM(TFIMCalculator):
         For energy, Bob's local energy is P_B = h*Z_N + J*X_0X_N.
         For charge, Bob's local charge is Q_B = (I+Z_N)/2.
         """
-        alice_site = utils.get_alice_idx(self.N)
-        bob_site = utils.get_bob_idx(self.N)
-
-        op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
-        op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
-
-        Zbob_exp = NumericalTFIM._compute_expectation_value(op_Zbob, self.gs0)
-        X0_Xbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbob, self.gs0)
+        exp_vals = self.get_expectation_values()
 
         #TODO: Minus compared to calculations? Go over again... Maybe related to the definition of P_A = 1 +- mu*X_0?
         # What about the Charge's rotation angle sign? There it seem to not affect the result.
-        num_theta_E1 = -self.h * X0_Xbob_exp + self.J * Zbob_exp
-        den_theta_E1 = self.h * Zbob_exp + self.J * X0_Xbob_exp
+        num_theta_E1 = -self.h * exp_vals.X0_Xbob + self.J * exp_vals.Zbob
+        den_theta_E1 = self.h * exp_vals.Zbob + self.J * exp_vals.X0_Xbob
         theta_E1 = 0.5 * np.arctan(num_theta_E1 / den_theta_E1)
 
-        num_theta_q1 = X0_Xbob_exp
-        den_theta_q1 = Zbob_exp
+        num_theta_q1 = exp_vals.X0_Xbob
+        den_theta_q1 = exp_vals.Zbob
         theta_q1 = 0.5 * np.arctan(num_theta_q1 / den_theta_q1)
 
         # FIXME: Complete for other bases
@@ -129,3 +130,29 @@ class NumericalTFIM(TFIMCalculator):
         charge_bob = (gs.getH() @ (Q_b @ gs)).toarray().real.item()
 
         return energy_bob, charge_bob
+
+    def get_expectation_values(self):
+        alice_site = utils.get_alice_idx(self.N)
+        bob_site = utils.get_bob_idx(self.N)
+
+        op_X0 = TFIMCalculator._get_pauli_operator_on_site('X', alice_site, self.N)
+        op_Xbob = TFIMCalculator._get_pauli_operator_on_site('X', bob_site, self.N)
+        op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
+        op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
+        op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', bob_site)], self.N)
+
+        X0_exp = NumericalTFIM._compute_expectation_value(op_X0, self.gs0)
+        Xbob_exp = NumericalTFIM._compute_expectation_value(op_Xbob, self.gs0)
+        Zbob_exp = NumericalTFIM._compute_expectation_value(op_Zbob, self.gs0)
+        X0_Xbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbob, self.gs0)
+        X0_Zbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Zbob, self.gs0)
+
+        exp = ExpectationValues()
+        exp.__dict__ = {
+            'X0': X0_exp,
+            'Xbob': Xbob_exp,
+            'Zbob': Zbob_exp,
+            'X0_Xbob': X0_Xbob_exp,
+            'X0_Zbob': X0_Zbob_exp
+        }
+        return exp
