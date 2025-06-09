@@ -1,7 +1,7 @@
 import utils
 import numpy as np
 import cmath
-from scipy.sparse import kron, eye, csc_matrix
+from scipy.sparse import kron, csc_matrix
 from qiskit.quantum_info import Statevector, DensityMatrix, partial_trace
 
 class TFIMCalculator:
@@ -46,7 +46,8 @@ class TFIMCalculator:
 
     # Helper function to create a Pauli operator on a specific site
     def _get_pauli_operator_on_site(op_char, site_idx, N):
-        # TODO: Understand why?!?!
+        # We reverse the indices because the kron product builds operators from left to right,
+        # which means the leftmost operator acts on the most significant qubit.
         site_idx = N - site_idx
 
         # pauli_ops is a dict {'I': I_op, 'X': X_op, ...}

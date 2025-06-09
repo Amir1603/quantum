@@ -69,7 +69,8 @@ class NumericalTFIM(TFIMCalculator):
 
     # Helper function for multi-site operators like X_i Z_j or X_i X_j Z_k
     def _get_multi_site_operator(ops_tuple_list, N):
-        # TODO: Understand if and why this should be `idx -> N-idx`
+        # We reverse the indices because the kron product builds operators from left to right,
+        # which means the leftmost operator acts on the most significant qubit.
         op_tuple_list = [(TFIMCalculator.pauli_ops[char], N - idx) for char, idx in ops_tuple_list]
 
         # Starting from identity operator on all sites
