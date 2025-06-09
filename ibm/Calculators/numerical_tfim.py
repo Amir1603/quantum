@@ -84,12 +84,12 @@ class NumericalTFIM(TFIMCalculator):
 
         return full_operator
 
-    # Helper to compute expectation value <gs|Op|gs>
-    def _compute_expectation_value(op_matrix, gs):
-        gs_col_sparse = csc_matrix(gs.data.reshape(-1, 1))
+    # Helper to compute expectation value <state|Op|state>
+    def _compute_expectation_value(op_matrix, state):
+        state_col_sparse = csc_matrix(state.data.reshape(-1, 1))
         if not isinstance(op_matrix, csc_matrix):
             op_matrix = csc_matrix(op_matrix)
-        val = gs_col_sparse.conj().T @ op_matrix @ gs_col_sparse
+        val = state_col_sparse.conj().T @ op_matrix @ state_col_sparse
         return val[0,0].real
 
     # Optimal Rotation Angles for Energy and Charge
