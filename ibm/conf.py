@@ -100,8 +100,8 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_bitflip_error(conf, num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
+    def generate_bitflip_error(conf, num_points=11):
+        probs = np.linspace(0.0, 0.5, num_points).tolist()
 
         confs = []
         for p in probs:
