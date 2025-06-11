@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from Calculators import NumericalTFIM
+import utils
 
 # Collect and deduplicate legend handles and labels
 def get_unique_legend(ax_array):
@@ -34,6 +35,7 @@ if __name__ == "__main__":
         ax.set_title("", fontsize=10)
 
     for i, N in enumerate(Ns):
+        print(f"Calculating for N={N}...")
 
         X0 = []
         Xbob = []
@@ -75,8 +77,8 @@ if __name__ == "__main__":
 
             # QB is only defined for J != 0
             if J != 0:
-                QB_a0.append((QB_a0_tilde - QB) / abs(QB))
-                QB_a1.append((QB_a1_tilde - QB) / abs(QB))
+                QB_a0.append(utils.normalized_difference(QB_a0_tilde, QB))
+                QB_a1.append(utils.normalized_difference(QB_a1_tilde, QB))
 
         raw_axis[0, 0].plot(Js, Xbob, label=f'N={N}')
         raw_axis[0, 0].set_title("Xbob")
@@ -91,12 +93,12 @@ if __name__ == "__main__":
 
         tel_axis[0, i].plot(Js, HB_a0, label=f'a=0')
         tel_axis[0, i].plot(Js, HB_a1, label=f'a=1')
-        tel_axis[0, i].set_title("HB")
+        tel_axis[0, i].set_title(f"HB N={N}")
 
         # Remove J=0 from QB as it is not defined there
         tel_axis[1, i].plot(Js[1:], QB_a0, label=f'a=0')
         tel_axis[1, i].plot(Js[1:], QB_a1, label=f'a=1')
-        tel_axis[1, i].set_title("QB")
+        tel_axis[1, i].set_title(f"QB N={N}")
 
     # Remove unused subplot from raw_axis (bottom right)
     raw_figure.delaxes(raw_axis[1, 2])  # remove the 6th placeholder

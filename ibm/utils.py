@@ -70,3 +70,17 @@ def get_bit_from_counts(bitstring: str, creg_index: int, num_clbits: int) -> str
         )
 
     return bitstring[string_index]
+
+def normalized_difference(x: float, y: float) -> float:
+    if y is None:
+        return x
+
+    elif y == 0:
+        if x > 0:
+            return float('inf')
+        elif x < 0:
+            return float('-inf')
+        else:
+            raise ValueError("Both x and y are zero, cannot compute normalized difference.")
+
+    return (x - y) / abs(y)

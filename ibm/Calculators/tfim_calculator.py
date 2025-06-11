@@ -102,11 +102,9 @@ class TFIMCalculator:
 
         if conf.p_excited_superposition_error != 0:
             p_err = conf.p_excited_superposition_error
-            # Relative phase for the superposition is negligible according to QKD paper
-            alpha = np.pi / 4
             # Amplitudes for the superposition
             amp_gs_super = np.sqrt(1 - p_err)
-            amp_excited_super = cmath.exp(1j * alpha) * np.sqrt(p_err)
+            amp_excited_super = np.sqrt(p_err)
 
             # Superposition state vector: |psi> = amp_gs_super * |gs> + amp_excited_super * |E1>
             psi_superposition = (amp_gs_super * self.gs0.data) + (amp_excited_super * self.ex1.data)

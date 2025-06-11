@@ -44,7 +44,10 @@ class Results:
             # Calculate primary metrics
             exp_val, sem = observable.calculate_expectation_and_sem(counts, total_shots)
             susceptibility = observable.calculate_susceptibility(counts)
-            correlation = Results.calculate_correlation(counts, conf.N+1)
+
+            # FIXME: Uncomment after fixing correlation calculation from bitstring, currently not used.
+            # correlation = Results.calculate_correlation(counts, conf.N+1)
+            correlation = 0.0
 
             # Extract relevant conf parameters
             conf_params = {

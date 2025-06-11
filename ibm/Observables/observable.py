@@ -5,7 +5,7 @@ from qiskit_aer.library import SetDensityMatrix
 import numpy as np
 from conf import Conf
 from Calculators.tfim_calculator import TFIMCalculator
-
+import utils
 
 class Observable:
     def __init__(self, name, conf: Conf, calc: TFIMCalculator):
@@ -36,7 +36,7 @@ class Observable:
     def apply_alice_measurement(self, qc: QuantumCircuit):
         raise NotImplementedError()
 
-    def apply_bob_operation(self, qc: QuantumCircuit, xor_alice_res):
+    def apply_bob_operation(self, qc: QuantumCircuit, xor_res):
         raise NotImplementedError()
 
     def get_bob_measurement_basis(self):
@@ -67,13 +67,13 @@ class Observable:
             print(f"Error creating matrix for {pauli_string}: {e}")
             return None
 
-    def get_theoretical_gs_expectation_value(self) -> float:
+    def get_theoretical_gs_expectation_value(self) -> float | None:
         """
         This is a placeholder for the theoretical ground state expectation value.
         The actual implementation should be provided in subclasses.
         This is a dummy implementation for observables that are not used as final results.
         """
-        return 0
+        return None
 
     # --- Post-Processing Calculations ---
     def calculate_expectation_and_sem(self, counts: dict, total_shots: int):
@@ -95,15 +95,11 @@ class Observable:
         if total_shots <= 0:
              return 0.0, 0.0
 
-        gs_exp_val = self.get_theoretical_gs_expectation_value()
-
         # Calculate expectation value <O>
         expectation = sum_val / total_shots
-        expectation = expectation - gs_exp_val
 
-        # Normalize expectation value to get result in arbitrary units
-        if gs_exp_val != 0:
-            expectation /= abs(gs_exp_val)
+        gs_exp_val = self.get_theoretical_gs_expectation_value()
+        expectation = utils.normalized_difference(expectation, gs_exp_val)
 
         # Calculate <O^2>
         expectation_sq = sum_val_sq / total_shots

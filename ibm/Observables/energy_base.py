@@ -17,7 +17,7 @@ class EnergyBase(Observable):
         qc.h(alice_idx)
         qc.measure(alice_idx, alice_idx)
 
-    def apply_bob_operation(self, qc: QuantumCircuit, xor_alice_res):
+    def apply_bob_operation(self, qc: QuantumCircuit, xor_res):
         """
         Bob's conditional operation (rotation).
         """
@@ -25,7 +25,7 @@ class EnergyBase(Observable):
         bob_idx = utils.get_bob_idx(self.N)
 
         theta = self._calc.theta_E1 if not self.theta else self.theta
-        angle = -2 * theta if xor_alice_res == 0 else 2 * theta
+        angle = -2 * theta if xor_res == 0 else 2 * theta
 
         # Apply the controlled rotation based on Alice's measurement.
         # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.

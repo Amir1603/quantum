@@ -10,7 +10,7 @@ from utils import get_nested_value
 def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, output_dir,
                                 error_param_path=None, group_by=None, filter_criteria=None,
                                 observables_to_plot=None,
-                                filename_prefix="plot", title_prefix="Plot"):
+                                filename_prefix="plot", title_prefix="Plot", ylim=None):
     """
     Generates a plot of one parameter vs another, optionally grouped and filtered.
 
@@ -132,6 +132,8 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
             ax.errorbar(x_sorted, y_sorted, yerr=err_sorted, label=group_label, marker='o', linestyle='-', capsize=3)
         else:
             ax.plot(x_sorted, y_sorted, label=group_label, marker='o', linestyle='-')
+            if ylim:
+                ax.set_ylim(ylim)
 
     ax.legend()
     ax.grid(True)
@@ -530,7 +532,7 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         return None
 
 
-def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, filter_criteria_plot, obs=['charge', 'E_B'], group_by=['observable']):
+def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_name, filter_criteria_plot, obs=['charge', 'E_B'], group_by=['observable'], ylim=None):
     # Define observables of interest for this plot
     selected_obs_plot = obs
 
@@ -544,7 +546,8 @@ def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_n
         title_prefix=f"Expectation Value",
         group_by=group_by,
         filter_criteria=filter_criteria_plot,
-        observables_to_plot=selected_obs_plot # Apply observable filter
+        observables_to_plot=selected_obs_plot,
+        ylim=ylim
     )
 
     print(f"Generated plot (filtered obs): {plot_exp_vs_p_filt}")
