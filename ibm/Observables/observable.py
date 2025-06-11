@@ -36,7 +36,7 @@ class Observable:
     def apply_alice_measurement(self, qc: QuantumCircuit):
         raise NotImplementedError()
 
-    def apply_bob_operation(self, qc: QuantumCircuit, xor_alice_res):
+    def apply_bob_operation(self, qc: QuantumCircuit, xor_res):
         raise NotImplementedError()
 
     def get_bob_measurement_basis(self):

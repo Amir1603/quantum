@@ -19,7 +19,7 @@ class Charge(Observable):
         qc.h(alice_idx)
         qc.measure(alice_idx, alice_idx)
 
-    def apply_bob_operation(self, qc: QuantumCircuit, xor_alice_res):
+    def apply_bob_operation(self, qc: QuantumCircuit, xor_res):
         """
         Bob's conditional operation based on Alice's measurement (outcome c).
         Operation is U_B(a) = Ry(a*theta), where a=+1 (c=0) or a=-1 (c=1).
@@ -32,7 +32,7 @@ class Charge(Observable):
         # Apply the controlled rotation based on Alice's measurement.
         # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
         # => We use a workaround suggested by Kazuki.
-        angle = 2 * theta if xor_alice_res == 0 else -2 * theta
+        angle = 2 * theta if xor_res == 0 else -2 * theta
 
         # Apply the controlled rotation based on Alice's measurement.
         # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
@@ -43,8 +43,10 @@ class Charge(Observable):
         qc.x(alice_idx)
 
         # This is equivalent to:
-        ###  with qc.if_test((alice_idx, 1^xor_alice_res)):
+        ### with qc.if_test((alice_idx, 0^xor_alice_res)):
         ###     qc.ry(-2 * theta, bob_idx)
+        ### with qc.if_test((alice_idx, 1^xor_alice_res)):
+        ###     qc.ry(2 * theta, bob_idx)
 
     def get_bob_measurement_basis(self):
         """

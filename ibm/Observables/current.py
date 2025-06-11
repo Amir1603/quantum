@@ -20,7 +20,7 @@ class Current(Observable):
 
         qc.measure(alice_idx, alice_idx)
 
-    def apply_bob_operation(self, qc: QuantumCircuit, xor_alice_res):
+    def apply_bob_operation(self, qc: QuantumCircuit, xor_res):
         """
         Bob's conditional operation based on Alice's Z measurement (outcome m).
         Apply Ry(pi) if Alice measured '1' (m=1 -> eigenvalue a=-1).
@@ -30,7 +30,7 @@ class Current(Observable):
         bob_idx = utils.get_bob_idx(self.N)
 
         # Apply Ry(pi) if the classical register (cond) is 1
-        with qc.if_test((alice_idx, 1^xor_alice_res)):
+        with qc.if_test((alice_idx, 1^xor_res)):
             qc.ry(np.pi, bob_idx)
 
     def get_bob_measurement_basis(self):
