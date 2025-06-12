@@ -72,13 +72,13 @@ if __name__ == "__main__":
             QB_a0_tilde = 0.5 + (exp_vals.Zbob**2 + exp_vals.X0_Xbob**2) / (2 * N_q)
             QB_a1_tilde = 0.5 + (exp_vals.Zbob**2 - exp_vals.X0_Xbob**2) / (2 * N_q)
 
-            HB_a0.append((HB_a0_tilde - HB) / abs(HB))
-            HB_a1.append((HB_a1_tilde - HB) / abs(HB))
+            HB_a0.append(HB_a0_tilde - HB)
+            HB_a1.append(HB_a1_tilde - HB)
 
             # QB is only defined for J != 0
             if J != 0:
-                QB_a0.append(utils.normalized_difference(QB_a0_tilde, QB))
-                QB_a1.append(utils.normalized_difference(QB_a1_tilde, QB))
+                QB_a0.append(QB_a0_tilde - QB)
+                QB_a1.append(QB_a1_tilde - QB)
 
         raw_axis[0, 0].plot(Js, Xbob, label=f'N={N}')
         raw_axis[0, 0].set_title("Xbob")
