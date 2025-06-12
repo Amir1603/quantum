@@ -99,7 +99,8 @@ class Observable:
         expectation = sum_val / total_shots
 
         gs_exp_val = self.get_theoretical_gs_expectation_value()
-        expectation = utils.normalized_difference(expectation, gs_exp_val)
+        if gs_exp_val is not None:
+            expectation = expectation - gs_exp_val
 
         # Calculate <O^2>
         expectation_sq = sum_val_sq / total_shots

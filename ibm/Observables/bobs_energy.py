@@ -76,10 +76,8 @@ class BobsEnergy(Observable):
         exp_val_v = v_res.expectation_value
         exp_val_hb = h * exp_val_h1 + J * exp_val_v
 
-        gs_energy = self._calc.bob_energy
-
-        # Calculate final value relative to ground state in arbitrary units
-        final_value = (exp_val_hb - gs_energy) / abs(gs_energy)
+        # Calculate final value relative to ground state
+        final_value = exp_val_hb - self._calc.bob_energy
 
         # Calculate combined SEM for h*<h1> + J*<V>
         sem_h1 = h1_res.sem
