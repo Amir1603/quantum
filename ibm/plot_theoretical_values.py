@@ -19,7 +19,7 @@ def get_unique_legend(ax_array):
 
 if __name__ == "__main__":
     Ns = [1, 2, 3, 4]
-    Js = np.linspace(0.0, 4.0, 100).tolist()
+    Js = np.linspace(0.0, 10.0, 250).tolist()
     h = 1.0
 
     # Raw figure - 5 subplots in a 2x3 grid, remove unused subplot
