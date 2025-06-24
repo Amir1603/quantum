@@ -14,7 +14,7 @@ class TFIMCalculator:
 
     def __init__(self, N, J, h):
         """
-        Initialize the NumericalTFIM class with parameters for the transverse field Ising model.
+        Initialize the class with parameters for the transverse field Ising model.
 
         Parameters:
         N (int): Number of spins.

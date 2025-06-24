@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Calculators import NumericalTFIM
-import utils
+from Calculators import AliceNumericalTFIM, NN_NumericalTFIM
 
 # Collect and deduplicate legend handles and labels
 def get_unique_legend(ax_array):
@@ -22,8 +21,8 @@ if __name__ == "__main__":
     Js = np.linspace(0.0, 10.0, 250).tolist()
     h = 1.0
 
-    # Raw figure - 5 subplots in a 2x3 grid, remove unused subplot
-    raw_figure, raw_axis = plt.subplots(2, 3, figsize=(10, 6))
+    # Raw figure - 9 subplots in a 3x5 grid, remove unused subplot
+    raw_figure, raw_axis = plt.subplots(3, 5, figsize=(10, 6))
     raw_figure.subplots_adjust(right=0.8)
     for ax in raw_axis.flat:
         ax.set_title("", fontsize=10)
@@ -38,10 +37,18 @@ if __name__ == "__main__":
         print(f"Calculating for N={N}...")
 
         X0 = []
+        Y0 = []
         Xbob = []
+        Ybob = []
         Zbob = []
         X0_Xbob = []
+        Y0_Ybob = []
         X0_Zbob = []
+        Y0_Zbob = []
+        Xbobn_Zbob = []
+        X0_Xbobn_Zbob = []
+        X0_Xbobn_Xbob = []
+        Y0_Xbobn_Xbob = []
 
         HB_a0 = []
         HB_a1 = []
@@ -49,16 +56,25 @@ if __name__ == "__main__":
         QB_a1 = []
 
         for J in Js:
-            ntfim = NumericalTFIM(N, J, h)
+            # TODO: Run both AliceNumericalTFIM and NN_NumericalTFIM
+            ntfim = NN_NumericalTFIM(N, J, h)
             ntfim.calc_all()
 
             exp_vals = ntfim.get_expectation_values()
 
             X0.append(exp_vals.X0)
+            Y0.append(exp_vals.Y0)
             Xbob.append(exp_vals.Xbob)
+            Ybob.append(exp_vals.Ybob)
             Zbob.append(exp_vals.Zbob)
             X0_Xbob.append(exp_vals.X0_Xbob)
+            Y0_Ybob.append(exp_vals.Y0_Ybob)
             X0_Zbob.append(exp_vals.X0_Zbob)
+            Y0_Zbob.append(exp_vals.Y0_Zbob)
+            Xbobn_Zbob.append(exp_vals.Xbobn_Zbob)
+            X0_Xbobn_Zbob.append(exp_vals.X0_Xbobn_Zbob)
+            X0_Xbobn_Xbob.append(exp_vals.X0_Xbobn_Xbob)
+            Y0_Xbobn_Xbob.append(exp_vals.Y0_Xbobn_Xbob)
 
             HB = h*exp_vals.Zbob + J*exp_vals.X0_Xbob
             QB = 0.5 * (1 + exp_vals.Zbob)
@@ -82,14 +98,30 @@ if __name__ == "__main__":
 
         raw_axis[0, 0].plot(Js, Xbob, label=f'N={N}')
         raw_axis[0, 0].set_title("Xbob")
-        raw_axis[0, 1].plot(Js, Zbob, label=f'N={N}')
-        raw_axis[0, 1].set_title("Zbob")
+        raw_axis[0, 1].plot(Js, Ybob, label=f'N={N}')
+        raw_axis[0, 1].set_title("Ybob")
+        raw_axis[0, 2].plot(Js, Zbob, label=f'N={N}')
+        raw_axis[0, 2].set_title("Zbob")
+        raw_axis[0, 3].plot(Js, X0, label=f'N={N}')
+        raw_axis[0, 3].set_title("X0")
+        raw_axis[0, 4].plot(Js, Y0, label=f'N={N}')
+        raw_axis[0, 4].set_title("Y0")
         raw_axis[1, 0].plot(Js, X0_Xbob, label=f'N={N}')
         raw_axis[1, 0].set_title("X0 Xbob")
-        raw_axis[1, 1].plot(Js, X0_Zbob, label=f'N={N}')
-        raw_axis[1, 1].set_title("X0 Zbob")
-        raw_axis[0, 2].plot(Js, X0, label=f'N={N}')
-        raw_axis[0, 2].set_title("X0")
+        raw_axis[1, 1].plot(Js, Y0_Ybob, label=f'N={N}')
+        raw_axis[1, 1].set_title("Y0 Ybob")
+        raw_axis[1, 2].plot(Js, X0_Zbob, label=f'N={N}')
+        raw_axis[1, 2].set_title("X0 Zbob")
+        raw_axis[1, 3].plot(Js, Y0_Zbob, label=f'N={N}')
+        raw_axis[1, 3].set_title("Y0 Zbob")
+        raw_axis[1, 4].plot(Js, Xbobn_Zbob, label=f'N={N}')
+        raw_axis[1, 4].set_title("Xbobn Zbob")
+        raw_axis[2, 0].plot(Js, X0_Xbobn_Zbob, label=f'N={N}')
+        raw_axis[2, 0].set_title("X0 Xbobn Zbob")
+        raw_axis[2, 1].plot(Js, X0_Xbobn_Xbob, label=f'N={N}')
+        raw_axis[2, 1].set_title("X0 Xbobn Xbob")
+        raw_axis[2, 2].plot(Js, Y0_Xbobn_Xbob, label=f'N={N}')
+        raw_axis[2, 2].set_title("Y0 Xbobn Xbob")
 
         tel_axis[0, i].plot(Js, HB_a0, label=f'a=0')
         tel_axis[0, i].plot(Js, HB_a1, label=f'a=1')
@@ -101,7 +133,8 @@ if __name__ == "__main__":
         tel_axis[1, i].set_title(f"QB N={N}")
 
     # Remove unused subplot from raw_axis (bottom right)
-    raw_figure.delaxes(raw_axis[1, 2])  # remove the 6th placeholder
+    raw_figure.delaxes(raw_axis[2, 3])  # remove the 14th placeholder
+    raw_figure.delaxes(raw_axis[2, 4])  # remove the 15th placeholder
 
     # Add legends to the side of each figure (once only)
     raw_handles, raw_labels = get_unique_legend(raw_axis)
