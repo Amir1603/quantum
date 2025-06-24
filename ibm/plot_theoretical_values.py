@@ -21,133 +21,140 @@ if __name__ == "__main__":
     Js = np.linspace(0.0, 10.0, 250).tolist()
     h = 1.0
 
-    # Raw figure - multiple subplots in a 3x5 grid, remove unused subplot
-    raw_figure, raw_axis = plt.subplots(3, 5, figsize=(10, 6))
-    raw_figure.subplots_adjust(right=0.8)
-    for ax in raw_axis.flat:
-        ax.set_title("", fontsize=10)
+    ntfims = {
+        'alice': AliceNumericalTFIM,
+        'nn': NN_NumericalTFIM
+    }
 
-    # Teleported figure
-    tel_figure, tel_axis = plt.subplots(2, len(Ns), figsize=(10, 6))
-    tel_figure.subplots_adjust(right=0.8)
-    for ax in tel_axis.flat:
-        ax.set_title("", fontsize=10)
+    for name, ntfim_class in ntfims.items():
+        # Raw figure - multiple subplots in a 3x5 grid, remove unused subplot
+        raw_figure, raw_axis = plt.subplots(3, 5, figsize=(10, 6))
+        raw_figure.subplots_adjust(right=0.8)
+        for ax in raw_axis.flat:
+            ax.set_title("", fontsize=10)
 
-    for i, N in enumerate(Ns):
-        print(f"Calculating for N={N}...")
+        # Teleported figure
+        tel_figure, tel_axis = plt.subplots(2, len(Ns), figsize=(10, 6))
+        tel_figure.subplots_adjust(right=0.8)
+        for ax in tel_axis.flat:
+            ax.set_title("", fontsize=10)
 
-        X0 = []
-        Y0 = []
-        Xbob = []
-        Ybob = []
-        Zbob = []
-        X0_Xbob = []
-        Y0_Ybob = []
-        X0_Zbob = []
-        Y0_Zbob = []
-        Xbobn_Xbob = []
-        Xbobn_Zbob = []
-        X0_Xbobn_Zbob = []
-        X0_Xbobn_Xbob = []
-        Y0_Xbobn_Xbob = []
+        print(f"Calculating theoretical values for {name}...")
 
-        HB_a0 = []
-        HB_a1 = []
-        QB_a0 = []
-        QB_a1 = []
+        for i, N in enumerate(Ns):
+            print(f"Calculating for N={N}...")
 
-        for J in Js:
-            # TODO: Run both AliceNumericalTFIM and NN_NumericalTFIM
-            ntfim = AliceNumericalTFIM(N, J, h)
-            ntfim.calc_all()
+            X0 = []
+            Y0 = []
+            Xbob = []
+            Ybob = []
+            Zbob = []
+            X0_Xbob = []
+            Y0_Ybob = []
+            X0_Zbob = []
+            Y0_Zbob = []
+            Xbobn_Xbob = []
+            Xbobn_Zbob = []
+            X0_Xbobn_Zbob = []
+            X0_Xbobn_Xbob = []
+            Y0_Xbobn_Xbob = []
 
-            exp_vals = ntfim.get_expectation_values()
+            HB_a0 = []
+            HB_a1 = []
+            QB_a0 = []
+            QB_a1 = []
 
-            X0.append(exp_vals.X0)
-            Y0.append(exp_vals.Y0)
-            Xbob.append(exp_vals.Xbob)
-            Ybob.append(exp_vals.Ybob)
-            Zbob.append(exp_vals.Zbob)
-            X0_Xbob.append(exp_vals.X0_Xbob)
-            Y0_Ybob.append(exp_vals.Y0_Ybob)
-            X0_Zbob.append(exp_vals.X0_Zbob)
-            Y0_Zbob.append(exp_vals.Y0_Zbob)
-            Xbobn_Xbob.append(exp_vals.Xbobn_Xbob)
-            Xbobn_Zbob.append(exp_vals.Xbobn_Zbob)
-            X0_Xbobn_Zbob.append(exp_vals.X0_Xbobn_Zbob)
-            X0_Xbobn_Xbob.append(exp_vals.X0_Xbobn_Xbob)
-            Y0_Xbobn_Xbob.append(exp_vals.Y0_Xbobn_Xbob)
+            for J in Js:
+                ntfim = ntfim_class(N, J, h)
+                ntfim.calc_all()
 
-            HB = h*exp_vals.Zbob + J*exp_vals.X0_Xbob
-            QB = 0.5 * (1 + exp_vals.Zbob)
+                exp_vals = ntfim.get_expectation_values()
 
-            N_H = -np.sqrt((h**2 + J**2)*(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2))
-            N_q = -np.sqrt(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2)
+                X0.append(exp_vals.X0)
+                Y0.append(exp_vals.Y0)
+                Xbob.append(exp_vals.Xbob)
+                Ybob.append(exp_vals.Ybob)
+                Zbob.append(exp_vals.Zbob)
+                X0_Xbob.append(exp_vals.X0_Xbob)
+                Y0_Ybob.append(exp_vals.Y0_Ybob)
+                X0_Zbob.append(exp_vals.X0_Zbob)
+                Y0_Zbob.append(exp_vals.Y0_Zbob)
+                Xbobn_Xbob.append(exp_vals.Xbobn_Xbob)
+                Xbobn_Zbob.append(exp_vals.Xbobn_Zbob)
+                X0_Xbobn_Zbob.append(exp_vals.X0_Xbobn_Zbob)
+                X0_Xbobn_Xbob.append(exp_vals.X0_Xbobn_Xbob)
+                Y0_Xbobn_Xbob.append(exp_vals.Y0_Xbobn_Xbob)
 
-            HB_a0_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 + (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
-            HB_a1_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 - (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
+                HB = h*exp_vals.Zbob + J*exp_vals.X0_Xbob
+                QB = 0.5 * (1 + exp_vals.Zbob)
 
-            QB_a0_tilde = 0.5 + (exp_vals.Zbob**2 + exp_vals.X0_Xbob**2) / (2 * N_q)
-            QB_a1_tilde = 0.5 + (exp_vals.Zbob**2 - exp_vals.X0_Xbob**2) / (2 * N_q)
+                N_H = -np.sqrt((h**2 + J**2)*(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2))
+                N_q = -np.sqrt(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2)
 
-            HB_a0.append(HB_a0_tilde - HB)
-            HB_a1.append(HB_a1_tilde - HB)
+                HB_a0_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 + (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
+                HB_a1_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 - (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
 
-            # QB is only defined for J != 0
-            if J != 0:
-                QB_a0.append(QB_a0_tilde - QB)
-                QB_a1.append(QB_a1_tilde - QB)
+                QB_a0_tilde = 0.5 + (exp_vals.Zbob**2 + exp_vals.X0_Xbob**2) / (2 * N_q)
+                QB_a1_tilde = 0.5 + (exp_vals.Zbob**2 - exp_vals.X0_Xbob**2) / (2 * N_q)
 
-        raw_axis[0, 0].plot(Js, Xbob, label=f'N={N}')
-        raw_axis[0, 0].set_title("Xbob")
-        raw_axis[0, 1].plot(Js, Ybob, label=f'N={N}')
-        raw_axis[0, 1].set_title("Ybob")
-        raw_axis[0, 2].plot(Js, Zbob, label=f'N={N}')
-        raw_axis[0, 2].set_title("Zbob")
-        raw_axis[0, 3].plot(Js, X0, label=f'N={N}')
-        raw_axis[0, 3].set_title("X0")
-        raw_axis[0, 4].plot(Js, Y0, label=f'N={N}')
-        raw_axis[0, 4].set_title("Y0")
-        raw_axis[1, 0].plot(Js, X0_Xbob, label=f'N={N}')
-        raw_axis[1, 0].set_title("X0 Xbob")
-        raw_axis[1, 1].plot(Js, Y0_Ybob, label=f'N={N}')
-        raw_axis[1, 1].set_title("Y0 Ybob")
-        raw_axis[1, 2].plot(Js, X0_Zbob, label=f'N={N}')
-        raw_axis[1, 2].set_title("X0 Zbob")
-        raw_axis[1, 3].plot(Js, Y0_Zbob, label=f'N={N}')
-        raw_axis[1, 3].set_title("Y0 Zbob")
-        raw_axis[1, 4].plot(Js, Xbobn_Xbob, label=f'N={N}')
-        raw_axis[1, 4].set_title("Xbobn Xbob")
-        raw_axis[2, 0].plot(Js, Xbobn_Zbob, label=f'N={N}')
-        raw_axis[2, 0].set_title("Xbobn Zbob")
-        raw_axis[2, 1].plot(Js, X0_Xbobn_Zbob, label=f'N={N}')
-        raw_axis[2, 1].set_title("X0 Xbobn Zbob")
-        raw_axis[2, 2].plot(Js, X0_Xbobn_Xbob, label=f'N={N}')
-        raw_axis[2, 2].set_title("X0 Xbobn Xbob")
-        raw_axis[2, 3].plot(Js, Y0_Xbobn_Xbob, label=f'N={N}')
-        raw_axis[2, 3].set_title("Y0 Xbobn Xbob")
+                HB_a0.append(HB_a0_tilde - HB)
+                HB_a1.append(HB_a1_tilde - HB)
 
-        tel_axis[0, i].plot(Js, HB_a0, label=f'a=0')
-        tel_axis[0, i].plot(Js, HB_a1, label=f'a=1')
-        tel_axis[0, i].set_title(f"HB N={N}")
+                # QB is only defined for J != 0
+                if J != 0:
+                    QB_a0.append(QB_a0_tilde - QB)
+                    QB_a1.append(QB_a1_tilde - QB)
 
-        # Remove J=0 from QB as it is not defined there
-        tel_axis[1, i].plot(Js[1:], QB_a0, label=f'a=0')
-        tel_axis[1, i].plot(Js[1:], QB_a1, label=f'a=1')
-        tel_axis[1, i].set_title(f"QB N={N}")
+            raw_axis[0, 0].plot(Js, Xbob, label=f'N={N}')
+            raw_axis[0, 0].set_title("Xbob")
+            raw_axis[0, 1].plot(Js, Ybob, label=f'N={N}')
+            raw_axis[0, 1].set_title("Ybob")
+            raw_axis[0, 2].plot(Js, Zbob, label=f'N={N}')
+            raw_axis[0, 2].set_title("Zbob")
+            raw_axis[0, 3].plot(Js, X0, label=f'N={N}')
+            raw_axis[0, 3].set_title("X0")
+            raw_axis[0, 4].plot(Js, Y0, label=f'N={N}')
+            raw_axis[0, 4].set_title("Y0")
+            raw_axis[1, 0].plot(Js, X0_Xbob, label=f'N={N}')
+            raw_axis[1, 0].set_title("X0 Xbob")
+            raw_axis[1, 1].plot(Js, Y0_Ybob, label=f'N={N}')
+            raw_axis[1, 1].set_title("Y0 Ybob")
+            raw_axis[1, 2].plot(Js, X0_Zbob, label=f'N={N}')
+            raw_axis[1, 2].set_title("X0 Zbob")
+            raw_axis[1, 3].plot(Js, Y0_Zbob, label=f'N={N}')
+            raw_axis[1, 3].set_title("Y0 Zbob")
+            raw_axis[1, 4].plot(Js, Xbobn_Xbob, label=f'N={N}')
+            raw_axis[1, 4].set_title("Xbobn Xbob")
+            raw_axis[2, 0].plot(Js, Xbobn_Zbob, label=f'N={N}')
+            raw_axis[2, 0].set_title("Xbobn Zbob")
+            raw_axis[2, 1].plot(Js, X0_Xbobn_Zbob, label=f'N={N}')
+            raw_axis[2, 1].set_title("X0 Xbobn Zbob")
+            raw_axis[2, 2].plot(Js, X0_Xbobn_Xbob, label=f'N={N}')
+            raw_axis[2, 2].set_title("X0 Xbobn Xbob")
+            raw_axis[2, 3].plot(Js, Y0_Xbobn_Xbob, label=f'N={N}')
+            raw_axis[2, 3].set_title("Y0 Xbobn Xbob")
 
-    # Remove unused subplot from raw_axis (bottom right)
-    raw_figure.delaxes(raw_axis[2, 4])  # remove the 15th placeholder
+            tel_axis[0, i].plot(Js, HB_a0, label=f'a=0')
+            tel_axis[0, i].plot(Js, HB_a1, label=f'a=1')
+            tel_axis[0, i].set_title(f"HB N={N}")
 
-    # Add legends to the side of each figure (once only)
-    raw_handles, raw_labels = get_unique_legend(raw_axis)
-    raw_figure.suptitle('Raw operators expectation Values for Different N and J', fontsize=14)
-    raw_figure.tight_layout(rect=[0, 0.05, 1, 0.93])  # Leave space at bottom for legend
-    raw_figure.legend(raw_handles, raw_labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
-    raw_figure.savefig('artifacts/raw_operators.png', bbox_inches='tight')
+            # Remove J=0 from QB as it is not defined there
+            tel_axis[1, i].plot(Js[1:], QB_a0, label=f'a=0')
+            tel_axis[1, i].plot(Js[1:], QB_a1, label=f'a=1')
+            tel_axis[1, i].set_title(f"QB N={N}")
 
-    tel_handles, tel_labels = get_unique_legend(tel_axis)
-    tel_figure.suptitle('Teleported operators expectation Values for Different N and J', fontsize=14)
-    tel_figure.tight_layout(rect=[0, 0.05, 1, 0.93])
-    tel_figure.legend(tel_handles, tel_labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
-    tel_figure.savefig('artifacts/teleported_operators.png', bbox_inches='tight')
+        # Remove unused subplot from raw_axis (bottom right)
+        raw_figure.delaxes(raw_axis[2, 4])  # remove the 15th placeholder
+
+        # Add legends to the side of each figure (once only)
+        raw_handles, raw_labels = get_unique_legend(raw_axis)
+        raw_figure.suptitle('Raw operators expectation Values for Different N and J', fontsize=14)
+        raw_figure.tight_layout(rect=[0, 0.05, 1, 0.93])  # Leave space at bottom for legend
+        raw_figure.legend(raw_handles, raw_labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
+        raw_figure.savefig(f'artifacts/raw_operators_{name}.png', bbox_inches='tight')
+
+        tel_handles, tel_labels = get_unique_legend(tel_axis)
+        tel_figure.suptitle('Teleported operators expectation Values for Different N and J', fontsize=14)
+        tel_figure.tight_layout(rect=[0, 0.05, 1, 0.93])
+        tel_figure.legend(tel_handles, tel_labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
+        tel_figure.savefig(f'artifacts/teleported_operators_{name}.png', bbox_inches='tight')
