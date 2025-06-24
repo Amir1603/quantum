@@ -77,7 +77,7 @@ def get_bit_from_counts(bitstring: str, creg_index: int, num_clbits: int) -> str
 
 class System(Enum):
     AliceInteraction = 'Alice'
-    NearestNeighborInteraction = 'NN_'
+    NearestNeighborInteraction = 'NearestNeighbors'
 
     def __str__(self):
         return self.value

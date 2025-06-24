@@ -16,6 +16,7 @@ class ExpectationValues:
         self.Y0_Ybob = None
         self.X0_Zbob = None
         self.Y0_Zbob = None
+        self.Xbobn_Xbob = None
         self.Xbobn_Zbob = None
         self.X0_Xbobn_Zbob = None
         self.X0_Xbobn_Xbob = None
@@ -45,7 +46,7 @@ class NumericalTFIM(TFIMCalculator):
         self._raw_exp_vals = self.get_expectation_values()
 
         self.bob_energy, self.bob_charge = self._compute_bob_gs_energy_and_charge()
-        self.theta_Ex, self.theta_qx. self.theta_Ey, self.theta_qy = self._compute_optimal_rotation_angles()
+        self.theta_Ex, self.theta_qx, self.theta_Ey, self.theta_qy = self._compute_optimal_rotation_angles()
 
     # Ground State and First Excited State Calculation
     def _compute_lowest_states(self):
@@ -100,6 +101,7 @@ class NumericalTFIM(TFIMCalculator):
         op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
         op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', bob_site)], self.N)
         op_Y0_Zbob = NumericalTFIM._get_multi_site_operator([('Y', alice_site), ('Z', bob_site)], self.N)
+        op_Xbobn_Xbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor), ('X', bob_site)], self.N)
         op_Xbobn_Zbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor), ('Z', bob_site)], self.N)
 
         op_X0_Xbobn_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor), ('Z', bob_site)], self.N)
@@ -116,6 +118,7 @@ class NumericalTFIM(TFIMCalculator):
         Y0_Ybob_exp = NumericalTFIM._compute_expectation_value(op_Y0_Ybob, self.gs0)
         X0_Zbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Zbob, self.gs0)
         Y0_Zbob_exp = NumericalTFIM._compute_expectation_value(op_Y0_Zbob, self.gs0)
+        Xbobn_Xbob_exp = NumericalTFIM._compute_expectation_value(op_Xbobn_Xbob, self.gs0)
         Xbobn_Zbob_exp = NumericalTFIM._compute_expectation_value(op_Xbobn_Zbob, self.gs0)
         X0_Xbobn_Zbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbobn_Zbob, self.gs0)
         X0_Xbobn_Xbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbobn_Xbob, self.gs0)
@@ -132,6 +135,7 @@ class NumericalTFIM(TFIMCalculator):
             'Y0_Ybob': Y0_Ybob_exp,
             'X0_Zbob': X0_Zbob_exp,
             'Y0_Zbob': Y0_Zbob_exp,
+            'Xbobn_Xbob': Xbobn_Xbob_exp,
             'Xbobn_Zbob': Xbobn_Zbob_exp,
             'X0_Xbobn_Zbob': X0_Xbobn_Zbob_exp,
             'X0_Xbobn_Xbob': X0_Xbobn_Xbob_exp,

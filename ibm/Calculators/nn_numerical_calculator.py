@@ -29,13 +29,13 @@ class NN_NumericalTFIM(NumericalTFIM):
     def _compute_optimal_rotation_angles(self):
         """
         Computes optimal rotation angles for general N.
-        For energy, Bob's local energy is P_B = h*Z_N + J*X_0X_N.
+        For energy, Bob's local energy is P_B = h*Z_N + J*X_{N-1}X_N.
         For charge, Bob's local charge is Q_B = (I+Z_N)/2.
         """
         exp_vals = self._raw_exp_vals
 
         num_theta_Ex = self.h * exp_vals.X0_Xbob - self.J * exp_vals.X0_Xbobn_Zbob
-        den_theta_Ex = self.h * exp_vals.Zbob
+        den_theta_Ex = self.h * exp_vals.Zbob + self.J * exp_vals.Xbobn_Xbob
         # The minus sign in the denomenator doesn't affect the ratio, but just for choosign the right quadrant.
         theta_Ex = 0.5 * np.arctan2(num_theta_Ex, -den_theta_Ex)
 
@@ -44,8 +44,8 @@ class NN_NumericalTFIM(NumericalTFIM):
         # The minus signs don't affect the ratio, but just for choosign the right quadrant.
         theta_qx = 0.5 * np.arctan2(-num_theta_qx, -den_theta_qx)
 
-        num_theta_Ey = -exp_vals.Y0_Ybob
-        den_theta_Ey = 2*exp_vals.Zbob
+        num_theta_Ey = -self.h * exp_vals.Y0_Ybob
+        den_theta_Ey = self.h * exp_vals.Zbob + self.J * exp_vals.Xbobn_Xbob
         # The minus signs don't affect the ratio, but just for choosign the right quadrant.
         theta_Ey = 0.5 * np.arctan2(num_theta_Ey, den_theta_Ey)
 
@@ -58,7 +58,7 @@ class NN_NumericalTFIM(NumericalTFIM):
 
     # Bob's Energy and Charge Expectation Calculation
     def _compute_bob_gs_energy_and_charge(self):
-        energy_bob = self.h * self._raw_exp_vals.Zbob + self.J * self._raw_exp_vals.X0_Xbob
+        energy_bob = self.h * self._raw_exp_vals.Zbob + self.J * self._raw_exp_vals.Xbobn_Xbob
         charge_bob = 0.5 * (1 + self._raw_exp_vals.Zbob)
 
         return energy_bob, charge_bob

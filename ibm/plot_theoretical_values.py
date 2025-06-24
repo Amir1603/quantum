@@ -21,7 +21,7 @@ if __name__ == "__main__":
     Js = np.linspace(0.0, 10.0, 250).tolist()
     h = 1.0
 
-    # Raw figure - 9 subplots in a 3x5 grid, remove unused subplot
+    # Raw figure - multiple subplots in a 3x5 grid, remove unused subplot
     raw_figure, raw_axis = plt.subplots(3, 5, figsize=(10, 6))
     raw_figure.subplots_adjust(right=0.8)
     for ax in raw_axis.flat:
@@ -45,6 +45,7 @@ if __name__ == "__main__":
         Y0_Ybob = []
         X0_Zbob = []
         Y0_Zbob = []
+        Xbobn_Xbob = []
         Xbobn_Zbob = []
         X0_Xbobn_Zbob = []
         X0_Xbobn_Xbob = []
@@ -57,7 +58,7 @@ if __name__ == "__main__":
 
         for J in Js:
             # TODO: Run both AliceNumericalTFIM and NN_NumericalTFIM
-            ntfim = NN_NumericalTFIM(N, J, h)
+            ntfim = AliceNumericalTFIM(N, J, h)
             ntfim.calc_all()
 
             exp_vals = ntfim.get_expectation_values()
@@ -71,6 +72,7 @@ if __name__ == "__main__":
             Y0_Ybob.append(exp_vals.Y0_Ybob)
             X0_Zbob.append(exp_vals.X0_Zbob)
             Y0_Zbob.append(exp_vals.Y0_Zbob)
+            Xbobn_Xbob.append(exp_vals.Xbobn_Xbob)
             Xbobn_Zbob.append(exp_vals.Xbobn_Zbob)
             X0_Xbobn_Zbob.append(exp_vals.X0_Xbobn_Zbob)
             X0_Xbobn_Xbob.append(exp_vals.X0_Xbobn_Xbob)
@@ -114,14 +116,16 @@ if __name__ == "__main__":
         raw_axis[1, 2].set_title("X0 Zbob")
         raw_axis[1, 3].plot(Js, Y0_Zbob, label=f'N={N}')
         raw_axis[1, 3].set_title("Y0 Zbob")
-        raw_axis[1, 4].plot(Js, Xbobn_Zbob, label=f'N={N}')
-        raw_axis[1, 4].set_title("Xbobn Zbob")
-        raw_axis[2, 0].plot(Js, X0_Xbobn_Zbob, label=f'N={N}')
-        raw_axis[2, 0].set_title("X0 Xbobn Zbob")
-        raw_axis[2, 1].plot(Js, X0_Xbobn_Xbob, label=f'N={N}')
-        raw_axis[2, 1].set_title("X0 Xbobn Xbob")
-        raw_axis[2, 2].plot(Js, Y0_Xbobn_Xbob, label=f'N={N}')
-        raw_axis[2, 2].set_title("Y0 Xbobn Xbob")
+        raw_axis[1, 4].plot(Js, Xbobn_Xbob, label=f'N={N}')
+        raw_axis[1, 4].set_title("Xbobn Xbob")
+        raw_axis[2, 0].plot(Js, Xbobn_Zbob, label=f'N={N}')
+        raw_axis[2, 0].set_title("Xbobn Zbob")
+        raw_axis[2, 1].plot(Js, X0_Xbobn_Zbob, label=f'N={N}')
+        raw_axis[2, 1].set_title("X0 Xbobn Zbob")
+        raw_axis[2, 2].plot(Js, X0_Xbobn_Xbob, label=f'N={N}')
+        raw_axis[2, 2].set_title("X0 Xbobn Xbob")
+        raw_axis[2, 3].plot(Js, Y0_Xbobn_Xbob, label=f'N={N}')
+        raw_axis[2, 3].set_title("Y0 Xbobn Xbob")
 
         tel_axis[0, i].plot(Js, HB_a0, label=f'a=0')
         tel_axis[0, i].plot(Js, HB_a1, label=f'a=1')
@@ -133,7 +137,6 @@ if __name__ == "__main__":
         tel_axis[1, i].set_title(f"QB N={N}")
 
     # Remove unused subplot from raw_axis (bottom right)
-    raw_figure.delaxes(raw_axis[2, 3])  # remove the 14th placeholder
     raw_figure.delaxes(raw_axis[2, 4])  # remove the 15th placeholder
 
     # Add legends to the side of each figure (once only)

@@ -188,7 +188,7 @@ if __name__ == "__main__":
     run_time_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     dir_name = args.output_dir if args.output_dir else run_time_str
 
-    output_dir = f'artifacts/{dir_name}'
+    output_dir = f'artifacts/{args.system}/{dir_name}'
     os.makedirs(output_dir, exist_ok=True)
 
     # Create Results instance with output directory
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
 
-        tfim = _get_tfim()
+        tfim = _get_tfim(args)
 
         tfim.calc_all()
         tfim.apply_errors(conf)
