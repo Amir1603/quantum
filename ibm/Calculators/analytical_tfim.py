@@ -29,11 +29,11 @@ class AnalyticalTFIM(TFIMCalculator):
         self.bob_charge = alpha**2
 
         k = self.J / 2
-        self.theta_E1 = np.arcsin(
+        self.theta_Ex = np.arcsin(
                 (self.h * k) / np.sqrt((self.h**2 + 2 * k**2)**2 + self.h**2 * k**2)
             ) / 2
 
-        self.theta_q1 = 0.5 * np.arctan2(self.J, 2 * self.h)
+        self.theta_qx = 0.5 * np.arctan2(self.J, 2 * self.h)
 
         self._init_n2_tfim_states_and_density_matrices()
 

@@ -45,7 +45,7 @@ class NumericalTFIM(TFIMCalculator):
         self._raw_exp_vals = self.get_expectation_values()
 
         self.bob_energy, self.bob_charge = self._compute_bob_gs_energy_and_charge()
-        self.theta_E1, self.theta_q1 = self._compute_optimal_rotation_angles()
+        self.theta_Ex, self.theta_qx. self.theta_Ey, self.theta_qy = self._compute_optimal_rotation_angles()
 
     # Ground State and First Excited State Calculation
     def _compute_lowest_states(self):

@@ -54,10 +54,10 @@ def test_optimal_rotation_angles(request, name):
 
     # Assertions
     # Using a tolerance, e.g., atol=1e-9
-    assert np.isclose(tfim.theta_E1, analytic_theta_E1, atol=1e-9), \
-        f"Theta_E1 mismatch: Num={tfim.theta_E1:.7f}, Ana={analytic_theta_E1:.7f}"
-    assert np.isclose(tfim.theta_q1, analytic_theta_q1, atol=1e-9), \
-        f"Theta_q1 mismatch: Num={tfim.theta_q1:.7f}, Ana={analytic_theta_q1:.7f}"
+    assert np.isclose(tfim.theta_Ex, analytic_theta_E1, atol=1e-9), \
+        f"Theta_E1 mismatch: Num={tfim.theta_Ex:.7f}, Ana={analytic_theta_E1:.7f}"
+    assert np.isclose(tfim.theta_qx, analytic_theta_q1, atol=1e-9), \
+        f"Theta_q1 mismatch: Num={tfim.theta_qx:.7f}, Ana={analytic_theta_q1:.7f}"
 
 @pytest.mark.parametrize("name", ["ntfim", "atfim"])
 def test_bob_energy_and_charge(request, name):

@@ -27,7 +27,7 @@ class Charge(Observable):
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
 
-        theta = self._calc.theta_q1 if not self.theta else self.theta
+        theta = self._calc.theta_qx if not self.theta else self.theta
 
         # Apply the controlled rotation based on Alice's measurement.
         # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.

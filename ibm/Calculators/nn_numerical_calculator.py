@@ -34,22 +34,27 @@ class NN_NumericalTFIM(NumericalTFIM):
         """
         exp_vals = self._raw_exp_vals
 
-        num_theta_E1 = self.h * exp_vals.X0_Xbob - self.J * exp_vals.Zbob
-        den_theta_E1 = self.h * exp_vals.Zbob + self.J * exp_vals.X0_Xbob
+        num_theta_Ex = self.h * exp_vals.X0_Xbob - self.J * exp_vals.X0_Xbobn_Zbob
+        den_theta_Ex = self.h * exp_vals.Zbob
         # The minus sign in the denomenator doesn't affect the ratio, but just for choosign the right quadrant.
-        theta_E1 = 0.5 * np.arctan2(num_theta_E1, -den_theta_E1)
+        theta_Ex = 0.5 * np.arctan2(num_theta_Ex, -den_theta_Ex)
 
-        num_theta_q1 = exp_vals.X0_Xbob
-        den_theta_q1 = 2*exp_vals.Zbob
+        num_theta_qx = exp_vals.X0_Xbob
+        den_theta_qx = 2*exp_vals.Zbob
         # The minus signs don't affect the ratio, but just for choosign the right quadrant.
-        theta_q1 = 0.5 * np.arctan2(-num_theta_q1, -den_theta_q1)
+        theta_qx = 0.5 * np.arctan2(-num_theta_qx, -den_theta_qx)
 
-        num_theta_q2 = -exp_vals.Y0_Ybob
-        den_theta_q2 = 2*exp_vals.Zbob
+        num_theta_Ey = -exp_vals.Y0_Ybob
+        den_theta_Ey = 2*exp_vals.Zbob
         # The minus signs don't affect the ratio, but just for choosign the right quadrant.
-        theta_q2 = 0.5 * np.arctan2(num_theta_q2, den_theta_q2)
+        theta_Ey = 0.5 * np.arctan2(num_theta_Ey, den_theta_Ey)
 
-        return theta_E1, theta_q1
+        num_theta_qy = -exp_vals.Y0_Ybob
+        den_theta_qy = 2*exp_vals.Zbob
+        # The minus signs don't affect the ratio, but just for choosign the right quadrant.
+        theta_qy = 0.5 * np.arctan2(num_theta_qy, den_theta_qy)
+
+        return theta_Ex, theta_qx, theta_Ey, theta_qy
 
     # Bob's Energy and Charge Expectation Calculation
     def _compute_bob_gs_energy_and_charge(self):

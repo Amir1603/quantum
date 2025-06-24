@@ -24,7 +24,7 @@ class EnergyBase(Observable):
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
 
-        theta = self._calc.theta_E1 if not self.theta else self.theta
+        theta = self._calc.theta_Ex if not self.theta else self.theta
         angle = -2 * theta if xor_res == 0 else 2 * theta
 
         # Apply the controlled rotation based on Alice's measurement.
