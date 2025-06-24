@@ -6,7 +6,7 @@ from .bobs_energy import BobsEnergy
 from .observable import Observable
 from Calculators.tfim_calculator import TFIMCalculator
 from conf import Conf
-
+from utils import System
 
 class Singleton(type):
     _instances = {}
@@ -17,8 +17,10 @@ class Singleton(type):
 
 
 class ObservableFactory(metaclass=Singleton):
-    def create_observables(self, conf: Conf, calc: TFIMCalculator) -> tuple[list[Observable], list[Observable]]:
-        obs = [H1_B(conf, calc), V_B(conf, calc), Charge(conf, calc)]
+    def create_observables(self, conf: Conf, calc: TFIMCalculator, sys: System) -> tuple[list[Observable], list[Observable]]:
+        v = V_B(conf, calc, sys)
+
+        obs = [H1_B(conf, calc), v, Charge(conf, calc)]
         derived_obs = [BobsEnergy(conf, calc)]
 
         return obs, derived_obs

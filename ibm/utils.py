@@ -1,5 +1,5 @@
 from functools import reduce
-import operator
+from enum import Enum
 
 def get_nested_value(data, path_str):
     """
@@ -28,6 +28,9 @@ def get_alice_idx(N):
 
 def get_bob_idx(N):
     return N
+
+def get_bob_neighbor_idx(N):
+    return get_bob_idx(N) - 1
 
 def get_bit_from_counts(bitstring: str, creg_index: int, num_clbits: int) -> str:
     """
@@ -70,3 +73,19 @@ def get_bit_from_counts(bitstring: str, creg_index: int, num_clbits: int) -> str
         )
 
     return bitstring[string_index]
+
+
+class System(Enum):
+    AliceInteraction = 'Alice'
+    NearestNeighborInteraction = 'NN_'
+
+    def __str__(self):
+        return self.value
+
+
+class AliceBase(Enum):
+    X = 'X'
+    Y = 'Y'
+
+    def __str__(self):
+        return self.value

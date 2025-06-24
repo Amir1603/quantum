@@ -87,6 +87,7 @@ class NumericalTFIM(TFIMCalculator):
     def get_expectation_values(self):
         alice_site = utils.get_alice_idx(self.N)
         bob_site = utils.get_bob_idx(self.N)
+        bob_neighbor = utils.get_bob_neighbor_idx(self.N)
 
         # Create Pauli operators
         op_X0 = TFIMCalculator._get_pauli_operator_on_site('X', alice_site, self.N)
@@ -99,11 +100,11 @@ class NumericalTFIM(TFIMCalculator):
         op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
         op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', bob_site)], self.N)
         op_Y0_Zbob = NumericalTFIM._get_multi_site_operator([('Y', alice_site), ('Z', bob_site)], self.N)
-        op_Xbobn_Zbob = NumericalTFIM._get_multi_site_operator([('X', bob_site-1), ('Z', bob_site)], self.N)
+        op_Xbobn_Zbob = NumericalTFIM._get_multi_site_operator([('X', bob_neighbor), ('Z', bob_site)], self.N)
 
-        op_X0_Xbobn_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site-1), ('Z', bob_site)], self.N)
-        op_X0_Xbobn_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site-1), ('X', bob_site)], self.N)
-        op_Y0_Xbobn_Xbob = NumericalTFIM._get_multi_site_operator([('Y', alice_site), ('X', bob_site-1), ('X', bob_site)], self.N)
+        op_X0_Xbobn_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor), ('Z', bob_site)], self.N)
+        op_X0_Xbobn_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_neighbor), ('X', bob_site)], self.N)
+        op_Y0_Xbobn_Xbob = NumericalTFIM._get_multi_site_operator([('Y', alice_site), ('X', bob_neighbor), ('X', bob_site)], self.N)
 
         # Compute gs expectation values
         X0_exp = NumericalTFIM._compute_expectation_value(op_X0, self.gs0)

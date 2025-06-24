@@ -3,12 +3,13 @@ import os
 from datetime import datetime
 from conf import Conf
 from Observables import ObservableFactory
-from Calculators import NumericalTFIM, AnalyticalTFIM
+from Calculators import AliceNumericalTFIM, NN_NumericalTFIM, AnalyticalTFIM
 from runner import Runner
 from results import Results
 import plotting
 import reporting
 from qiskit_ibm_runtime import QiskitRuntimeService
+from utils import System, AliceBase
 
 def print_run_plan(confs):
     print('#########################################################')
@@ -91,6 +92,17 @@ def report_and_plot(results_obj: Results, args):
     reporting.generate_report(results_list, plot_filenames, output_dir, [])
 
 
+def _get_tfim(args):
+    if args.run_analytical:
+        return AnalyticalTFIM(conf.N, conf.J, conf.h)
+    elif args.system == System.AliceInteraction:
+        return AliceNumericalTFIM(conf.N, conf.J, conf.h)
+    elif args.system == System.NearestNeighborInteraction:
+        return NN_NumericalTFIM(conf.N, conf.J, conf.h)
+    else:
+        raise ValueError(f"Unsupported system type: {args.system}. Use --system AliceInteraction or NearestNeighborInteraction.")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Quantum Teleportation Simulation")
 
@@ -103,6 +115,8 @@ if __name__ == "__main__":
     parser.add_argument('--run-analytical', action='store_true', help="Run in analytical calculations mode instead of numerical")
     parser.add_argument('--output-dir', '-o', required=False, type=str, help="Set output directory")
     parser.add_argument('-N', type=int, default=1, help="Choose value for N - the number of sites (in addition to Alice) in chain")
+    parser.add_argument('--system', '-s', type=System, default=System.AliceInteraction, choices=list(System), help="Choose the system (Hamiltonian) to run: Alice site interaction or nearest neighbor interaction. Default is Alice Site interaction.")
+    parser.add_argument('--alice-base', type=AliceBase, default=AliceBase.X, choices=list(AliceBase), help="Choose Alice's basis of measurement.")
 
     error_group = parser.add_mutually_exclusive_group(required=False)
 
@@ -118,6 +132,9 @@ if __name__ == "__main__":
 
     if args.run_analytical and args.N != 1:
         raise ValueError("Only N=1 is supported for analytical simulations. Remove `--run-analytical` for other values.")
+
+    if args.system == System.AliceInteraction and args.alice_base != AliceBase.X:
+        raise ValueError("Alice's base can only be X for Alice interaction system. Use `--system NearestNeighborInteraction` to use Y base.")
 
     # --- Configuration Loading ---
     confs = [Conf(args.N)]
@@ -188,14 +205,14 @@ if __name__ == "__main__":
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
 
-        tfim = AnalyticalTFIM(conf.N, conf.J, conf.h) if args.run_analytical else NumericalTFIM(conf.N, conf.J, conf.h)
+        tfim = _get_tfim()
 
         tfim.calc_all()
         tfim.apply_errors(conf)
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones
-        simulatable_obs_list, derived_obs = observable_factory.create_observables(conf, tfim)
+        simulatable_obs_list, derived_obs = observable_factory.create_observables(conf, tfim, args.system)
 
         # Initialize Runner (or re-init if backend/noise changes significantly)
         # Pass only the list of observables to simulate

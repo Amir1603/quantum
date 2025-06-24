@@ -75,6 +75,9 @@ class Runner():
 
         qc.measure(bob_idx, bob_idx)
 
+        bob_neighbor_idx = utils.get_bob_neighbor_idx(N)
+        qc.measure(bob_neighbor_idx, bob_neighbor_idx)
+
     def _qet_circuit(self, obs: Observable, conf: Conf, is_simulator: bool):
         num_qubits = conf.N+1
 
