@@ -5,11 +5,11 @@ from .observable import Observable
 import utils
 
 class Current(Observable):
-    def __init__(self, conf: Conf):
+    def __init__(self, conf: Conf, alice_basis: str):
         name = f'current'
 
         # Initialize Observable parent class
-        super().__init__(name, conf)
+        super().__init__(name, conf, alice_basis)
 
     def apply_alice_measurement(self, qc: QuantumCircuit):
         """
@@ -17,6 +17,7 @@ class Current(Observable):
         Measure Alice's qubit in the Z basis.
         """
         alice_idx = utils.get_alice_idx(self.N)
+        utils.apply_basis(qc, self._alice_basis, alice_idx)
 
         qc.measure(alice_idx, alice_idx)
 
@@ -26,9 +27,12 @@ class Current(Observable):
         Apply Ry(pi) if Alice measured '1' (m=1 -> eigenvalue a=-1).
         U_B(a) = Ry(a*pi)
         """
+        # FIXME: Complete if needed.
+        raise NotImplementedError("Current observable does not require a specific theta value.")
+
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
-
+        
         # Apply Ry(pi) if the classical register (cond) is 1
         with qc.if_test((alice_idx, 1^xor_res)):
             qc.ry(np.pi, bob_idx)

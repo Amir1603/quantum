@@ -11,9 +11,9 @@ class BobsEnergy(Observable):
     teleported energy in arbitrary units E_B = (<H_B> - <H_B>_gs)/<H_B>_gs.
     Calculated from results of V (<XX>) and H1 (<Z>).
     """
-    def __init__(self, conf: Conf, calc: TFIMCalculator):
+    def __init__(self, conf: Conf, alice_basis: str, calc: TFIMCalculator):
         name = "E_B"
-        super().__init__(name, conf, calc)
+        super().__init__(name, conf, alice_basis, calc)
 
         self._h1_comp_name = "H1_B"
         self._v_comp_name = "V_B"

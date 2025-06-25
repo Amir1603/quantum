@@ -17,10 +17,10 @@ class Singleton(type):
 
 
 class ObservableFactory(metaclass=Singleton):
-    def create_observables(self, conf: Conf, calc: TFIMCalculator, sys: System) -> tuple[list[Observable], list[Observable]]:
-        v = V_B(conf, calc, sys)
+    def create_observables(self, conf: Conf, calc: TFIMCalculator, sys: System, alice_basis: str = 'X') -> tuple[list[Observable], list[Observable]]:
+        v = V_B(conf, alice_basis, calc, sys)
 
-        obs = [H1_B(conf, calc), v, Charge(conf, calc)]
-        derived_obs = [BobsEnergy(conf, calc)]
+        obs = [H1_B(conf, alice_basis, calc), v, Charge(conf, alice_basis, calc)]
+        derived_obs = [BobsEnergy(conf, alice_basis, calc)]
 
         return obs, derived_obs

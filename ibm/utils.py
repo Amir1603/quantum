@@ -1,4 +1,4 @@
-from functools import reduce
+from qiskit import QuantumCircuit
 from enum import Enum
 
 def get_nested_value(data, path_str):
@@ -73,6 +73,17 @@ def get_bit_from_counts(bitstring: str, creg_index: int, num_clbits: int) -> str
         )
 
     return bitstring[string_index]
+
+def apply_basis(qc: QuantumCircuit, basis: str, site_idx: int):
+    if basis == "X":
+        qc.h(site_idx)
+    elif basis == "Y":
+        qc.sdg(site_idx) # Apply S dagger
+        qc.h(site_idx)
+    elif basis == "Z":
+        pass # For measuting Z we do nothing
+    else:
+        raise ValueError("Unknown measurement basis for Bob!")
 
 
 class System(Enum):
