@@ -212,7 +212,7 @@ if __name__ == "__main__":
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones
-        simulatable_obs_list, derived_obs = observable_factory.create_observables(conf, tfim, args.system)
+        simulatable_obs_list, derived_obs = observable_factory.create_observables(conf, tfim, args.system, str(args.alice_base))
 
         # Initialize Runner (or re-init if backend/noise changes significantly)
         # Pass only the list of observables to simulate

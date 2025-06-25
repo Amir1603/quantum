@@ -24,7 +24,8 @@ class EnergyBase(Observable):
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
 
-        theta = self._calc.theta_Ex if not self.theta else self.theta
+        calc_theta = self._calc.theta_Ex if self._alice_basis == 'X' else self._calc.theta_Ey
+        theta = calc_theta if not self.theta else self.theta
         angle = -2 * theta if xor_res == 0 else 2 * theta
 
         # If Alice's basis is 'X', Bob uses 'Y' rotation and vice versa.
