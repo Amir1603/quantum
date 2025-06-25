@@ -62,13 +62,18 @@ class Runner():
     def _apply_measurements(self, obs: Observable, qc: QuantumCircuit, N: int):
         bob_idx = utils.get_bob_idx(N)
         bob_meas_basis = obs.get_bob_measurement_basis()
+
+        alice_idx = utils.get_alice_idx(N)
         bob_neighbor_idx = utils.get_bob_neighbor_idx(N)
 
         utils.apply_basis(qc, bob_meas_basis, bob_idx)
 
         qc.measure(bob_idx, bob_idx)
-        # qc.h(bob_neighbor_idx)
-        qc.measure(bob_neighbor_idx, bob_neighbor_idx)
+
+        # Act on Bob's neighbor only if N is big enough and it is different from Alice's qubit
+        if alice_idx != bob_neighbor_idx:
+            # qc.h(bob_neighbor_idx)
+            qc.measure(bob_neighbor_idx, bob_neighbor_idx)
 
     def _qet_circuit(self, obs: Observable, conf: Conf, is_simulator: bool):
         num_qubits = conf.N+1
