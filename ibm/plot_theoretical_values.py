@@ -16,13 +16,114 @@ def get_unique_legend(ax_array):
                 seen.add(l)
     return unique_handles, unique_labels
 
+def alice_hb_a0(h, J, exp_vals):
+    HB = h*exp_vals.Zbob + J*exp_vals.X0_Xbob
+
+    N_H = -np.sqrt((h**2 + J**2)*(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2))
+    hb_a0_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 + (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
+
+    return hb_a0_tilde - HB
+
+def alice_hb_a1(h, J, exp_vals):
+    HB = h*exp_vals.Zbob + J*exp_vals.X0_Xbob
+
+    N_H = -np.sqrt((h**2 + J**2)*(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2))
+    hb_a1_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 - (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
+
+    return hb_a1_tilde - HB
+
+def nn_hb_a0_x(h, J, exp_vals):
+    HB = h*exp_vals.Zbob + J*exp_vals.Xbobn_Xbob
+
+    h_term = h**2 * (exp_vals.Zbob**2 + exp_vals.X0_Xbob**2)
+    J_term = J**2 * (exp_vals.X0_Xbobn_Zbob**2 + exp_vals.Xbobn_Xbob**2)
+    hJ_term = 2 * h * J * (exp_vals.Zbob * exp_vals.Xbobn_Xbob - exp_vals.X0_Xbob * exp_vals.X0_Xbobn_Zbob)
+
+    N_H = -2 * np.sqrt(h_term + J_term + hJ_term)
+    hb_a0_tilde = (h_term + J_term + hJ_term) / (N_H)
+
+    return hb_a0_tilde - HB
+
+def nn_hb_a1_x(h, J, exp_vals):
+    HB = h*exp_vals.Zbob + J*exp_vals.Xbobn_Xbob
+
+    h_term = h**2 * (exp_vals.Zbob**2 + exp_vals.X0_Xbob**2)
+    J_term = J**2 * (exp_vals.X0_Xbobn_Zbob**2 + exp_vals.Xbobn_Xbob**2)
+    hJ_term = 2 * h * J * (exp_vals.Zbob * exp_vals.Xbobn_Xbob - exp_vals.X0_Xbob * exp_vals.X0_Xbobn_Zbob)
+
+    N_H = -2 * np.sqrt(h_term + J_term + hJ_term)
+
+    h_term = h**2 * (exp_vals.Zbob**2 - exp_vals.X0_Xbob**2)
+    J_term = J**2 * (exp_vals.Xbobn_Xbob**2 - exp_vals.X0_Xbobn_Zbob**2)
+    hJ_term = 2 * h * J * (exp_vals.Zbob * exp_vals.Xbobn_Xbob + exp_vals.X0_Xbob * exp_vals.X0_Xbobn_Zbob)
+
+    hb_a0_tilde = (h_term + J_term + hJ_term) / (N_H)
+
+    return hb_a0_tilde - HB
+
+def nn_hb_a0_y(h, J, exp_vals):
+    HB = h*exp_vals.Zbob + J*exp_vals.Xbobn_Xbob
+
+    N_H = -np.sqrt(exp_vals.Zbob**2 + exp_vals.Y0_Ybob**2)
+    hb_a0_tilde = J*exp_vals.Xbobn_Xbob + h*(exp_vals.Zbob**2 + exp_vals.Y0_Ybob**2) / (N_H)
+
+    return hb_a0_tilde - HB
+
+def nn_hb_a1_y(h, J, exp_vals):
+    HB = h*exp_vals.Zbob + J*exp_vals.Xbobn_Xbob
+
+    N_H = -np.sqrt(exp_vals.Zbob**2 + exp_vals.Y0_Ybob**2)
+    hb_a0_tilde = J*exp_vals.Xbobn_Xbob + h*(exp_vals.Zbob**2 - exp_vals.Y0_Ybob**2) / (N_H)
+
+    return hb_a0_tilde - HB
+
+##########################################################
+
+def alice_qb_a0(exp_vals):
+    QB = 0.5 * (1 + exp_vals.Zbob)
+
+    N_q = -np.sqrt(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2)
+    QB_a0_tilde = 0.5 + (exp_vals.Zbob**2 + exp_vals.X0_Xbob**2) / (2 * N_q)
+
+    return QB_a0_tilde - QB
+
+def alice_qb_a1(exp_vals):
+    QB = 0.5 * (1 + exp_vals.Zbob)
+
+    N_q = -np.sqrt(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2)
+    QB_a1_tilde = 0.5 + (exp_vals.Zbob**2 - exp_vals.X0_Xbob**2) / (2 * N_q)
+
+    return QB_a1_tilde - QB
+
+def nn_qb_a0_x(exp_vals):
+    QB = 0.5 * (1 + exp_vals.Zbob)
+
+    N_q = -np.sqrt(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2)
+    QB_a1_tilde = 0.5 + (exp_vals.Zbob**2 - exp_vals.X0_Xbob**2) / (2 * N_q)
+
+    return QB_a1_tilde - QB
+
+def nn_qb_a1_x(exp_vals):
+    return 0
+
+def nn_qb_a0_y(exp_vals):
+    return 0
+
+def nn_qb_a1_y(exp_vals):
+    return 0
+
+##########################################################
+
+
+
+
 if __name__ == "__main__":
-    Ns = [1, 2, 3, 4]
+    Ns = [1, 2]#, 3, 4]
     Js = np.linspace(0.0, 10.0, 250).tolist()
     h = 1.0
 
     ntfims = {
-        'alice': AliceNumericalTFIM,
+        # 'alice': AliceNumericalTFIM,
         'nn': NN_NumericalTFIM
     }
 
@@ -59,10 +160,14 @@ if __name__ == "__main__":
             X0_Xbobn_Xbob = []
             Y0_Xbobn_Xbob = []
 
-            HB_a0 = []
-            HB_a1 = []
-            QB_a0 = []
-            QB_a1 = []
+            HB_a0_x = []
+            HB_a1_x = []
+            QB_a0_x = []
+            QB_a1_x = []
+            HB_a0_y = []
+            HB_a1_y = []
+            QB_a0_y = []
+            QB_a1_y = []
 
             for J in Js:
                 ntfim = ntfim_class(N, J, h)
@@ -85,25 +190,31 @@ if __name__ == "__main__":
                 X0_Xbobn_Xbob.append(exp_vals.X0_Xbobn_Xbob)
                 Y0_Xbobn_Xbob.append(exp_vals.Y0_Xbobn_Xbob)
 
-                HB = h*exp_vals.Zbob + J*exp_vals.X0_Xbob
-                QB = 0.5 * (1 + exp_vals.Zbob)
+                if name == 'alice':
+                    HB_a0_x.append(alice_hb_a0(h, J, exp_vals))
+                    HB_a1_x.append(alice_hb_a1(h, J, exp_vals))
+                    HB_a0_y.append(0)
+                    HB_a1_y.append(0)
 
-                N_H = -np.sqrt((h**2 + J**2)*(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2))
-                N_q = -np.sqrt(exp_vals.Zbob**2 + exp_vals.X0_Xbob**2)
+                    # QB is only defined for J != 0
+                    if J != 0:
+                        QB_a0_x.append(alice_qb_a0(exp_vals))
+                        QB_a1_x.append(alice_qb_a1(exp_vals))
+                        QB_a1_y.append(0)
+                        QB_a1_y.append(0)
 
-                HB_a0_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 + (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
-                HB_a1_tilde = ((h*exp_vals.Zbob + J*exp_vals.X0_Xbob)**2 - (h*exp_vals.X0_Xbob - J*exp_vals.Zbob)**2) / N_H
+                else:
+                    HB_a0_x.append(nn_hb_a0_x(h, J, exp_vals))
+                    HB_a1_x.append(nn_hb_a1_x(h, J, exp_vals))
+                    HB_a0_y.append(nn_hb_a0_y(h, J, exp_vals))
+                    HB_a1_y.append(nn_hb_a1_y(h, J, exp_vals))
 
-                QB_a0_tilde = 0.5 + (exp_vals.Zbob**2 + exp_vals.X0_Xbob**2) / (2 * N_q)
-                QB_a1_tilde = 0.5 + (exp_vals.Zbob**2 - exp_vals.X0_Xbob**2) / (2 * N_q)
-
-                HB_a0.append(HB_a0_tilde - HB)
-                HB_a1.append(HB_a1_tilde - HB)
-
-                # QB is only defined for J != 0
-                if J != 0:
-                    QB_a0.append(QB_a0_tilde - QB)
-                    QB_a1.append(QB_a1_tilde - QB)
+                    # QB is only defined for J != 0
+                    if J != 0:
+                        QB_a0_x.append(nn_qb_a0_x(exp_vals))
+                        QB_a1_x.append(nn_qb_a1_x(exp_vals))
+                        QB_a0_y.append(nn_qb_a0_y(exp_vals))
+                        QB_a1_y.append(nn_qb_a1_y(exp_vals))
 
             raw_axis[0, 0].plot(Js, Xbob, label=f'N={N}')
             raw_axis[0, 0].set_title("Xbob")
@@ -134,13 +245,15 @@ if __name__ == "__main__":
             raw_axis[2, 3].plot(Js, Y0_Xbobn_Xbob, label=f'N={N}')
             raw_axis[2, 3].set_title("Y0 Xbobn Xbob")
 
-            tel_axis[0, i].plot(Js, HB_a0, label=f'a=0')
-            tel_axis[0, i].plot(Js, HB_a1, label=f'a=1')
+            tel_axis[0, i].plot(Js, HB_a0_x, label=f'a=0, X')
+            tel_axis[0, i].plot(Js, HB_a1_x, label=f'a=1, X')
+            tel_axis[0, i].plot(Js, HB_a0_y, label=f'a=0, Y')
+            tel_axis[0, i].plot(Js, HB_a1_y, label=f'a=1, Y')
             tel_axis[0, i].set_title(f"HB N={N}")
 
             # Remove J=0 from QB as it is not defined there
-            tel_axis[1, i].plot(Js[1:], QB_a0, label=f'a=0')
-            tel_axis[1, i].plot(Js[1:], QB_a1, label=f'a=1')
+            tel_axis[1, i].plot(Js[1:], QB_a0_x, label=f'a=0')
+            tel_axis[1, i].plot(Js[1:], QB_a1_x, label=f'a=1')
             tel_axis[1, i].set_title(f"QB N={N}")
 
         # Remove unused subplot from raw_axis (bottom right)
