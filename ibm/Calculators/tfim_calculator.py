@@ -57,6 +57,7 @@ class TFIMCalculator:
 
         return full_operator
 
+    #TODO - fix
     def apply_errors(self, conf):
         # Apply errors to the density matrix
         p_err = 0

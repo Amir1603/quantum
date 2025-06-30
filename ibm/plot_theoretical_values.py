@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from Calculators import nn_H, alice_H, alice_HB, nn_HB, QB, NumericalTFIM
+import utils
 
 
 # Collect and deduplicate legend handles and labels
@@ -24,9 +25,9 @@ if __name__ == "__main__":
     h = 1.0
 
     hamiltonians = {
-        'alice': (alice_H, [alice_HB, QB], 'X'),
-        'nn_X': (nn_H, [nn_HB, QB], 'X'),
-        'nn_Y': (nn_H, [nn_HB, QB], 'Y'),
+        'alice': (alice_H, [alice_HB, QB], utils.AliceBase.X),
+        'nn_X': (nn_H, [nn_HB, QB], utils.AliceBase.X),
+        'nn_Y': (nn_H, [nn_HB, QB], utils.AliceBase.Y),
     }
 
     for name, (hamiltonian_class, OB_classes, alice_base) in hamiltonians.items():

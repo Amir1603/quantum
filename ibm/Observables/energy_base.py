@@ -24,7 +24,8 @@ class EnergyBase(Observable):
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
 
-        calc_theta = self._calc.theta_Ex if self._alice_basis == 'X' else self._calc.theta_Ey
+        hb_key = next((item for item in self._calc.ops.keys() if 'HB' in item), None)
+        calc_theta = self._calc.ops[hb_key].theta
         theta = calc_theta if not self.theta else self.theta
         angle = -2 * theta if xor_res == 0 else 2 * theta
 

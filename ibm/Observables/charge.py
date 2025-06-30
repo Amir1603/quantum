@@ -27,7 +27,7 @@ class Charge(Observable):
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
 
-        calc_theta = self._calc.theta_qx if self._alice_basis == 'X' else self._calc.theta_qy
+        calc_theta = self._calc.ops['QB'].theta
         theta = calc_theta if not self.theta else self.theta
 
         # Apply the controlled rotation based on Alice's measurement.
@@ -79,7 +79,7 @@ class Charge(Observable):
             return 0.0 # Z eigenvalue -1 -> charge density eigenvalue 0
 
     def get_theoretical_gs_expectation_value(self):
-        return self._calc.bob_charge
+        return self._calc.ops['QB'].gs_expectation
 
     def description(self):
         bob_idx = utils.get_bob_idx(self.N)

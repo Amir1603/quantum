@@ -7,7 +7,7 @@ class NumericalTFIM(TFIMCalculator):
     def __init__(self, H: H, ops: list[BobOperator]):
         super().__init__(H.N, H.J, H.h)
         self.H = H
-        self.ops = ops
+        self.ops = {type(o).__name__: o for o in ops}
 
     def calc_all(self):
         """
@@ -24,7 +24,7 @@ class NumericalTFIM(TFIMCalculator):
         self.gs_rho = NumericalTFIM._compute_density_matrix(self.gs0)
         self.ex1_rho = NumericalTFIM._compute_density_matrix(self.ex1)
 
-        for op in self.ops:
+        for op in self.ops.values():
             op.shift(self.gs_rho.data)
             op.calc_eta_xi(self.gs_rho.data)
             op.calc_optimal_angle()

@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from conf import Conf
 from Observables import ObservableFactory
-from Calculators import AliceNumericalTFIM, NN_NumericalTFIM, AnalyticalTFIM
+from Calculators import AnalyticalTFIM, NumericalTFIM, nn_H, alice_H, alice_HB, QB, nn_HB
 from runner import Runner
 from results import Results
 import plotting
@@ -92,13 +92,23 @@ def report_and_plot(results_obj: Results, args):
     reporting.generate_report(results_list, plot_filenames, output_dir, [])
 
 
-def _get_tfim(args):
+def _get_tfim(args, conf: Conf):
+    alice_hb = alice_HB(conf.h, conf.J, conf.N, args.alice_base)
+    nn_hb = nn_HB(conf.h, conf.J, conf.N, args.alice_base)
+    qb = QB(conf.h, conf.J, conf.N, args.alice_base)
+
     if args.run_analytical:
         return AnalyticalTFIM(conf.N, conf.J, conf.h)
     elif args.system == System.AliceInteraction:
-        return AliceNumericalTFIM(conf.N, conf.J, conf.h)
+        H = alice_H(conf.h, conf.J, conf.N)
+        bob_ops = [alice_hb, qb]
+
+        return NumericalTFIM(H, bob_ops)
     elif args.system == System.NearestNeighborInteraction:
-        return NN_NumericalTFIM(conf.N, conf.J, conf.h)
+        H = nn_H(conf.h, conf.J, conf.N)
+        bob_ops = [nn_hb, qb]
+
+        return NumericalTFIM(H, bob_ops)
     else:
         raise ValueError(f"Unsupported system type: {args.system}. Use --system AliceInteraction or NearestNeighborInteraction.")
 
@@ -205,7 +215,7 @@ if __name__ == "__main__":
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
 
-        tfim = _get_tfim(args)
+        tfim = _get_tfim(args, conf)
 
         tfim.calc_all()
         tfim.apply_errors(conf)

@@ -46,13 +46,15 @@ class Operator:
 
         self.matrix = self._build_matrix()
 
+        self.gs_expectation = None
+
     def _build_matrix(self) -> csc_matrix:
         raise NotImplementedError("Subclasses should implement this method")
 
     # Shift the operator according to the gs expectation value <state|Op|state>
     def shift(self, gs_dm: np.ndarray):
-        expectation_value = np.trace(gs_dm @ self.matrix)
-        self.matrix -= expectation_value * Operator.get_nI(self.N)
+        self.gs_expectation = np.trace(gs_dm @ self.matrix)
+        self.matrix -= self.gs_expectation * Operator.get_nI(self.N)
 
 class BobOperator(Operator):
     def __init__(self, h, J, N, alice_base: str):
@@ -69,10 +71,10 @@ class BobOperator(Operator):
         sigma_A = None
         sigma_B = None
 
-        if self.alice_base == 'X':
+        if self.alice_base == utils.AliceBase.X:
             sigma_A = Operator.get_Xi(self.N, utils.get_alice_idx(self.N))
             sigma_B = Operator.get_Yi(self.N, utils.get_bob_idx(self.N))
-        elif self.alice_base == 'Y':
+        elif self.alice_base == utils.AliceBase.Y:
             sigma_A = Operator.get_Yi(self.N, utils.get_alice_idx(self.N))
             sigma_B = Operator.get_Xi(self.N, utils.get_bob_idx(self.N))
         else:
