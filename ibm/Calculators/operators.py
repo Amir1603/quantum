@@ -86,7 +86,7 @@ class BobOperator(Operator):
         self.xi = np.trace(gs_dm @ sigma_B @ self.matrix @ sigma_B).real
 
     def calc_optimal_angle(self):
-        self.theta = 0.5 * np.arctan2(-self.eta, self.xi)
+        self.theta = 0.5 * np.arcsin(self.eta / np.sqrt(self.eta**2 + self.xi**2))
 
     def calc_teleported_values(self):
         As = [False, True]
