@@ -70,9 +70,9 @@ class Runner():
 
         qc.measure(bob_idx, bob_idx)
 
-        # Act on Bob's neighbor only if N is big enough and it is different from Alice's qubit
+        # Act on Bob's neighbor only if N is big enough such that it is different from Alice's qubit
         if alice_idx != bob_neighbor_idx:
-            # qc.h(bob_neighbor_idx)
+            utils.apply_basis(qc, bob_meas_basis, bob_neighbor_idx)
             qc.measure(bob_neighbor_idx, bob_neighbor_idx)
 
     def _qet_circuit(self, obs: Observable, conf: Conf, is_simulator: bool):
