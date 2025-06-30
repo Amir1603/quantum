@@ -5,13 +5,6 @@ from scipy.sparse import kron, csc_matrix
 from qiskit.quantum_info import Statevector, DensityMatrix, partial_trace
 
 class TFIMCalculator:
-    # Pauli Matrices
-    I = csc_matrix(np.array([[1, 0], [0, 1]], dtype=complex))
-    X = csc_matrix(np.array([[0, 1], [1, 0]], dtype=complex))
-    Y = csc_matrix(np.array([[0, -1j], [1j, 0]], dtype=complex))
-    Z = csc_matrix(np.array([[1, 0], [0, -1]], dtype=complex))
-    pauli_ops = {'I': I, 'X': X, 'Y': Y, 'Z': Z}
-
     def __init__(self, N, J, h):
         """
         Initialize the class with parameters for the transverse field Ising model.
