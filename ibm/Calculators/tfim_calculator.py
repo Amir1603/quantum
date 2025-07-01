@@ -1,7 +1,5 @@
 import utils
 import numpy as np
-import cmath
-from scipy.sparse import kron, csc_matrix
 from qiskit.quantum_info import Statevector, DensityMatrix, partial_trace
 
 class TFIMCalculator:
@@ -39,24 +37,6 @@ class TFIMCalculator:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    # Helper function to create a Pauli operator on a specific site
-    def _get_pauli_operator_on_site(op_char, site_idx, N):
-        # We reverse the indices because the kron product builds operators from left to right,
-        # which means the leftmost operator acts on the most significant qubit.
-        site_idx = N - site_idx
-
-        # pauli_ops is a dict {'I': I_op, 'X': X_op, ...}
-        if not (0 <= site_idx <= N):
-            raise ValueError(f"Site index {site_idx} out of bounds for N={N}")
-
-        op_list = [TFIMCalculator.pauli_ops[op_char] if i == site_idx else TFIMCalculator.pauli_ops['I'] for i in range(N+1)]
-
-        full_operator = op_list[0]
-        for i_op in range(1, N+1):
-            full_operator = kron(full_operator, op_list[i_op], format="csc")
-
-        return full_operator
-
     #TODO - fix
     def apply_errors(self, conf):
         # Apply errors to the density matrix
@@ -73,21 +53,21 @@ class TFIMCalculator:
 
         if conf.p_bitflip_error != 0:
             bob_idx = utils.get_bob_idx(conf.N)
-            X_bob = TFIMCalculator._get_pauli_operator_on_site('X', bob_idx, conf.N)
+            X_bob = utils.get_pauli_operator_on_site('X', bob_idx, conf.N)
 
             rho_err = X_bob @ self.gs_rho.data @ X_bob
             p_err = conf.p_bitflip_error
 
         if conf.p_alice_phaseflip_error != 0:
             alice_idx = utils.get_alice_idx(conf.N)
-            Z_alice = TFIMCalculator._get_pauli_operator_on_site('Z', alice_idx, conf.N)
+            Z_alice = utils.get_pauli_operator_on_site('Z', alice_idx, conf.N)
 
             rho_err = Z_alice @ self.gs_rho.data @ Z_alice
             p_err = conf.p_alice_phaseflip_error
 
         if conf.p_bob_phaseflip_error != 0:
             bob_idx = utils.get_bob_idx(conf.N)
-            Z_bob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_idx, conf.N)
+            Z_bob = utils.get_pauli_operator_on_site('Z', bob_idx, conf.N)
 
             rho_err = Z_bob @ self.gs_rho.data @ Z_bob
             p_err = conf.p_bob_phaseflip_error
