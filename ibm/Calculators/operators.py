@@ -20,10 +20,9 @@ class Operator:
     # Shift the operator according to the gs expectation value <state|Op|state>
     def shift(self, gs_dm: np.ndarray):
         self.gs_expectation = np.trace(gs_dm @ self.matrix).real
-        # TODO
         # The site idx is irrelevant because we want the identity operator
-        # I = utils.get_pauli_operator_on_site('I', 0, self.N)
-        # self.matrix -= self.gs_expectation * I
+        I = utils.get_pauli_operator_on_site('I', 0, self.N)
+        self.matrix -= self.gs_expectation * I
 
 class BobOperator(Operator):
     def __init__(self, h, J, N, alice_base: str):
@@ -52,17 +51,12 @@ class BobOperator(Operator):
         else:
             raise ValueError("Invalid Alice base. Use 'X' or 'Y'.")
 
-        # TODO
-        sigma_B_dot = 1j * (self.matrix @ sigma_B - sigma_B @ self.matrix) / 2
+        sigma_B_dot = 1j * (self.matrix @ sigma_B - sigma_B @ self.matrix)
         self.eta = np.trace(gs_dm @ sigma_A @ sigma_B_dot).real
         self.xi = np.trace(gs_dm @ sigma_B @ self.matrix @ sigma_B).real
 
     def calc_optimal_angle(self):
-        # TODO
-        # self.theta = 0.5 * np.arcsin(self.eta / np.sqrt(self.eta**2 + self.xi**2))
-        den = self.xi #- self.gs_expectation
-        # input(f'xi={self.xi}, eta={self.eta}, gs={self.gs_expectation}, den={den}')
-        self.theta = 0.5 * np.arctan2(self.eta, den)
+        self.theta = 0.5 * np.arctan2(self.eta, self.xi)
 
     def calc_teleported_values(self):
         As = [False, True]
@@ -90,43 +84,8 @@ class H(Operator):
         eigenvalues, eigenvectors = eigenvalues[idx], eigenvectors[:, idx]
         return eigenvalues[0], eigenvectors[:, 0], eigenvalues[1], eigenvectors[:, 1]
 
-class nn_H(H):
-    def __init__(self, h, J, N):
-        super().__init__(h, J, N)
-
-    def _build_matrix(self):
-        mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
-
-        for i in range(1, self.N+1):
-            op = utils.get_multi_site_operator([('X', i-1), ('X', i)], self.N)
-            mat += self.J * op
-
-        for i in range(self.N+1):
-            op = utils.get_pauli_operator_on_site('Z', i, self.N)
-            mat += self.h * op
-
-        return mat
-
-class alice_H(H):
-    def __init__(self, h, J, N):
-        super().__init__(h, J, N)
-
-    def _build_matrix(self):
-        # TODO
-        H = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
-        for i in range(1, self.N+1):
-            term = 1
-            for j in range(self.N+1):
-                term = kron(term, utils.X if j == i or j == 0 else utils.I)
-            H += self.J * term
-
-        for i in range(self.N+1):
-            term = 1
-            for j in range(self.N+1):
-                term = kron(term, utils.Z if j == i else utils.I)
-            H += self.h * term
-
-        return H
+    def _build(self, interaction_idx_lambda):
+        # TODO: Use get pauli op on site
         # mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
 
         # alice_idx = utils.get_alice_idx(self.N)
@@ -140,44 +99,64 @@ class alice_H(H):
         #     mat += self.h * op
 
         # return mat
+        H = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
+        for i in range(1, self.N+1):
+            term = 1
+            for j in range(self.N+1):
+                term = kron(term, utils.X if j == i or j == interaction_idx_lambda(i) else utils.I)
+            H += self.J * term
+
+        for i in range(self.N+1):
+            term = 1
+            for j in range(self.N+1):
+                term = kron(term, utils.Z if j == i else utils.I)
+            H += self.h * term
+
+        return H
+
+class nn_H(H):
+    def __init__(self, h, J, N):
+        super().__init__(h, J, N)
+
+    def _build_matrix(self):
+        return self._build(lambda i: i-1)
+
+class alice_H(H):
+    def __init__(self, h, J, N):
+        super().__init__(h, J, N)
+
+    def _build_matrix(self):
+        return self._build(lambda _: utils.get_alice_idx(self.N))
 
 class HB(BobOperator):
     def __init__(self, h, J, N, alice_base):
         super().__init__(h, J, N, alice_base)
+
+    def _build(self, int_site_idx: int):
+        mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
+
+        bob_idx = utils.get_bob_idx(self.N)
+
+        z_op = utils.get_pauli_operator_on_site('Z', bob_idx, self.N)
+        xx_op = utils.get_multi_site_operator([('X', int_site_idx), ('X', bob_idx)], self.N)
+
+        mat += self.h * z_op + self.J * xx_op
+
+        return mat
 
 class nn_HB(HB):
     def __init__(self, h, J, N, alice_base):
         super().__init__(h, J, N, alice_base)
 
     def _build_matrix(self):
-        mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
-
-        bob_neighbor_idx = utils.get_bob_neighbor_idx(self.N)
-        bob_idx = utils.get_bob_idx(self.N)
-
-        z_op = utils.get_pauli_operator_on_site('Z', bob_idx, self.N)
-        xx_op = utils.get_multi_site_operator([('X', bob_neighbor_idx), ('X', bob_idx)], self.N)
-
-        mat += self.h * z_op + self.J * xx_op
-
-        return mat
+        return self._build(utils.get_bob_neighbor_idx(self.N))
 
 class alice_HB(HB):
     def __init__(self, h, J, N, alice_base):
         super().__init__(h, J, N, alice_base)
 
     def _build_matrix(self):
-        mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
-
-        alice_idx = utils.get_alice_idx(self.N)
-        bob_idx = utils.get_bob_idx(self.N)
-
-        z_op = utils.get_pauli_operator_on_site('Z', bob_idx, self.N)
-        xx_op = utils.get_multi_site_operator([('X', alice_idx), ('X', bob_idx)], self.N)
-
-        mat += self.h * z_op + self.J * xx_op
-
-        return mat
+        return self._build(utils.get_alice_idx(self.N))
 
 class QB(BobOperator):
     def __init__(self, h, J, N, alice_base):
