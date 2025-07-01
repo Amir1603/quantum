@@ -5,40 +5,6 @@ import utils
 
 
 class Operator:
-    # Pauli Matrices
-    I = csc_matrix(np.array([[1, 0], [0, 1]], dtype=complex))
-    X = csc_matrix(np.array([[0, 1], [1, 0]], dtype=complex))
-    Y = csc_matrix(np.array([[0, -1j], [1j, 0]], dtype=complex))
-    Z = csc_matrix(np.array([[1, 0], [0, -1]], dtype=complex))
-    pauli_ops = {'I': I, 'X': X, 'Y': Y, 'Z': Z}
-
-    @staticmethod
-    def get_nI(N):
-        """Returns the identity operator for N qubits."""
-        return Operator.I if N == 0 else kron(Operator.get_nI(N-1), Operator.I, format="csc")
-
-    @staticmethod
-    def get_Xi(N, i):
-        if N == 0 and N == i:
-            return Operator.X
-        elif N == 0:
-            return Operator.I
-        elif N == i:
-            return kron(Operator.get_Xi(N-1, i), Operator.X, format="csc")
-        else:
-            return kron(Operator.get_Xi(N-1, i), Operator.I, format="csc")
-
-    @staticmethod
-    def get_Yi(N, i):
-        if N == 0 and N == i:
-            return Operator.Y
-        elif N == 0:
-            return Operator.I
-        elif N == i:
-            return kron(Operator.get_Yi(N-1, i), Operator.Y, format="csc")
-        else:
-            return kron(Operator.get_Yi(N-1, i), Operator.I, format="csc")
-
     def __init__(self, h, J, N):
         self.h = h
         self.J = J
@@ -53,8 +19,11 @@ class Operator:
 
     # Shift the operator according to the gs expectation value <state|Op|state>
     def shift(self, gs_dm: np.ndarray):
-        self.gs_expectation = np.trace(gs_dm @ self.matrix)
-        self.matrix -= self.gs_expectation * Operator.get_nI(self.N)
+        self.gs_expectation = np.trace(gs_dm @ self.matrix).real
+        # TODO
+        # The site idx is irrelevant because we want the identity operator
+        # I = utils.get_pauli_operator_on_site('I', 0, self.N)
+        # self.matrix -= self.gs_expectation * I
 
 class BobOperator(Operator):
     def __init__(self, h, J, N, alice_base: str):
@@ -71,22 +40,29 @@ class BobOperator(Operator):
         sigma_A = None
         sigma_B = None
 
+        alice_idx = utils.get_alice_idx(self.N)
+        bob_idx = utils.get_bob_idx(self.N)
+
         if self.alice_base == utils.AliceBase.X:
-            sigma_A = Operator.get_Xi(self.N, utils.get_alice_idx(self.N))
-            sigma_B = Operator.get_Yi(self.N, utils.get_bob_idx(self.N))
+            sigma_A = utils.get_pauli_operator_on_site('X', alice_idx, self.N)
+            sigma_B = utils.get_pauli_operator_on_site('Y', bob_idx, self.N)
         elif self.alice_base == utils.AliceBase.Y:
-            sigma_A = Operator.get_Yi(self.N, utils.get_alice_idx(self.N))
-            sigma_B = Operator.get_Xi(self.N, utils.get_bob_idx(self.N))
+            sigma_A = utils.get_pauli_operator_on_site('Y', alice_idx, self.N)
+            sigma_B = utils.get_pauli_operator_on_site('X', bob_idx, self.N)
         else:
             raise ValueError("Invalid Alice base. Use 'X' or 'Y'.")
 
-        sigma_B_dot = 1j * (self.matrix @ sigma_B - sigma_B @ self.matrix)
-
+        # TODO
+        sigma_B_dot = 1j * (self.matrix @ sigma_B - sigma_B @ self.matrix) / 2
         self.eta = np.trace(gs_dm @ sigma_A @ sigma_B_dot).real
         self.xi = np.trace(gs_dm @ sigma_B @ self.matrix @ sigma_B).real
 
     def calc_optimal_angle(self):
-        self.theta = 0.5 * np.arcsin(self.eta / np.sqrt(self.eta**2 + self.xi**2))
+        # TODO
+        # self.theta = 0.5 * np.arcsin(self.eta / np.sqrt(self.eta**2 + self.xi**2))
+        den = self.xi #- self.gs_expectation
+        # input(f'xi={self.xi}, eta={self.eta}, gs={self.gs_expectation}, den={den}')
+        self.theta = 0.5 * np.arctan2(self.eta, den)
 
     def calc_teleported_values(self):
         As = [False, True]
@@ -122,16 +98,12 @@ class nn_H(H):
         mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
 
         for i in range(1, self.N+1):
-            term = 1
-            for j in range(self.N+1):
-                term = kron(term, Operator.X if j == i or j == i-1 else Operator.I)
-            mat += self.J * term
+            op = utils.get_multi_site_operator([('X', i-1), ('X', i)], self.N)
+            mat += self.J * op
 
         for i in range(self.N+1):
-            term = 1
-            for j in range(self.N+1):
-                term = kron(term, Operator.Z if j == i else Operator.I)
-            mat += self.h * term
+            op = utils.get_pauli_operator_on_site('Z', i, self.N)
+            mat += self.h * op
 
         return mat
 
@@ -140,21 +112,34 @@ class alice_H(H):
         super().__init__(h, J, N)
 
     def _build_matrix(self):
-        mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
-
+        # TODO
+        H = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
         for i in range(1, self.N+1):
             term = 1
             for j in range(self.N+1):
-                term = kron(term, Operator.X if j == i or j == 0 else Operator.I)
-            mat += self.J * term
+                term = kron(term, utils.X if j == i or j == 0 else utils.I)
+            H += self.J * term
 
         for i in range(self.N+1):
             term = 1
             for j in range(self.N+1):
-                term = kron(term, Operator.Z if j == i else Operator.I)
-            mat += self.h * term
+                term = kron(term, utils.Z if j == i else utils.I)
+            H += self.h * term
 
-        return mat
+        return H
+        # mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
+
+        # alice_idx = utils.get_alice_idx(self.N)
+
+        # for i in range(1, self.N+1):
+        #     op = utils.get_multi_site_operator([('X', alice_idx), ('X', i)], self.N)
+        #     mat += self.J * op
+
+        # for i in range(self.N+1):
+        #     op = utils.get_pauli_operator_on_site('Z', i, self.N)
+        #     mat += self.h * op
+
+        # return mat
 
 class HB(BobOperator):
     def __init__(self, h, J, N, alice_base):
@@ -167,13 +152,13 @@ class nn_HB(HB):
     def _build_matrix(self):
         mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
 
-        z_term = 1
-        x_term = 1
-        for i in range(self.N+1):
-            z_term = kron(z_term, Operator.Z if i == self.N else Operator.I)
-            x_term = kron(x_term, Operator.X if i == self.N or i == self.N-1 else Operator.I)
+        bob_neighbor_idx = utils.get_bob_neighbor_idx(self.N)
+        bob_idx = utils.get_bob_idx(self.N)
 
-        mat += self.h * z_term + self.J * x_term
+        z_op = utils.get_pauli_operator_on_site('Z', bob_idx, self.N)
+        xx_op = utils.get_multi_site_operator([('X', bob_neighbor_idx), ('X', bob_idx)], self.N)
+
+        mat += self.h * z_op + self.J * xx_op
 
         return mat
 
@@ -184,14 +169,13 @@ class alice_HB(HB):
     def _build_matrix(self):
         mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
 
-        x_term = 1
-        z_term = 1
+        alice_idx = utils.get_alice_idx(self.N)
+        bob_idx = utils.get_bob_idx(self.N)
 
-        for i in range(self.N+1):
-            z_term = kron(z_term, Operator.Z if i == self.N else Operator.I)
-            x_term = kron(x_term, Operator.X if i == self.N or i == 0 else Operator.I)
+        z_op = utils.get_pauli_operator_on_site('Z', bob_idx, self.N)
+        xx_op = utils.get_multi_site_operator([('X', alice_idx), ('X', bob_idx)], self.N)
 
-        mat += self.h * z_term + self.J * x_term
+        mat += self.h * z_op + self.J * xx_op
 
         return mat
 
@@ -202,13 +186,11 @@ class QB(BobOperator):
     def _build_matrix(self):
         mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
 
-        i_term = 1
-        z_term = 1
+        bob_idx = utils.get_bob_idx(self.N)
 
-        for i in range(self.N+1):
-            i_term = kron(i_term, Operator.I)
-            z_term = kron(z_term, Operator.Z if i == self.N else Operator.I)
+        i_op = utils.get_pauli_operator_on_site('I', bob_idx, self.N)
+        z_op = utils.get_pauli_operator_on_site('Z', bob_idx, self.N)
 
-        mat += 0.5*(i_term + z_term)
+        mat += 0.5*(i_op + z_op)
 
         return mat
