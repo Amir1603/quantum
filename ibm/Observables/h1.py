@@ -5,8 +5,8 @@ import utils
 
 class H1_B(EnergyBase):
     """Observable for Bob's local energy term h*Z."""
-    def __init__(self, conf: Conf, calc: TFIMCalculator):
-        super().__init__(name="H1_B", conf=conf, calc=calc)
+    def __init__(self, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
+        super().__init__(name="H1_B", conf=conf, alice_basis=alice_basis, calc=calc)
 
     def get_bob_measurement_basis(self):
         """Indicates the runner needs to measure Z at Bob's site directly."""

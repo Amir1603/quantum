@@ -1,24 +1,16 @@
-import numpy as np
-from scipy.sparse import kron, eye, csc_matrix
-from scipy.sparse.linalg import eigsh
-import utils
+from scipy.sparse import kron
 from qiskit.quantum_info import Statevector, DensityMatrix
 from .tfim_calculator import TFIMCalculator
-
-class ExpectationValues:
-    def __init__(self):
-        self.X0 = None
-        self.Xbob = None
-        self.Zbob = None
-        self.X0_Xbob = None
-        self.X0_Zbob = None
+from .Operators import H, BobOperator
+from conf import Conf
 
 class NumericalTFIM(TFIMCalculator):
-    def __init__(self, N, J, h):
-        super().__init__(N, J, h)
-        self.H = self._build_tfim_hamiltonian()
+    def __init__(self, H: H, ops: list[BobOperator]):
+        super().__init__(H.N, H.J, H.h)
+        self.H = H
+        self.ops = {type(o).__name__: o for o in ops}
 
-    def calc_all(self):
+    def calc_all(self, conf: Conf):
         """
         Calculate the ground state, first excited state, and their properties.
         Returns:
@@ -26,123 +18,25 @@ class NumericalTFIM(TFIMCalculator):
                density matrix of the ground state, total energy, total charge,
                expectation values of Z and XX operators.
         """
-        self.E0, gs0, self.E1, ex1 = self._compute_lowest_states()
-
+        self.E0, gs0, self.E1, ex1 = self.H.get_lowest_states()
         self.gs0, self.ex1 = Statevector(gs0), Statevector(ex1)
 
         # Compute density matrices
         self.gs_rho = NumericalTFIM._compute_density_matrix(self.gs0)
         self.ex1_rho = NumericalTFIM._compute_density_matrix(self.ex1)
 
-        self._raw_exp_vals = self.get_expectation_values()
+        for op in self.ops.values():
+            op.shift(self.gs_rho.data)
+            op.calc_eta_xi(self.gs_rho.data)
+            op.calc_optimal_angle()
+            op.calc_teleported_values()
 
-        self.bob_energy, self.bob_charge = self._compute_bob_gs_energy_and_charge()
-        self.theta_E1, self.theta_q1 = self._compute_optimal_rotation_angles()
-
-    # Hamiltonian Construction for TFIM
-    def _build_tfim_hamiltonian(self):
-        H = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
-        for i in range(1, self.N+1):
-            term = 1
-            for j in range(self.N+1):
-                term = kron(term, TFIMCalculator.X if j == i or j == 0 else TFIMCalculator.I)
-            H += self.J * term
-
-        for i in range(self.N+1):
-            term = 1
-            for j in range(self.N+1):
-                term = kron(term, TFIMCalculator.Z if j == i else TFIMCalculator.I)
-            H += self.h * term
-
-        return H
-
-    # Ground State and First Excited State Calculation
-    def _compute_lowest_states(self):
-        eigenvalues, eigenvectors = eigsh(self.H, k=2, which='SA')
-        idx = np.argsort(eigenvalues)
-        eigenvalues, eigenvectors = eigenvalues[idx], eigenvectors[:, idx]
-        return eigenvalues[0], eigenvectors[:, 0], eigenvalues[1], eigenvectors[:, 1]
+        # TODO: Currently we want the errors to affect only the density matrix initialized into the
+        #       quantum circuit and not to affect the calculation of the optimal rotation angle theta.
+        #       When applying errors also with numerical theoretical plots, we should introduce the
+        #       errors before the calculations to see how it affect the results.
+        self.apply_errors(conf)
 
     # Density Matrix Calculation
     def _compute_density_matrix(state):
         return DensityMatrix(state)
-
-    # Helper function for multi-site operators like X_i Z_j or X_i X_j Z_k
-    def _get_multi_site_operator(ops_tuple_list, N):
-        # We reverse the indices because the kron product builds operators from left to right,
-        # which means the leftmost operator acts on the most significant qubit.
-        op_tuple_list = [(TFIMCalculator.pauli_ops[char], N - idx) for char, idx in ops_tuple_list]
-
-        # Starting from identity operator on all sites
-        op_list = [TFIMCalculator.pauli_ops['I']] * (N+1)
-
-        for op, site in op_tuple_list:
-            op_list[site] = op_list[site] @ op
-
-        full_operator = op_list[0]
-        for i_op in range(1, N+1):
-            full_operator = kron(full_operator, op_list[i_op], format="csc")
-
-        return full_operator
-
-    # Helper to compute expectation value <state|Op|state>
-    def _compute_expectation_value(op_matrix, state):
-        state_col_sparse = csc_matrix(state.data.reshape(-1, 1))
-        if not isinstance(op_matrix, csc_matrix):
-            op_matrix = csc_matrix(op_matrix)
-        val = state_col_sparse.conj().T @ op_matrix @ state_col_sparse
-        return val[0,0].real
-
-    # Optimal Rotation Angles for Energy and Charge
-    def _compute_optimal_rotation_angles(self):
-        """
-        Computes optimal rotation angles for general N.
-        For energy, Bob's local energy is P_B = h*Z_N + J*X_0X_N.
-        For charge, Bob's local charge is Q_B = (I+Z_N)/2.
-        """
-        exp_vals = self._raw_exp_vals
-
-        num_theta_E1 = self.h * exp_vals.X0_Xbob - self.J * exp_vals.Zbob
-        den_theta_E1 = self.h * exp_vals.Zbob + self.J * exp_vals.X0_Xbob
-        # The minus sign in the denomenator doesn't affect the ratio, but just for choosign the right quadrant.
-        theta_E1 = 0.5 * np.arctan2(num_theta_E1, -den_theta_E1)
-
-        num_theta_q1 = exp_vals.X0_Xbob
-        den_theta_q1 = exp_vals.Zbob
-        # The minus signs don't affect the ratio, but just for choosign the right quadrant.
-        theta_q1 = 0.5 * np.arctan2(-num_theta_q1, -den_theta_q1)
-
-        return theta_E1, theta_q1
-
-    # Bob's Energy and Charge Expectation Calculation
-    def _compute_bob_gs_energy_and_charge(self):
-        energy_bob = self.h * self._raw_exp_vals.Zbob + self.J * self._raw_exp_vals.X0_Xbob
-        charge_bob = 0.5 * (1 + self._raw_exp_vals.Zbob)
-
-        return energy_bob, charge_bob
-
-    def get_expectation_values(self):
-        alice_site = utils.get_alice_idx(self.N)
-        bob_site = utils.get_bob_idx(self.N)
-
-        op_X0 = TFIMCalculator._get_pauli_operator_on_site('X', alice_site, self.N)
-        op_Xbob = TFIMCalculator._get_pauli_operator_on_site('X', bob_site, self.N)
-        op_X0_Xbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('X', bob_site)], self.N)
-        op_Zbob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_site, self.N)
-        op_X0_Zbob = NumericalTFIM._get_multi_site_operator([('X', alice_site), ('Z', bob_site)], self.N)
-
-        X0_exp = NumericalTFIM._compute_expectation_value(op_X0, self.gs0)
-        Xbob_exp = NumericalTFIM._compute_expectation_value(op_Xbob, self.gs0)
-        Zbob_exp = NumericalTFIM._compute_expectation_value(op_Zbob, self.gs0)
-        X0_Xbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Xbob, self.gs0)
-        X0_Zbob_exp = NumericalTFIM._compute_expectation_value(op_X0_Zbob, self.gs0)
-
-        exp = ExpectationValues()
-        exp.__dict__ = {
-            'X0': X0_exp,
-            'Xbob': Xbob_exp,
-            'Zbob': Zbob_exp,
-            'X0_Xbob': X0_Xbob_exp,
-            'X0_Zbob': X0_Zbob_exp
-        }
-        return exp

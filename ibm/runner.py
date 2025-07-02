@@ -25,7 +25,7 @@ class Runner():
 
     def _create_noise_model(self, conf: Conf):
         p_dephase = conf.p_dephase
-        p_cl_error = conf.p_classical_error
+        p_cl_error = conf.errors.p_classical_error
 
         noise_model = noise.NoiseModel()
 
@@ -63,17 +63,17 @@ class Runner():
         bob_idx = utils.get_bob_idx(N)
         bob_meas_basis = obs.get_bob_measurement_basis()
 
-        if bob_meas_basis == "X":
-            qc.h(bob_idx)
-        elif bob_meas_basis == "Y":
-            qc.sdg(bob_idx) # Apply S dagger
-            qc.h(bob_idx)
-        elif bob_meas_basis == "Z":
-            pass # For measuting Z we do nothing
-        else:
-            raise ValueError("Unknown measurement basis for Bob!")
+        alice_idx = utils.get_alice_idx(N)
+        bob_neighbor_idx = utils.get_bob_neighbor_idx(N)
+
+        utils.apply_basis(qc, bob_meas_basis, bob_idx)
 
         qc.measure(bob_idx, bob_idx)
+
+        # Act on Bob's neighbor only if N is big enough such that it is different from Alice's qubit
+        if alice_idx != bob_neighbor_idx:
+            utils.apply_basis(qc, bob_meas_basis, bob_neighbor_idx)
+            qc.measure(bob_neighbor_idx, bob_neighbor_idx)
 
     def _qet_circuit(self, obs: Observable, conf: Conf, is_simulator: bool):
         num_qubits = conf.N+1
@@ -81,7 +81,6 @@ class Runner():
         # Consistently use N classical bits for arbitrary N simulation runs
         # even if not all are measured by the specific observable
         num_clbits = conf.N+1
-
 
         qc = QuantumCircuit(num_qubits, num_clbits)
         qc.name = f'{obs.name}_qc'

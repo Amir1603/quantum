@@ -1,20 +1,12 @@
 import utils
 import numpy as np
-import cmath
-from scipy.sparse import kron, csc_matrix
 from qiskit.quantum_info import Statevector, DensityMatrix, partial_trace
+from conf import Conf
 
 class TFIMCalculator:
-    # Pauli Matrices
-    I = csc_matrix(np.array([[1, 0], [0, 1]], dtype=complex))
-    X = csc_matrix(np.array([[0, 1], [1, 0]], dtype=complex))
-    Y = csc_matrix(np.array([[0, -1j], [1j, 0]], dtype=complex))
-    Z = csc_matrix(np.array([[1, 0], [0, -1]], dtype=complex))
-    pauli_ops = {'I': I, 'X': X, 'Y': Y, 'Z': Z}
-
     def __init__(self, N, J, h):
         """
-        Initialize the NumericalTFIM class with parameters for the transverse field Ising model.
+        Initialize the class with parameters for the transverse field Ising model.
 
         Parameters:
         N (int): Number of spins.
@@ -34,74 +26,62 @@ class TFIMCalculator:
         self.ex1_rho = None
         self.bob_energy = None
         self.bob_charge = None
-        self.theta_E1 = None
-        self.theta_q1 = None
+        self.theta_Ex = None
+        self.theta_qx = None
+        self.theta_Ey = None
+        self.theta_qy = None
 
-    def calc_all(self):
+    def calc_all(self, conf: Conf):
         """
         Calculate all properties of the transverse field Ising model.
         This method should be overridden by subclasses to perform specific calculations.
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    # Helper function to create a Pauli operator on a specific site
-    def _get_pauli_operator_on_site(op_char, site_idx, N):
-        # We reverse the indices because the kron product builds operators from left to right,
-        # which means the leftmost operator acts on the most significant qubit.
-        site_idx = N - site_idx
+    #TODO - fix
+    def apply_errors(self, conf: Conf):
+        if conf is None:
+            return
 
-        # pauli_ops is a dict {'I': I_op, 'X': X_op, ...}
-        if not (0 <= site_idx <= N):
-            raise ValueError(f"Site index {site_idx} out of bounds for N={N}")
-
-        op_list = [TFIMCalculator.pauli_ops[op_char] if i == site_idx else TFIMCalculator.pauli_ops['I'] for i in range(N+1)]
-
-        full_operator = op_list[0]
-        for i_op in range(1, N+1):
-            full_operator = kron(full_operator, op_list[i_op], format="csc")
-
-        return full_operator
-
-    def apply_errors(self, conf):
         # Apply errors to the density matrix
         p_err = 0
         rho_err = np.zeros((2**(conf.N+1), 2**(conf.N+1)), dtype=complex)
 
-        if conf.p_depol_error != 0:
+        if conf.errors.p_depol_error != 0:
             rho_bob_reduced = partial_trace(self.gs_rho, [utils.get_bob_idx(self.N)])
             identity_alice_data = np.eye(2, dtype=complex) / 2
             rho_alice_mixed = DensityMatrix(identity_alice_data)
 
             rho_err = rho_alice_mixed.tensor(rho_bob_reduced)
-            p_err = conf.p_depol_error
+            p_err = conf.errors.p_depol_error
 
-        if conf.p_bitflip_error != 0:
+        if conf.errors.p_bitflip_error != 0:
             bob_idx = utils.get_bob_idx(conf.N)
-            X_bob = TFIMCalculator._get_pauli_operator_on_site('X', bob_idx, conf.N)
+            X_bob = utils.get_pauli_operator_on_site('X', bob_idx, conf.N)
 
             rho_err = X_bob @ self.gs_rho.data @ X_bob
-            p_err = conf.p_bitflip_error
+            p_err = conf.errors.p_bitflip_error
 
-        if conf.p_alice_phaseflip_error != 0:
+        if conf.errors.p_alice_phaseflip_error != 0:
             alice_idx = utils.get_alice_idx(conf.N)
-            Z_alice = TFIMCalculator._get_pauli_operator_on_site('Z', alice_idx, conf.N)
+            Z_alice = utils.get_pauli_operator_on_site('Z', alice_idx, conf.N)
 
             rho_err = Z_alice @ self.gs_rho.data @ Z_alice
-            p_err = conf.p_alice_phaseflip_error
+            p_err = conf.errors.p_alice_phaseflip_error
 
-        if conf.p_bob_phaseflip_error != 0:
+        if conf.errors.p_bob_phaseflip_error != 0:
             bob_idx = utils.get_bob_idx(conf.N)
-            Z_bob = TFIMCalculator._get_pauli_operator_on_site('Z', bob_idx, conf.N)
+            Z_bob = utils.get_pauli_operator_on_site('Z', bob_idx, conf.N)
 
             rho_err = Z_bob @ self.gs_rho.data @ Z_bob
-            p_err = conf.p_bob_phaseflip_error
+            p_err = conf.errors.p_bob_phaseflip_error
 
-        if conf.p_excited_mixture != 0:
+        if conf.errors.p_excited_mixture != 0:
             rho_err = self.ex1_rho.data
-            p_err = conf.p_excited_mixture
+            p_err = conf.errors.p_excited_mixture
 
-        if conf.p_excited_superposition_error != 0:
-            p_err = conf.p_excited_superposition_error
+        if conf.errors.p_excited_superposition_error != 0:
+            p_err = conf.errors.p_excited_superposition_error
             # Amplitudes for the superposition
             amp_gs_super = np.sqrt(1 - p_err)
             amp_excited_super = np.sqrt(p_err)

@@ -1,14 +1,16 @@
 import argparse
 import os
 from datetime import datetime
-from conf import Conf
+from conf import Conf, ErrorsConf
 from Observables import ObservableFactory
-from Calculators import NumericalTFIM, AnalyticalTFIM
+from Calculators import AnalyticalTFIM, NumericalTFIM
+from Calculators.Operators import nn_H, alice_H, alice_HB, QB, nn_HB
 from runner import Runner
 from results import Results
 import plotting
 import reporting
 from qiskit_ibm_runtime import QiskitRuntimeService
+from utils import System, AliceBase
 
 def print_run_plan(confs):
     print('#########################################################')
@@ -91,6 +93,27 @@ def report_and_plot(results_obj: Results, args):
     reporting.generate_report(results_list, plot_filenames, output_dir, [])
 
 
+def _get_tfim(args, conf: Conf):
+    alice_hb = alice_HB(conf.h, conf.J, conf.N, args.alice_base)
+    nn_hb = nn_HB(conf.h, conf.J, conf.N, args.alice_base)
+    qb = QB(conf.h, conf.J, conf.N, args.alice_base)
+
+    if args.run_analytical:
+        return AnalyticalTFIM(conf.N, conf.J, conf.h)
+    elif args.system == System.AliceInteraction:
+        H = alice_H(conf.h, conf.J, conf.N)
+        bob_ops = [alice_hb, qb]
+
+        return NumericalTFIM(H, bob_ops)
+    elif args.system == System.NearestNeighborInteraction:
+        H = nn_H(conf.h, conf.J, conf.N)
+        bob_ops = [nn_hb, qb]
+
+        return NumericalTFIM(H, bob_ops)
+    else:
+        raise ValueError(f"Unsupported system type: {args.system}. Use --system AliceInteraction or NearestNeighborInteraction.")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Quantum Teleportation Simulation")
 
@@ -103,6 +126,8 @@ if __name__ == "__main__":
     parser.add_argument('--run-analytical', action='store_true', help="Run in analytical calculations mode instead of numerical")
     parser.add_argument('--output-dir', '-o', required=False, type=str, help="Set output directory")
     parser.add_argument('-N', type=int, default=1, help="Choose value for N - the number of sites (in addition to Alice) in chain")
+    parser.add_argument('--system', '-s', type=System, default=System.AliceInteraction, choices=list(System), help="Choose the system (Hamiltonian) to run: Alice site interaction or nearest neighbor interaction. Default is Alice Site interaction.")
+    parser.add_argument('--alice-base', type=AliceBase, default=AliceBase.X, choices=list(AliceBase), help="Choose Alice's basis of measurement.")
 
     error_group = parser.add_mutually_exclusive_group(required=False)
 
@@ -118,6 +143,9 @@ if __name__ == "__main__":
 
     if args.run_analytical and args.N != 1:
         raise ValueError("Only N=1 is supported for analytical simulations. Remove `--run-analytical` for other values.")
+
+    if args.system == System.AliceInteraction and args.alice_base != AliceBase.X:
+        raise ValueError("Alice's base can only be X for Alice interaction system. Use `--system NearestNeighborInteraction` to use Y base.")
 
     # --- Configuration Loading ---
     confs = [Conf(args.N)]
@@ -142,27 +170,31 @@ if __name__ == "__main__":
     if args.both_alice_values:
         confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]
 
+    errs = []
+
     if args.classical_errors:
-        confs = [conf for c in confs for conf in Conf.generate_classical_error(c)]
+        errs = ErrorsConf.generate_classical_error()
 
     if args.depolarization_errors:
-        confs = [conf for c in confs for conf in Conf.generate_depolarization_error(c)]
+        errs = ErrorsConf.generate_depolarization_error()
 
     if args.bit_flip_errors:
-        confs = [conf for c in confs for conf in Conf.generate_bitflip_error(c)]
+        errs = ErrorsConf.generate_bitflip_error()
 
     if args.alice_phase_flip_errors:
-        confs = [conf for c in confs for conf in Conf.generate_alice_phase_flip_error(c)]
+        errs = ErrorsConf.generate_alice_phase_flip_error()
 
     if args.bob_phase_flip_errors:
-        confs = [conf for c in confs for conf in Conf.generate_bob_phase_flip_error(c)]
+        errs = ErrorsConf.generate_bob_phase_flip_error()
 
     if args.excited_mixture_errors:
-        confs = [conf for c in confs for conf in Conf.generate_excited_mixture_error(c)]
+        errs = ErrorsConf.generate_excited_mixture_error()
 
     if args.excited_superposition_errors:
-        confs = [conf for c in confs for conf in Conf.generate_excited_superposition_error(c)]
+        errs = ErrorsConf.generate_excited_superposition_error()
 
+    if errs:
+        confs = [conf for c in confs for conf in Conf.generate_from_errors(c, errs)]
 
     print(f"Generated {len(confs)} configurations to run.")
     print_run_plan(confs) # Display the plan based on the configurations list
@@ -171,7 +203,7 @@ if __name__ == "__main__":
     run_time_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     dir_name = args.output_dir if args.output_dir else run_time_str
 
-    output_dir = f'artifacts/{dir_name}'
+    output_dir = f'artifacts/{args.system}/{dir_name}'
     os.makedirs(output_dir, exist_ok=True)
 
     # Create Results instance with output directory
@@ -188,14 +220,13 @@ if __name__ == "__main__":
     for i, conf in enumerate(confs):
         print(f"\n--- Running Configuration {i+1}/{len(confs)} ---")
 
-        tfim = AnalyticalTFIM(conf.N, conf.J, conf.h) if args.run_analytical else NumericalTFIM(conf.N, conf.J, conf.h)
+        tfim = _get_tfim(args, conf)
 
-        tfim.calc_all()
-        tfim.apply_errors(conf)
+        tfim.calc_all(conf)
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones
-        simulatable_obs_list, derived_obs = observable_factory.create_observables(conf, tfim)
+        simulatable_obs_list, derived_obs = observable_factory.create_observables(conf, tfim, args.system, args.alice_base)
 
         # Initialize Runner (or re-init if backend/noise changes significantly)
         # Pass only the list of observables to simulate

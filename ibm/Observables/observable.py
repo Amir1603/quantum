@@ -8,13 +8,17 @@ from Calculators.tfim_calculator import TFIMCalculator
 import utils
 
 class Observable:
-    def __init__(self, name, conf: Conf, calc: TFIMCalculator):
+    def __init__(self, name, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         self.name = name
         self._conf = conf
         self._calc = calc
+        self._alice_basis = alice_basis
 
         # Cache for ground state vector to avoid recomputing
         self._gs_vector_cache = {}
+
+        if alice_basis not in [utils.AliceBase.X, utils.AliceBase.Y]:
+            raise ValueError(f"Unsupported Alice basis '{self._alice_basis}'.")
 
     @property
     def h(self):

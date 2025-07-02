@@ -11,9 +11,9 @@ class BobsEnergy(Observable):
     teleported energy in arbitrary units E_B = (<H_B> - <H_B>_gs)/<H_B>_gs.
     Calculated from results of V (<XX>) and H1 (<Z>).
     """
-    def __init__(self, conf: Conf, calc: TFIMCalculator):
+    def __init__(self, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         name = "E_B"
-        super().__init__(name, conf, calc)
+        super().__init__(name, conf, alice_basis, calc)
 
         self._h1_comp_name = "H1_B"
         self._v_comp_name = "V_B"
@@ -77,7 +77,8 @@ class BobsEnergy(Observable):
         exp_val_hb = h * exp_val_h1 + J * exp_val_v
 
         # Calculate final value relative to ground state
-        final_value = exp_val_hb - self._calc.bob_energy
+        hb_key = next((item for item in self._calc.ops.keys() if 'HB' in item), None)
+        final_value = exp_val_hb - self._calc.ops[hb_key].gs_expectation
 
         # Calculate combined SEM for h*<h1> + J*<V>
         sem_h1 = h1_res.sem

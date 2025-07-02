@@ -1,5 +1,7 @@
-from functools import reduce
-import operator
+from qiskit import QuantumCircuit
+from enum import Enum
+import numpy as np
+from scipy.sparse import kron, csc_matrix
 
 def get_nested_value(data, path_str):
     """
@@ -28,6 +30,9 @@ def get_alice_idx(N):
 
 def get_bob_idx(N):
     return N
+
+def get_bob_neighbor_idx(N):
+    return get_bob_idx(N) - 1
 
 def get_bit_from_counts(bitstring: str, creg_index: int, num_clbits: int) -> str:
     """
@@ -70,3 +75,72 @@ def get_bit_from_counts(bitstring: str, creg_index: int, num_clbits: int) -> str
         )
 
     return bitstring[string_index]
+
+def apply_basis(qc: QuantumCircuit, basis: str, site_idx: int):
+    if basis == "X":
+        qc.h(site_idx)
+    elif basis == "Y":
+        qc.sdg(site_idx) # Apply S dagger
+        qc.h(site_idx)
+    elif basis == "Z":
+        pass # For measuting Z we do nothing
+    else:
+        raise ValueError("Unknown measurement basis for Bob!")
+
+# Pauli Matrices
+I = csc_matrix(np.array([[1, 0], [0, 1]], dtype=complex))
+X = csc_matrix(np.array([[0, 1], [1, 0]], dtype=complex))
+Y = csc_matrix(np.array([[0, -1j], [1j, 0]], dtype=complex))
+Z = csc_matrix(np.array([[1, 0], [0, -1]], dtype=complex))
+pauli_ops = {'I': I, 'X': X, 'Y': Y, 'Z': Z}
+
+# Helper function to create a Pauli operator on a specific site
+def get_pauli_operator_on_site(op_char: str, site_idx: int, N: int):
+    # We reverse the indices because the kron product builds operators from left to right,
+    # which means the leftmost operator acts on the most significant qubit.
+    site_idx = N - site_idx
+
+    # pauli_ops is a dict {'I': I_op, 'X': X_op, ...}
+    if not (0 <= site_idx <= N):
+        raise ValueError(f"Site index {site_idx} out of bounds for N={N}")
+
+    op_list = [pauli_ops[op_char] if i == site_idx else pauli_ops['I'] for i in range(N+1)]
+
+    full_operator = op_list[0]
+    for i_op in range(1, N+1):
+        full_operator = kron(full_operator, op_list[i_op], format="csc")
+
+    return full_operator
+
+# Helper function for multi-site operators like X_i Z_j or X_i X_j Z_k
+def get_multi_site_operator(ops_tuple_list, N: int):
+    # We reverse the indices because the kron product builds operators from left to right,
+    # which means the leftmost operator acts on the most significant qubit.
+    op_tuple_list = [(pauli_ops[char], N - idx) for char, idx in ops_tuple_list]
+
+    # Starting from identity operator on all sites
+    op_list = [pauli_ops['I']] * (N+1)
+
+    for op, site in op_tuple_list:
+        op_list[site] = op_list[site] @ op
+
+    full_operator = op_list[0]
+    for i_op in range(1, N+1):
+        full_operator = kron(full_operator, op_list[i_op], format="csc")
+
+    return full_operator
+
+class System(Enum):
+    AliceInteraction = 'Alice'
+    NearestNeighborInteraction = 'NearestNeighbors'
+
+    def __str__(self):
+        return self.value
+
+
+class AliceBase(Enum):
+    X = 'X'
+    Y = 'Y'
+
+    def __str__(self):
+        return self.value

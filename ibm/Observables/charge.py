@@ -9,16 +9,17 @@ class Charge(Observable):
     Observable for Bob's local charge density (rho_B ~ (I+Z)/2) for arbitrary N,
     under the protocol optimized for energy (Alice measures X, Bob rotates Ry based on theta).
     """
-    def __init__(self, conf: Conf, calc: TFIMCalculator):
+    def __init__(self, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         name = f'charge'
-        super().__init__(name=name, conf=conf, calc=calc)
+        super().__init__(name=name, conf=conf, alice_basis=alice_basis, calc=calc)
 
     def apply_alice_measurement(self, qc: QuantumCircuit):
         alice_idx = utils.get_alice_idx(self.N)
+        utils.apply_basis(qc, self._alice_basis, alice_idx)
 
-        qc.h(alice_idx)
         qc.measure(alice_idx, alice_idx)
 
+    # TODO: What is the different from energy? Can the operation be unified?
     def apply_bob_operation(self, qc: QuantumCircuit, xor_res):
         """
         Bob's conditional operation based on Alice's measurement (outcome c).
@@ -27,20 +28,30 @@ class Charge(Observable):
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
 
-        theta = self._calc.theta_q1 if not self.theta else self.theta
+        calc_theta = self._calc.ops['QB'].theta
+        theta = calc_theta if not self.theta else self.theta
 
         # Apply the controlled rotation based on Alice's measurement.
         # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
         # => We use a workaround suggested by Kazuki.
-        angle = 2 * theta if xor_res == 0 else -2 * theta
+        angle = -2 * theta if xor_res == 0 else 2 * theta
 
-        # Apply the controlled rotation based on Alice's measurement.
-        # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
-        # => We use a workaround suggested by Kazuki.
-        qc.cry(angle, alice_idx, bob_idx)
-        qc.x(alice_idx)
-        qc.cry(-angle, alice_idx, bob_idx)
-        qc.x(alice_idx)
+        # If Alice's basis is 'X', Bob uses 'Y' rotation and vice versa.
+        if self._alice_basis == 'X':
+            # Apply the controlled rotation based on Alice's measurement.
+            # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
+            # => We use a workaround suggested by Kazuki.
+            qc.cry(angle, alice_idx, bob_idx)
+            qc.x(alice_idx)
+            qc.cry(-angle, alice_idx, bob_idx)
+            qc.x(alice_idx)
+        elif self._alice_basis == 'Y':
+            qc.crx(angle, alice_idx, bob_idx)
+            qc.x(alice_idx)
+            qc.crx(-angle, alice_idx, bob_idx)
+            qc.x(alice_idx)
+        else:
+            raise ValueError(f"Unsupported Alice basis '{self._alice_basis}'.")
 
         # This is equivalent to:
         ### with qc.if_test((alice_idx, 0^xor_alice_res)):
@@ -69,7 +80,7 @@ class Charge(Observable):
             return 0.0 # Z eigenvalue -1 -> charge density eigenvalue 0
 
     def get_theoretical_gs_expectation_value(self):
-        return self._calc.bob_charge
+        return self._calc.ops['QB'].gs_expectation
 
     def description(self):
         bob_idx = utils.get_bob_idx(self.N)
