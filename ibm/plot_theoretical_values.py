@@ -24,12 +24,13 @@ if __name__ == "__main__":
     h = 1.0
 
     hamiltonians = {
-        'alice': (Operators.alice_H, [Operators.alice_HB, Operators.QB], utils.AliceBase.X, [1, 2, 3, 4]),
-        'nn_X': (Operators.nn_H, [Operators.nn_HB, Operators.QB], utils.AliceBase.X, [2, 3, 4]),
-        'nn_Y': (Operators.nn_H, [Operators.nn_HB, Operators.QB], utils.AliceBase.Y, [2, 3, 4]),
+        'alice': (Operators.alice_H, [Operators.alice_HB, Operators.QB], [utils.AliceBase.X], [1, 2, 3, 4]),
+        'nn': (Operators.nn_H, [Operators.nn_HB, Operators.QB], [utils.AliceBase.X, utils.AliceBase.Y], [2, 3, 4]),
+        'nn_X': (Operators.nn_H, [Operators.nn_HB, Operators.QB], [utils.AliceBase.X], [2, 3, 4]),
+        'nn_Y': (Operators.nn_H, [Operators.nn_HB, Operators.QB], [utils.AliceBase.Y], [2, 3, 4]),
     }
 
-    for name, (hamiltonian_class, OB_classes, alice_base, Ns) in hamiltonians.items():
+    for name, (hamiltonian_class, OB_classes, alice_bases, Ns) in hamiltonians.items():
         # Teleported figure
         tel_figure, tel_axis = plt.subplots(2, len(Ns), figsize=(10, 6))
         tel_figure.subplots_adjust(right=0.8)
@@ -41,28 +42,29 @@ if __name__ == "__main__":
         for i, N in enumerate(Ns):
             print(f"Calculating for N={N}...")
 
-            teleported_values = {}
+            for alice_base in alice_bases:
+                teleported_values = {}
 
-            for J in Js:
-                OBs = {OB_class.__name__: OB_class(h, J, N, alice_base) for OB_class in OB_classes}
-                H = hamiltonian_class(h, J, N)
+                for J in Js:
+                    OBs = {OB_class.__name__: OB_class(h, J, N, alice_base) for OB_class in OB_classes}
+                    H = hamiltonian_class(h, J, N)
 
-                ntfim = NumericalTFIM(H, list(OBs.values()))
-                ntfim.calc_all(None)
+                    ntfim = NumericalTFIM(H, list(OBs.values()))
+                    ntfim.calc_all(None)
 
-                for k, v in OBs.items():
-                    if k not in teleported_values:
-                        teleported_values[k] = []
+                    for k, v in OBs.items():
+                        if k not in teleported_values:
+                            teleported_values[k] = []
 
-                    teleported_values[k].append(v.teleported_values)
+                        teleported_values[k].append(v.teleported_values)
 
-            for idx, k in enumerate(teleported_values):
-                a0_vals = [tv[False] for tv in teleported_values[k]]
-                a1_vals = [tv[True] for tv in teleported_values[k]]
+                for idx, k in enumerate(teleported_values):
+                    a0_vals = [tv[False] for tv in teleported_values[k]]
+                    a1_vals = [tv[True] for tv in teleported_values[k]]
 
-                tel_axis[idx, i].plot(Js, a0_vals, label=f'a=0')
-                tel_axis[idx, i].plot(Js, a1_vals, label=f'a=1')
-                tel_axis[idx, i].set_title(f"{k} N={N}")
+                    tel_axis[idx, i].plot(Js, a0_vals, label=f'a=0, sigma_A={alice_base}')
+                    tel_axis[idx, i].plot(Js, a1_vals, label=f'a=1, sigma_A={alice_base}')
+                    tel_axis[idx, i].set_title(f"{k} N={N}")
 
         tel_handles, tel_labels = get_unique_legend(tel_axis)
         tel_figure.suptitle('Teleported operators expectation Values for Different N and J', fontsize=14)
