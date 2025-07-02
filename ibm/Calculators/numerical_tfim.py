@@ -1,7 +1,7 @@
 from scipy.sparse import kron
 from qiskit.quantum_info import Statevector, DensityMatrix
 from .tfim_calculator import TFIMCalculator
-from .operators import BobOperator, H
+from .Operators import H, BobOperator
 
 class NumericalTFIM(TFIMCalculator):
     def __init__(self, H: H, ops: list[BobOperator]):

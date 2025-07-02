@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Calculators import nn_H, alice_H, alice_HB, nn_HB, QB, NumericalTFIM
+from Calculators import Operators, NumericalTFIM
 import utils
 
 
@@ -25,9 +25,9 @@ if __name__ == "__main__":
     h = 1.0
 
     hamiltonians = {
-        'alice': (alice_H, [alice_HB, QB], utils.AliceBase.X),
-        'nn_X': (nn_H, [nn_HB, QB], utils.AliceBase.X),
-        'nn_Y': (nn_H, [nn_HB, QB], utils.AliceBase.Y),
+        'alice': (Operators.alice_H, [Operators.alice_HB, Operators.QB], utils.AliceBase.X),
+        'nn_X': (Operators.nn_H, [Operators.nn_HB, Operators.QB], utils.AliceBase.X),
+        'nn_Y': (Operators.nn_H, [Operators.nn_HB, Operators.QB], utils.AliceBase.Y),
     }
 
     for name, (hamiltonian_class, OB_classes, alice_base) in hamiltonians.items():
