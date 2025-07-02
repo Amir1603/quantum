@@ -1,6 +1,7 @@
 import utils
 import numpy as np
 from qiskit.quantum_info import Statevector, DensityMatrix, partial_trace
+from conf import Conf
 
 class TFIMCalculator:
     def __init__(self, N, J, h):
@@ -30,7 +31,7 @@ class TFIMCalculator:
         self.theta_Ey = None
         self.theta_qy = None
 
-    def calc_all(self):
+    def calc_all(self, conf: Conf):
         """
         Calculate all properties of the transverse field Ising model.
         This method should be overridden by subclasses to perform specific calculations.
@@ -38,7 +39,10 @@ class TFIMCalculator:
         raise NotImplementedError("Subclasses should implement this method.")
 
     #TODO - fix
-    def apply_errors(self, conf):
+    def apply_errors(self, conf: Conf):
+        if conf is None:
+            return
+
         # Apply errors to the density matrix
         p_err = 0
         rho_err = np.zeros((2**(conf.N+1), 2**(conf.N+1)), dtype=complex)

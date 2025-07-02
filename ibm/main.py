@@ -217,8 +217,7 @@ if __name__ == "__main__":
 
         tfim = _get_tfim(args, conf)
 
-        tfim.calc_all()
-        tfim.apply_errors(conf)
+        tfim.calc_all(conf)
 
         # Create/get observables for this config (needed for runner)
         # Note: Factory creates *all* observables, runner uses the list of simulatable ones

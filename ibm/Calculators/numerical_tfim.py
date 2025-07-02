@@ -2,6 +2,7 @@ from scipy.sparse import kron
 from qiskit.quantum_info import Statevector, DensityMatrix
 from .tfim_calculator import TFIMCalculator
 from .Operators import H, BobOperator
+from conf import Conf
 
 class NumericalTFIM(TFIMCalculator):
     def __init__(self, H: H, ops: list[BobOperator]):
@@ -9,7 +10,7 @@ class NumericalTFIM(TFIMCalculator):
         self.H = H
         self.ops = {type(o).__name__: o for o in ops}
 
-    def calc_all(self):
+    def calc_all(self, conf: Conf):
         """
         Calculate the ground state, first excited state, and their properties.
         Returns:
@@ -23,6 +24,8 @@ class NumericalTFIM(TFIMCalculator):
         # Compute density matrices
         self.gs_rho = NumericalTFIM._compute_density_matrix(self.gs0)
         self.ex1_rho = NumericalTFIM._compute_density_matrix(self.ex1)
+
+        self.apply_errors(conf)
 
         for op in self.ops.values():
             op.shift(self.gs_rho.data)

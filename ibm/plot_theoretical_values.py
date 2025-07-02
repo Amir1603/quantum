@@ -49,7 +49,7 @@ if __name__ == "__main__":
                 H = hamiltonian_class(h, J, N)
 
                 ntfim = NumericalTFIM(H, list(OBs.values()))
-                ntfim.calc_all()
+                ntfim.calc_all(None)
 
                 for k, v in OBs.items():
                     if k not in teleported_values:
