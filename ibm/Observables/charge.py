@@ -37,7 +37,7 @@ class Charge(Observable):
         angle = -2 * theta if xor_res == 0 else 2 * theta
 
         # If Alice's basis is 'X', Bob uses 'Y' rotation and vice versa.
-        if self._alice_basis == 'X':
+        if self._alice_basis == utils.AliceBase.X:
             # Apply the controlled rotation based on Alice's measurement.
             # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
             # => We use a workaround suggested by Kazuki.
@@ -45,7 +45,7 @@ class Charge(Observable):
             qc.x(alice_idx)
             qc.cry(-angle, alice_idx, bob_idx)
             qc.x(alice_idx)
-        elif self._alice_basis == 'Y':
+        elif self._alice_basis == utils.AliceBase.Y:
             qc.crx(angle, alice_idx, bob_idx)
             qc.x(alice_idx)
             qc.crx(-angle, alice_idx, bob_idx)
