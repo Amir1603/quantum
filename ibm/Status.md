@@ -16,4 +16,4 @@ TODO:
 | NN          | 2 | X           | X              | V              | ~V              | V               |
 | NN          | 3 | X           | X              | V              | X               | V               |
 | NN          | 2 | Y           | VX             | ~V             | V               | V               |
-| NN          | 3 | Y           | X              | X              |                 |                 |
+| NN          | 3 | Y           | X              | X              | ~V              | ~V              |
