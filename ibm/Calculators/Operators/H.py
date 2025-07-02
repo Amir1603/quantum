@@ -1,7 +1,7 @@
 from .operator import Operator
 import numpy as np
 from scipy.sparse.linalg import eigsh
-from scipy.sparse import kron, csc_matrix
+from scipy.sparse import csc_matrix
 import utils
 
 class H(Operator):
@@ -16,34 +16,17 @@ class H(Operator):
         return eigenvalues[0], eigenvectors[:, 0], eigenvalues[1], eigenvectors[:, 1]
 
     def _build(self, interaction_idx_lambda):
-        # TODO: Use get pauli op on site
-        # mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
+        mat = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
 
-        # alice_idx = utils.get_alice_idx(self.N)
-
-        # for i in range(1, self.N+1):
-        #     op = utils.get_multi_site_operator([('X', alice_idx), ('X', i)], self.N)
-        #     mat += self.J * op
-
-        # for i in range(self.N+1):
-        #     op = utils.get_pauli_operator_on_site('Z', i, self.N)
-        #     mat += self.h * op
-
-        # return mat
-        H = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
         for i in range(1, self.N+1):
-            term = 1
-            for j in range(self.N+1):
-                term = kron(term, utils.X if j == i or j == interaction_idx_lambda(i) else utils.I)
-            H += self.J * term
+            op = utils.get_multi_site_operator([('X', interaction_idx_lambda(i)), ('X', i)], self.N)
+            mat += self.J * op
 
         for i in range(self.N+1):
-            term = 1
-            for j in range(self.N+1):
-                term = kron(term, utils.Z if j == i else utils.I)
-            H += self.h * term
+            op = utils.get_pauli_operator_on_site('Z', i, self.N)
+            mat += self.h * op
 
-        return H
+        return mat
 
 class nn_H(H):
     def __init__(self, h, J, N):

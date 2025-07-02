@@ -3,7 +3,8 @@ import os
 from datetime import datetime
 from conf import Conf
 from Observables import ObservableFactory
-from Calculators import AnalyticalTFIM, NumericalTFIM, nn_H, alice_H, alice_HB, QB, nn_HB
+from Calculators import AnalyticalTFIM, NumericalTFIM
+from Calculators.Operators import nn_H, alice_H, alice_HB, QB, nn_HB
 from runner import Runner
 from results import Results
 import plotting
