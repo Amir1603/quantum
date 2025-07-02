@@ -4,8 +4,7 @@ TODO:
 2) Fix errors injection.
 3) Run on real HW for more stats.
 * Extra:
-1) Fix `run_all` script.
-2) Fix analytical_tfim and tests.
+1) Fix analytical_tfim and tests.
 
 
 | Hamiltonian | N | Alice Basis | E Status (10k) | Q Status (10k) | E Status (500k) | Q Status (500k) |
