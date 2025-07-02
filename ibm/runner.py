@@ -25,7 +25,7 @@ class Runner():
 
     def _create_noise_model(self, conf: Conf):
         p_dephase = conf.p_dephase
-        p_cl_error = conf.p_classical_error
+        p_cl_error = conf.errors.p_classical_error
 
         noise_model = noise.NoiseModel()
 

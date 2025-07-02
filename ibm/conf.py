@@ -2,6 +2,94 @@ import yaml
 import numpy as np
 
 
+class ErrorsConf:
+    @staticmethod
+    def generate_classical_error(num_points=21):
+        probs = np.linspace(0.0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = ErrorsConf()
+            new_conf.p_classical_error = p
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
+    def generate_depolarization_error(num_points=21):
+        probs = np.linspace(0.0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = ErrorsConf()
+            new_conf.p_depol_error = p
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
+    def generate_bitflip_error(num_points=11):
+        probs = np.linspace(0.0, 0.5, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = ErrorsConf()
+            new_conf.p_bitflip_error = p
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
+    def generate_alice_phase_flip_error(num_points=21):
+        probs = np.linspace(0.0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = ErrorsConf()
+            new_conf.p_alice_phaseflip_error = p
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
+    def generate_bob_phase_flip_error(num_points=21):
+        probs = np.linspace(0.0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = ErrorsConf()
+            new_conf.p_bob_phaseflip_error = p
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
+    def generate_excited_mixture_error(num_points=21):
+        probs = np.linspace(0.0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = ErrorsConf()
+            new_conf.p_excited_mixture = p
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
+    def generate_excited_superposition_error(num_points=21):
+        probs = np.linspace(0.0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in probs:
+            new_conf = ErrorsConf()
+            new_conf.p_excited_superposition_error = p
+            confs.append(new_conf)
+        return confs
+
+    def __init__(self):
+        self.p_classical_error = 0.0
+        self.p_depol_error = 0.0
+        self.p_bitflip_error = 0.0
+        self.p_alice_phaseflip_error = 0.0
+        self.p_bob_phaseflip_error = 0.0
+        self.p_excited_mixture = 0.0
+        self.p_excited_superposition_error = 0.0
+
+
 class Conf:
     @staticmethod
     def generate_hJ_combinations(conf, step=0.25, max_value=2):
@@ -76,87 +164,15 @@ class Conf:
         return confs
 
     @staticmethod
-    def generate_classical_error(conf, num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
-
+    def generate_from_errors(conf, errors_list: list[ErrorsConf]):
         confs = []
-        for p in probs:
+
+        for errors in errors_list:
             new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.p_classical_error = p
+            new_conf.errors = errors
             confs.append(new_conf)
-        return confs
 
-    @staticmethod
-    def generate_depolarization_error(conf, num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
-
-        confs = []
-        for p in probs:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.p_depol_error = p
-            confs.append(new_conf)
-        return confs
-
-    @staticmethod
-    def generate_bitflip_error(conf, num_points=11):
-        probs = np.linspace(0.0, 0.5, num_points).tolist()
-
-        confs = []
-        for p in probs:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.p_bitflip_error = p
-            confs.append(new_conf)
-        return confs
-
-    @staticmethod
-    def generate_alice_phase_flip_error(conf, num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
-
-        confs = []
-        for p in probs:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.p_alice_phaseflip_error = p
-            confs.append(new_conf)
-        return confs
-
-    @staticmethod
-    def generate_bob_phase_flip_error(conf, num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
-
-        confs = []
-        for p in probs:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.p_bob_phaseflip_error = p
-            confs.append(new_conf)
-        return confs
-
-    @staticmethod
-    def generate_excited_mixture_error(conf, num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
-
-        confs = []
-        for p in probs:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.p_excited_mixture = p
-            confs.append(new_conf)
-        return confs
-
-    @staticmethod
-    def generate_excited_superposition_error(conf, num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
-
-        confs = []
-        for p in probs:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.p_excited_superposition_error = p
-            confs.append(new_conf)
         return confs
 
     def __init__(self, N):
@@ -175,13 +191,7 @@ class Conf:
         self.delay_time = 0
         self.theta = None
         self.xor_alice_res = 0
-        self.p_classical_error = 0.0
-        self.p_depol_error = 0.0
-        self.p_bitflip_error = 0.0
-        self.p_alice_phaseflip_error = 0.0
-        self.p_bob_phaseflip_error = 0.0
-        self.p_excited_mixture = 0.0
-        self.p_excited_superposition_error = 0.0
+        self.errors = ErrorsConf()
 
 
     def load(self):

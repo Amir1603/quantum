@@ -1,7 +1,7 @@
 import argparse
 import os
 from datetime import datetime
-from conf import Conf
+from conf import Conf, ErrorsConf
 from Observables import ObservableFactory
 from Calculators import AnalyticalTFIM, NumericalTFIM
 from Calculators.Operators import nn_H, alice_H, alice_HB, QB, nn_HB
@@ -170,27 +170,31 @@ if __name__ == "__main__":
     if args.both_alice_values:
         confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]
 
+    errs = []
+
     if args.classical_errors:
-        confs = [conf for c in confs for conf in Conf.generate_classical_error(c)]
+        errs = ErrorsConf.generate_classical_error()
 
     if args.depolarization_errors:
-        confs = [conf for c in confs for conf in Conf.generate_depolarization_error(c)]
+        errs = ErrorsConf.generate_depolarization_error()
 
     if args.bit_flip_errors:
-        confs = [conf for c in confs for conf in Conf.generate_bitflip_error(c)]
+        errs = ErrorsConf.generate_bitflip_error()
 
     if args.alice_phase_flip_errors:
-        confs = [conf for c in confs for conf in Conf.generate_alice_phase_flip_error(c)]
+        errs = ErrorsConf.generate_alice_phase_flip_error()
 
     if args.bob_phase_flip_errors:
-        confs = [conf for c in confs for conf in Conf.generate_bob_phase_flip_error(c)]
+        errs = ErrorsConf.generate_bob_phase_flip_error()
 
     if args.excited_mixture_errors:
-        confs = [conf for c in confs for conf in Conf.generate_excited_mixture_error(c)]
+        errs = ErrorsConf.generate_excited_mixture_error()
 
     if args.excited_superposition_errors:
-        confs = [conf for c in confs for conf in Conf.generate_excited_superposition_error(c)]
+        errs = ErrorsConf.generate_excited_superposition_error()
 
+    if errs:
+        confs = [conf for c in confs for conf in Conf.generate_from_errors(c, errs)]
 
     print(f"Generated {len(confs)} configurations to run.")
     print_run_plan(confs) # Display the plan based on the configurations list

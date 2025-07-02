@@ -47,41 +47,41 @@ class TFIMCalculator:
         p_err = 0
         rho_err = np.zeros((2**(conf.N+1), 2**(conf.N+1)), dtype=complex)
 
-        if conf.p_depol_error != 0:
+        if conf.errors.p_depol_error != 0:
             rho_bob_reduced = partial_trace(self.gs_rho, [utils.get_bob_idx(self.N)])
             identity_alice_data = np.eye(2, dtype=complex) / 2
             rho_alice_mixed = DensityMatrix(identity_alice_data)
 
             rho_err = rho_alice_mixed.tensor(rho_bob_reduced)
-            p_err = conf.p_depol_error
+            p_err = conf.errors.p_depol_error
 
-        if conf.p_bitflip_error != 0:
+        if conf.errors.p_bitflip_error != 0:
             bob_idx = utils.get_bob_idx(conf.N)
             X_bob = utils.get_pauli_operator_on_site('X', bob_idx, conf.N)
 
             rho_err = X_bob @ self.gs_rho.data @ X_bob
-            p_err = conf.p_bitflip_error
+            p_err = conf.errors.p_bitflip_error
 
-        if conf.p_alice_phaseflip_error != 0:
+        if conf.errors.p_alice_phaseflip_error != 0:
             alice_idx = utils.get_alice_idx(conf.N)
             Z_alice = utils.get_pauli_operator_on_site('Z', alice_idx, conf.N)
 
             rho_err = Z_alice @ self.gs_rho.data @ Z_alice
-            p_err = conf.p_alice_phaseflip_error
+            p_err = conf.errors.p_alice_phaseflip_error
 
-        if conf.p_bob_phaseflip_error != 0:
+        if conf.errors.p_bob_phaseflip_error != 0:
             bob_idx = utils.get_bob_idx(conf.N)
             Z_bob = utils.get_pauli_operator_on_site('Z', bob_idx, conf.N)
 
             rho_err = Z_bob @ self.gs_rho.data @ Z_bob
-            p_err = conf.p_bob_phaseflip_error
+            p_err = conf.errors.p_bob_phaseflip_error
 
-        if conf.p_excited_mixture != 0:
+        if conf.errors.p_excited_mixture != 0:
             rho_err = self.ex1_rho.data
-            p_err = conf.p_excited_mixture
+            p_err = conf.errors.p_excited_mixture
 
-        if conf.p_excited_superposition_error != 0:
-            p_err = conf.p_excited_superposition_error
+        if conf.errors.p_excited_superposition_error != 0:
+            p_err = conf.errors.p_excited_superposition_error
             # Amplitudes for the superposition
             amp_gs_super = np.sqrt(1 - p_err)
             amp_excited_super = np.sqrt(p_err)
