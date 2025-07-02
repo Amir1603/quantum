@@ -19,6 +19,7 @@ class Charge(Observable):
 
         qc.measure(alice_idx, alice_idx)
 
+    # TODO: What is the different from energy? Can the operation be unified?
     def apply_bob_operation(self, qc: QuantumCircuit, xor_res):
         """
         Bob's conditional operation based on Alice's measurement (outcome c).
@@ -33,7 +34,7 @@ class Charge(Observable):
         # Apply the controlled rotation based on Alice's measurement.
         # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.
         # => We use a workaround suggested by Kazuki.
-        angle = 2 * theta if xor_res == 0 else -2 * theta
+        angle = -2 * theta if xor_res == 0 else 2 * theta
 
         # If Alice's basis is 'X', Bob uses 'Y' rotation and vice versa.
         if self._alice_basis == 'X':
