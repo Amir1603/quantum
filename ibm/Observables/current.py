@@ -5,7 +5,7 @@ from .observable import Observable
 import utils
 
 class Current(Observable):
-    def __init__(self, conf: Conf, alice_basis: str):
+    def __init__(self, conf: Conf, alice_basis: utils.AliceBase):
         name = f'current'
 
         # Initialize Observable parent class
@@ -32,7 +32,7 @@ class Current(Observable):
 
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
-        
+
         # Apply Ry(pi) if the classical register (cond) is 1
         with qc.if_test((alice_idx, 1^xor_res)):
             qc.ry(np.pi, bob_idx)

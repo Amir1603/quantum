@@ -5,7 +5,7 @@ import utils
 
 class H1_B(EnergyBase):
     """Observable for Bob's local energy term h*Z."""
-    def __init__(self, conf: Conf, alice_basis: str, calc: TFIMCalculator):
+    def __init__(self, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         super().__init__(name="H1_B", conf=conf, alice_basis=alice_basis, calc=calc)
 
     def get_bob_measurement_basis(self):

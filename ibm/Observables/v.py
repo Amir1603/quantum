@@ -8,7 +8,7 @@ class V_B(EnergyBase):
     Observable for the interaction energy term X*X at Bob's site.
     Returns eigenvalue (+/-1).
     """
-    def __init__(self, conf: Conf, alice_basis: str, calc: TFIMCalculator, sys: utils.System):
+    def __init__(self, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator, sys: utils.System):
         super().__init__(name="V_B", conf=conf, alice_basis=alice_basis, calc=calc)
         self.sys = sys
 

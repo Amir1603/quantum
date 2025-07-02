@@ -5,7 +5,7 @@ from conf import Conf
 import utils
 
 class EnergyBase(Observable):
-    def __init__(self, name, conf: Conf, alice_basis: str, calc: TFIMCalculator):
+    def __init__(self, name, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         super().__init__(name, conf, alice_basis, calc)
 
     def apply_alice_measurement(self, qc: QuantumCircuit):
