@@ -20,17 +20,16 @@ def get_unique_legend(ax_array):
 
 
 if __name__ == "__main__":
-    Ns = [1, 2, 3, 4]
     Js = np.linspace(0.0, 10.0, 250).tolist()
     h = 1.0
 
     hamiltonians = {
-        'alice': (Operators.alice_H, [Operators.alice_HB, Operators.QB], utils.AliceBase.X),
-        'nn_X': (Operators.nn_H, [Operators.nn_HB, Operators.QB], utils.AliceBase.X),
-        'nn_Y': (Operators.nn_H, [Operators.nn_HB, Operators.QB], utils.AliceBase.Y),
+        'alice': (Operators.alice_H, [Operators.alice_HB, Operators.QB], utils.AliceBase.X, [1, 2, 3, 4]),
+        'nn_X': (Operators.nn_H, [Operators.nn_HB, Operators.QB], utils.AliceBase.X, [2, 3, 4]),
+        'nn_Y': (Operators.nn_H, [Operators.nn_HB, Operators.QB], utils.AliceBase.Y, [2, 3, 4]),
     }
 
-    for name, (hamiltonian_class, OB_classes, alice_base) in hamiltonians.items():
+    for name, (hamiltonian_class, OB_classes, alice_base, Ns) in hamiltonians.items():
         # Teleported figure
         tel_figure, tel_axis = plt.subplots(2, len(Ns), figsize=(10, 6))
         tel_figure.subplots_adjust(right=0.8)
