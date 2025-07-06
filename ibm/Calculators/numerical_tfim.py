@@ -2,7 +2,7 @@ from scipy.sparse import kron
 from qiskit.quantum_info import Statevector, DensityMatrix
 from .tfim_calculator import TFIMCalculator
 from .Operators import H, BobOperator
-from conf import QuantumSimConf
+from conf import Conf
 
 class NumericalTFIM(TFIMCalculator):
     def __init__(self, H: H, ops: list[BobOperator]):
@@ -10,7 +10,7 @@ class NumericalTFIM(TFIMCalculator):
         self.H = H
         self.ops = {type(o).__name__: o for o in ops}
 
-    def calc_all(self, conf: QuantumSimConf):
+    def calc_all(self, conf: Conf):
         """
         Calculate the ground state, first excited state, and their properties.
         Returns:

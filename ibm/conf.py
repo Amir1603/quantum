@@ -90,7 +90,7 @@ class ErrorsConf:
         self.p_excited_superposition_error = 0.0
 
 
-class QuantumSimConf:
+class Conf:
     @staticmethod
     def generate_hJ_combinations(conf, step=0.25, max_value=2):
         axis = np.arange(0, max_value + step, step)
@@ -98,7 +98,7 @@ class QuantumSimConf:
 
         confs = []
         for h, J in hJs:
-            new_conf = QuantumSimConf(conf.N)
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.h = h
             new_conf.J = J
@@ -113,31 +113,11 @@ class QuantumSimConf:
 
         confs = []
         for J in Js:
-            new_conf = QuantumSimConf(conf.N)
+            new_conf = Conf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.J = J
             confs.append(new_conf)
         return confs
-
-    @staticmethod
-    def generate_p_dephase_values(conf, num_points=1):
-        dephases = np.linspace(0, 1.0, num_points).tolist()
-
-        confs = []
-        for p in dephases:
-            new_conf = QuantumSimConf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.p_dephase = p
-            confs.append(new_conf)
-        return confs
-
-    @staticmethod
-    def generate_backends():
-        return ['ibm_kyiv', 'ibm_sherbrooke', 'ibm_brisbane']
-
-    @staticmethod
-    def generate_delays():
-        return [0]
 
     @staticmethod
     def generate_alice_xor(conf):
@@ -163,11 +143,39 @@ class QuantumSimConf:
 
         return confs
 
-    def __init__(self, N):
+    def __init__(self, N: int):
         self.N = N
 
         self.h = 1.0
         self.J = 1.0
+        self.xor_alice_res = 0
+        self.errors = ErrorsConf()
+
+
+class QuantumSimConf(Conf):
+    @staticmethod
+    def generate_p_dephase_values(conf, num_points=1):
+        dephases = np.linspace(0, 1.0, num_points).tolist()
+
+        confs = []
+        for p in dephases:
+            new_conf = QuantumSimConf(conf.N)
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.p_dephase = p
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
+    def generate_backends():
+        return ['ibm_kyiv', 'ibm_sherbrooke', 'ibm_brisbane']
+
+    @staticmethod
+    def generate_delays():
+        return [0]
+
+    def __init__(self, N):
+        super().__init__(N)
+
         self.total_shots = 10000
         self.error_mitigation = False
         self.run_simulator = True
@@ -177,19 +185,6 @@ class QuantumSimConf:
         self.backend = None
         self.draw_circuit = False
         self.delay_time = 0
-        self.xor_alice_res = 0
-        self.errors = ErrorsConf()
-
-
-    def load(self):
-        with open('conf.yaml', 'r') as f:
-            self.__dict__ = yaml.load(f, Loader=yaml.FullLoader)    
-
-
-    def save(self):
-        with open('conf.yaml', 'w') as f:
-            yaml.dump(self.__dict__, f)
-
 
     def __str__(self):
         return str(self.__dict__)

@@ -1,7 +1,7 @@
 import argparse
 import os
 from datetime import datetime
-from conf import QuantumSimConf, ErrorsConf
+from conf import Conf, QuantumSimConf, ErrorsConf
 from Observables import ObservableFactory
 from Calculators import AnalyticalTFIM, NumericalTFIM
 from Calculators.Operators import nn_H, alice_H, alice_HB, QB, nn_HB
@@ -156,15 +156,15 @@ if __name__ == "__main__":
         service = None
 
     if args.all_hJ:
-        confs = [conf for c in confs for conf in QuantumSimConf.generate_hJ_combinations(c)]
+        confs = [conf for c in confs for conf in Conf.generate_hJ_combinations(c)]
     elif args.J_for_h:
-        confs = [conf for c in confs for conf in QuantumSimConf.generate_J_for_h(c, num_points=args.J_for_h, avoid_0=args.avoid_J0)]
+        confs = [conf for c in confs for conf in Conf.generate_J_for_h(c, num_points=args.J_for_h, avoid_0=args.avoid_J0)]
 
     if args.all_dephase:
         confs = [conf for c in confs for conf in QuantumSimConf.generate_p_dephase_values(c)]
 
     if args.both_alice_values:
-        confs = [conf for c in confs for conf in QuantumSimConf.generate_alice_xor(c)]
+        confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]
 
     errs = []
 
@@ -190,7 +190,7 @@ if __name__ == "__main__":
         errs = ErrorsConf.generate_excited_superposition_error()
 
     if errs:
-        confs = [conf for c in confs for conf in QuantumSimConf.generate_from_errors(c, errs)]
+        confs = [conf for c in confs for conf in Conf.generate_from_errors(c, errs)]
 
     print(f"Generated {len(confs)} configurations to run.")
     print_run_plan(confs) # Display the plan based on the configurations list

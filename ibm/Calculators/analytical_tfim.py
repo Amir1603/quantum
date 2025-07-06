@@ -1,7 +1,7 @@
 from .tfim_calculator import TFIMCalculator
 from qiskit.quantum_info import Statevector, DensityMatrix
 import numpy as np
-from conf import QuantumSimConf
+from conf import Conf
 
 class AnalyticalTFIM(TFIMCalculator):
     def __init__(self, N, J, h):
@@ -21,7 +21,7 @@ class AnalyticalTFIM(TFIMCalculator):
 
         return alpha, beta
 
-    def calc_all(self, conf: QuantumSimConf):
+    def calc_all(self, conf: Conf):
         self.E0 = -np.sqrt(4 * self.h**2 + self.J**2)
         self.bob_energy = -(2 * self.h**2 + self.J**2) / np.sqrt(4 * self.h**2 + self.J**2)
         self.E1 = -self.J
