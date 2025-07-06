@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from Calculators import Operators, NumericalTFIM
 import utils
+from conf import Conf, ErrorsConf
 
 
 # Collect and deduplicate legend handles and labels
@@ -18,6 +19,15 @@ def get_unique_legend(ax_array):
                 seen.add(l)
     return unique_handles, unique_labels
 
+
+def single_run(conf: Conf, alice_base: utils.AliceBase, OB_classes: list[type]):
+    OBs = {OB_class.__name__: OB_class(conf.h, conf.J, conf.N, alice_base) for OB_class in OB_classes}
+    H = hamiltonian_class(conf.h, conf.J, conf.N)
+
+    ntfim = NumericalTFIM(H, list(OBs.values()))
+    ntfim.calc_all(None)
+
+    return OBs
 
 if __name__ == "__main__":
     Js = np.linspace(0.0, 10.0, 250).tolist()
@@ -39,18 +49,19 @@ if __name__ == "__main__":
 
         print(f"Calculating theoretical values for {name}...")
 
-        for i, N in enumerate(Ns):
-            print(f"Calculating for N={N}...")
-
-            for alice_base in alice_bases:
+        for alice_base in alice_bases:
+            for i, N in enumerate(Ns):
+                print(f"Calculating for N={N} with AliceBase={alice_base}...")
                 teleported_values = {}
 
-                for J in Js:
-                    OBs = {OB_class.__name__: OB_class(h, J, N, alice_base) for OB_class in OB_classes}
-                    H = hamiltonian_class(h, J, N)
+                conf = Conf(N)
+                conf.h = h
+                conf.xor_alice_res = 0
+                conf.errors = ErrorsConf()
+                confs = Conf.generate_J_for_h(conf, 250, False)
 
-                    ntfim = NumericalTFIM(H, list(OBs.values()))
-                    ntfim.calc_all(None)
+                for c in confs:
+                    OBs = single_run(c, alice_base, OB_classes)
 
                     for k, v in OBs.items():
                         if k not in teleported_values:
