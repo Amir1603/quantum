@@ -3,6 +3,22 @@ from enum import Enum
 import numpy as np
 from scipy.sparse import kron, csc_matrix
 
+
+class System(Enum):
+    AliceInteraction = 'Alice'
+    NearestNeighborInteraction = 'NearestNeighbors'
+
+    def __str__(self):
+        return self.value
+
+
+class AliceBase(Enum):
+    X = 'X'
+    Y = 'Y'
+
+    def __str__(self):
+        return self.value
+
 def get_nested_value(data, path_str):
     """
     Retrieves a value from a nested dictionary or object using a dot-separated path.
@@ -77,6 +93,7 @@ def get_bit_from_counts(bitstring: str, creg_index: int, num_clbits: int) -> str
     return bitstring[string_index]
 
 def apply_basis(qc: QuantumCircuit, basis: str, site_idx: int):
+    basis = str(basis)
     if basis == "X":
         qc.h(site_idx)
     elif basis == "Y":
@@ -85,7 +102,7 @@ def apply_basis(qc: QuantumCircuit, basis: str, site_idx: int):
     elif basis == "Z":
         pass # For measuting Z we do nothing
     else:
-        raise ValueError("Unknown measurement basis for Bob!")
+        raise ValueError(f"Unknown measurement basis {basis} for Bob!")
 
 # Pauli Matrices
 I = csc_matrix(np.array([[1, 0], [0, 1]], dtype=complex))
@@ -129,18 +146,3 @@ def get_multi_site_operator(ops_tuple_list, N: int):
         full_operator = kron(full_operator, op_list[i_op], format="csc")
 
     return full_operator
-
-class System(Enum):
-    AliceInteraction = 'Alice'
-    NearestNeighborInteraction = 'NearestNeighbors'
-
-    def __str__(self):
-        return self.value
-
-
-class AliceBase(Enum):
-    X = 'X'
-    Y = 'Y'
-
-    def __str__(self):
-        return self.value
