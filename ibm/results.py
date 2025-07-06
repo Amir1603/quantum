@@ -8,7 +8,7 @@ from collections import defaultdict
 from typing import List, Dict, Tuple, Any
 from run_result import RunResult
 from Observables import ObservableFactory, Observable
-from conf import Conf
+from conf import QuantumSimConf
 
 class Results:
     def __init__(self, output_dir):
@@ -17,11 +17,11 @@ class Results:
         os.makedirs(self.output_dir, exist_ok=True)
 
         # Store raw data temporarily during the run
-        self._raw_results_buffer: List[Tuple[Conf, Observable, str, Dict, Dict, int, str | None]] = []
+        self._raw_results_buffer: List[Tuple[QuantumSimConf, Observable, str, Dict, Dict, int, str | None]] = []
         # Final processed results
         self.processed_results: List[RunResult] = []
 
-    def add_raw_result(self, conf: Conf, obs: Observable, backend_name: str, noise_params: Dict,
+    def add_raw_result(self, conf: QuantumSimConf, obs: Observable, backend_name: str, noise_params: Dict,
                        counts: Dict, total_shots: int, job_id: str | None = None):
         """Temporarily stores raw results from a run."""
         self._raw_results_buffer.append(

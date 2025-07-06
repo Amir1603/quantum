@@ -3,12 +3,12 @@ from qiskit.quantum_info import SparsePauliOp
 from qiskit.circuit.library import StatePreparation
 from qiskit_aer.library import SetDensityMatrix
 import numpy as np
-from conf import Conf
+from conf import QuantumSimConf
 from Calculators.tfim_calculator import TFIMCalculator
 import utils
 
 class Observable:
-    def __init__(self, name, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
+    def __init__(self, name, conf: QuantumSimConf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         self.name = name
         self._conf = conf
         self._calc = calc

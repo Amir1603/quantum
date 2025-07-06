@@ -90,7 +90,7 @@ class ErrorsConf:
         self.p_excited_superposition_error = 0.0
 
 
-class Conf:
+class QuantumSimConf:
     @staticmethod
     def generate_hJ_combinations(conf, step=0.25, max_value=2):
         axis = np.arange(0, max_value + step, step)
@@ -98,7 +98,7 @@ class Conf:
 
         confs = []
         for h, J in hJs:
-            new_conf = Conf(conf.N)
+            new_conf = QuantumSimConf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.h = h
             new_conf.J = J
@@ -113,7 +113,7 @@ class Conf:
 
         confs = []
         for J in Js:
-            new_conf = Conf(conf.N)
+            new_conf = QuantumSimConf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.J = J
             confs.append(new_conf)
@@ -125,7 +125,7 @@ class Conf:
 
         confs = []
         for p in dephases:
-            new_conf = Conf(conf.N)
+            new_conf = QuantumSimConf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_dephase = p
             confs.append(new_conf)
@@ -144,7 +144,7 @@ class Conf:
         confs = []
 
         for xor_val in [0, 1]:
-            new_conf = Conf(conf.N)
+            new_conf = QuantumSimConf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.xor_alice_res = xor_val
             confs.append(new_conf)
@@ -156,7 +156,7 @@ class Conf:
         confs = []
 
         for errors in errors_list:
-            new_conf = Conf(conf.N)
+            new_conf = QuantumSimConf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.errors = errors
             confs.append(new_conf)

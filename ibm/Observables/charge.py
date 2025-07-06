@@ -1,7 +1,7 @@
 from qiskit import QuantumCircuit
 from .observable import Observable
 from Calculators.tfim_calculator import TFIMCalculator
-from conf import Conf
+from conf import QuantumSimConf
 import utils
 
 class Charge(Observable):
@@ -9,7 +9,7 @@ class Charge(Observable):
     Observable for Bob's local charge density (rho_B ~ (I+Z)/2) for arbitrary N,
     under the protocol optimized for energy (Alice measures X, Bob rotates Ry based on theta).
     """
-    def __init__(self, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
+    def __init__(self, conf: QuantumSimConf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         name = f'charge'
         super().__init__(name=name, conf=conf, alice_basis=alice_basis, calc=calc)
 

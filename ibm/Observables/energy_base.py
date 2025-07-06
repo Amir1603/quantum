@@ -1,11 +1,11 @@
 from Calculators.tfim_calculator import TFIMCalculator
 from qiskit import QuantumCircuit
 from .observable import Observable
-from conf import Conf
+from conf import QuantumSimConf
 import utils
 
 class EnergyBase(Observable):
-    def __init__(self, name, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
+    def __init__(self, name, conf: QuantumSimConf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         super().__init__(name, conf, alice_basis, calc)
 
     def apply_alice_measurement(self, qc: QuantumCircuit):

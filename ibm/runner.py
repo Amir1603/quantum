@@ -1,4 +1,4 @@
-from conf import Conf
+from conf import QuantumSimConf
 from Observables import Observable
 from qiskit_aer import Aer, AerSimulator
 import qiskit_aer.noise as noise
@@ -15,7 +15,7 @@ class Runner():
         self.observables = observables
         self.service = service
 
-    def __choose_backend(self, backend_name, conf: Conf):
+    def __choose_backend(self, backend_name, conf: QuantumSimConf):
         if self.noise_model or (not conf.run_sampler):
             return AerSimulator(method="density_matrix", noise_model=self.noise_model)
         elif backend_name:
@@ -23,7 +23,7 @@ class Runner():
         else:
             return self.service.least_busy(operational=True, simulator=False)
 
-    def _create_noise_model(self, conf: Conf):
+    def _create_noise_model(self, conf: QuantumSimConf):
         p_dephase = conf.p_dephase
         p_cl_error = conf.errors.p_classical_error
 
@@ -45,7 +45,7 @@ class Runner():
 
         self.noise_model = noise_model
 
-    def init_run_level(self, conf: Conf, backend_name: str | None = None):
+    def init_run_level(self, conf: QuantumSimConf, backend_name: str | None = None):
          """ Initialize backend and noise for a specific configuration (h, J, delay etc.) """
          self.backend = self.__choose_backend(backend_name, conf)
          self._create_noise_model(conf)
@@ -75,7 +75,7 @@ class Runner():
             utils.apply_basis(qc, bob_meas_basis, bob_neighbor_idx)
             qc.measure(bob_neighbor_idx, bob_neighbor_idx)
 
-    def _qet_circuit(self, obs: Observable, conf: Conf, is_simulator: bool):
+    def _qet_circuit(self, obs: Observable, conf: QuantumSimConf, is_simulator: bool):
         num_qubits = conf.N+1
 
         # Consistently use N classical bits for arbitrary N simulation runs
@@ -149,7 +149,7 @@ class Runner():
             print(f"Error running sampler for {qc.name}: {e}")
             return {}, None
 
-    def execute_observable(self, obs: Observable, conf: Conf, results: Results):
+    def execute_observable(self, obs: Observable, conf: QuantumSimConf, results: Results):
         """Executes simulation/run for a single observable and adds raw result."""
 
         print(f"  Executing: {obs.name}")

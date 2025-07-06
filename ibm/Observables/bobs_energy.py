@@ -1,6 +1,6 @@
 from .observable import Observable
 from Calculators.tfim_calculator import TFIMCalculator
-from conf import Conf
+from conf import QuantumSimConf
 import utils
 import numpy as np
 
@@ -11,7 +11,7 @@ class BobsEnergy(Observable):
     teleported energy in arbitrary units E_B = (<H_B> - <H_B>_gs)/<H_B>_gs.
     Calculated from results of V (<XX>) and H1 (<Z>).
     """
-    def __init__(self, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
+    def __init__(self, conf: QuantumSimConf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         name = "E_B"
         super().__init__(name, conf, alice_basis, calc)
 

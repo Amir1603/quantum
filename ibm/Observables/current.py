@@ -1,11 +1,11 @@
-from conf import Conf
+from conf import QuantumSimConf
 import numpy as np
 from qiskit import QuantumCircuit
 from .observable import Observable
 import utils
 
 class Current(Observable):
-    def __init__(self, conf: Conf, alice_basis: utils.AliceBase):
+    def __init__(self, conf: QuantumSimConf, alice_basis: utils.AliceBase):
         name = f'current'
 
         # Initialize Observable parent class
