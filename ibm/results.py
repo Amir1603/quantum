@@ -53,7 +53,7 @@ class Results:
             conf_params = {
                 'h': conf.h, 'J': conf.J, 'total_shots': conf.total_shots,
                 'delay_time': conf.delay_time, 'N': conf.N,
-                'p_dephase': conf.p_dephase, 'theta': conf.theta,
+                'p_dephase': conf.p_dephase,
                 'xor_alice_res': conf.xor_alice_res,
                 'alice_basis': getattr(observable, 'alice_basis', None),
                 'p_classical_error': conf.errors.p_classical_error,
@@ -129,7 +129,7 @@ class Results:
              )
              grouped_results[key][res.observable.name] = res
 
-        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'J', 'theta'], derived_obs)
+        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'J'], derived_obs)
         for observable in derived_obs:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue

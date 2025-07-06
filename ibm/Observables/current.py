@@ -28,7 +28,7 @@ class Current(Observable):
         U_B(a) = Ry(a*pi)
         """
         # FIXME: Complete if needed.
-        raise NotImplementedError("Current observable does not require a specific theta value.")
+        raise NotImplementedError()
 
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)

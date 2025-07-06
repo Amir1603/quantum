@@ -27,10 +27,6 @@ class Observable:
     @property
     def J(self):
         return self._conf.J
-    
-    @property
-    def theta(self):
-        return self._conf.theta
 
     @property
     def N(self):

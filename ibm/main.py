@@ -121,7 +121,6 @@ if __name__ == "__main__":
     parser.add_argument('--avoid-J0', action='store_true', help="Avoid starting enumerating J values from 0")
     parser.add_argument('--all-hJ', action='store_true', help="Run all coupling pairs configurations")
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
-    parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
     parser.add_argument('--run-analytical', action='store_true', help="Run in analytical calculations mode instead of numerical")
     parser.add_argument('--output-dir', '-o', required=False, type=str, help="Set output directory")
@@ -163,9 +162,6 @@ if __name__ == "__main__":
 
     if args.all_dephase:
         confs = [conf for c in confs for conf in Conf.generate_p_dephase_values(c)]
-
-    if args.all_theta:
-        confs = [conf for c in confs for conf in Conf.generate_thetas(c)]
 
     if args.both_alice_values:
         confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]

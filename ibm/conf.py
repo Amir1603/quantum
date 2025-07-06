@@ -140,18 +140,6 @@ class Conf:
         return [0]
 
     @staticmethod
-    def generate_thetas(conf, num_points=20):
-        thetas = np.linspace(-np.pi, np.pi, num_points).tolist()
-
-        confs = []
-        for theta in thetas:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.theta = theta
-            confs.append(new_conf)
-        return confs
-
-    @staticmethod
     def generate_alice_xor(conf):
         confs = []
 
@@ -189,7 +177,6 @@ class Conf:
         self.backend = None
         self.draw_circuit = False
         self.delay_time = 0
-        self.theta = None
         self.xor_alice_res = 0
         self.errors = ErrorsConf()
 
@@ -206,7 +193,3 @@ class Conf:
 
     def __str__(self):
         return str(self.__dict__)
-
-
-    def __repr__(self):
-        return f"<Conf h:{self.h} J:{self.J} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <N:{self.N}> <xor_alice_res:{self.xor_alice_res}> <p_classical_error:{self.p_classical_error}> <p_depol_error:{self.p_depol_error}> <p_bitflip_error:{self.p_bitflip_error}> <p_alice_phaseflip_error:{self.p_alice_phaseflip_error}> <p_bob_phaseflip_error:{self.p_bob_phaseflip_error}> <p_excited_mixture:{self.p_excited_mixture}> <p_excited_superposition_error:{self.p_excited_superposition_error}>"

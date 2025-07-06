@@ -409,7 +409,7 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
         # Note: Heatmaps usually make sense for a single observable type at a time
         obs_name = result_dict.get('observable', 'Unknown').name
         if observable_to_plot and obs_name != observable_to_plot:
-             # Allow partial match if observable name includes theta etc.
+             # Allow partial match
              if not observable_to_plot in obs_name:
                   continue
 
