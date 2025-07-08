@@ -31,7 +31,7 @@ class NumericalTFIM(TFIMCalculator):
             op.shift(self.gs_rho.data)
             op.calc_eta_xi(self.gs_rho.data)
             op.calc_optimal_angle()
-            op.calc_teleported_values(self.rho.data)
+            op.calc_teleported_values(self.rho.data, conf.errors.p_classical_error)
 
     # Density Matrix Calculation
     def _compute_density_matrix(state):

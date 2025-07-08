@@ -38,7 +38,7 @@ class BobOperator(Operator):
     def calc_optimal_angle(self):
         self.theta = 0.5 * np.arctan2(self.eta, self.xi)
 
-    def calc_teleported_values(self, gs_dm: np.ndarray):
+    def calc_teleported_values(self, gs_dm: np.ndarray, p_classical_comm_err: float):
         As = [False, True]
 
         alice_idx = utils.get_alice_idx(self.N)
@@ -58,9 +58,17 @@ class BobOperator(Operator):
                 sigma_B = utils.get_pauli_operator_on_site(bob_base, bob_idx, self.N)
                 U_B = expm(-1j * mu * ((-1)**a) * self.theta * sigma_B.toarray())
 
-                rho_B += U_B @ P_A @ gs_dm @ P_A @ U_B.conj().T
+                inner_part = P_A @ gs_dm @ P_A
 
-            self.teleported_values[a] = np.trace(rho_B @ self.matrix).real #- np.trace(gs_dm @ self.matrix).real
+                # Avoid excessive numerical calculation if it is redundant and no error applies
+                if p_classical_comm_err != 0:
+                    U_B_err = expm(-1j * mu * ((-1)**(not a)) * self.theta * sigma_B.toarray())
+                    rho_B += (1-p_classical_comm_err) * U_B @ inner_part @ U_B.conj().T \
+                            + p_classical_comm_err * U_B_err @ inner_part @ U_B_err.conj().T
+                else:
+                    rho_B += U_B @ inner_part @ U_B.conj().T
+
+            self.teleported_values[a] = np.trace(rho_B @ self.matrix).real
 
     def calc_teleported_values_using_eta_xi(self):
         As = [False, True]
