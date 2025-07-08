@@ -1,7 +1,7 @@
 import argparse
 import os
 from datetime import datetime
-from conf import Conf, ErrorsConf
+from conf import Conf, QuantumSimConf, ErrorsConf
 from Observables import ObservableFactory
 from Calculators import AnalyticalTFIM, NumericalTFIM
 from Calculators.Operators import nn_H, alice_H, alice_HB, QB, nn_HB
@@ -93,7 +93,7 @@ def report_and_plot(results_obj: Results, args):
     reporting.generate_report(results_list, plot_filenames, output_dir, [])
 
 
-def _get_tfim(args, conf: Conf):
+def _get_tfim(args, conf: QuantumSimConf):
     alice_hb = alice_HB(conf.h, conf.J, conf.N, args.alice_base)
     nn_hb = nn_HB(conf.h, conf.J, conf.N, args.alice_base)
     qb = QB(conf.h, conf.J, conf.N, args.alice_base)
@@ -121,7 +121,6 @@ if __name__ == "__main__":
     parser.add_argument('--avoid-J0', action='store_true', help="Avoid starting enumerating J values from 0")
     parser.add_argument('--all-hJ', action='store_true', help="Run all coupling pairs configurations")
     parser.add_argument('--all-dephase', action='store_true', help="Run all p_dephase configurations")
-    parser.add_argument('--all-theta', action='store_true', help="Run all theta configurations")
     parser.add_argument('--both-alice-values', action='store_true', help="Run both cases where Alice sends the right or wrong bit to Bob")
     parser.add_argument('--run-analytical', action='store_true', help="Run in analytical calculations mode instead of numerical")
     parser.add_argument('--output-dir', '-o', required=False, type=str, help="Set output directory")
@@ -148,7 +147,7 @@ if __name__ == "__main__":
         raise ValueError("Alice's base can only be X for Alice interaction system. Use `--system NearestNeighborInteraction` to use Y base.")
 
     # --- Configuration Loading ---
-    confs = [Conf(args.N)]
+    confs = [QuantumSimConf(args.N)]
 
     if confs[0].run_all or confs[0].run_sampler:
         print("Initializing QiskitRuntimeService()")
@@ -162,10 +161,7 @@ if __name__ == "__main__":
         confs = [conf for c in confs for conf in Conf.generate_J_for_h(c, num_points=args.J_for_h, avoid_0=args.avoid_J0)]
 
     if args.all_dephase:
-        confs = [conf for c in confs for conf in Conf.generate_p_dephase_values(c)]
-
-    if args.all_theta:
-        confs = [conf for c in confs for conf in Conf.generate_thetas(c)]
+        confs = [conf for c in confs for conf in QuantumSimConf.generate_p_dephase_values(c)]
 
     if args.both_alice_values:
         confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]

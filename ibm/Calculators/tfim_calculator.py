@@ -41,6 +41,7 @@ class TFIMCalculator:
     #TODO - fix
     def apply_errors(self, conf: Conf):
         if conf is None:
+            self.rho = self.gs_rho
             return
 
         # Apply errors to the density matrix
@@ -52,7 +53,8 @@ class TFIMCalculator:
             identity_alice_data = np.eye(2, dtype=complex) / 2
             rho_alice_mixed = DensityMatrix(identity_alice_data)
 
-            rho_err = rho_alice_mixed.tensor(rho_bob_reduced)
+            # TODO: Should be just identity without tesor with Bob's part?
+            rho_err = rho_alice_mixed.tensor(rho_bob_reduced).data
             p_err = conf.errors.p_depol_error
 
         if conf.errors.p_bitflip_error != 0:
@@ -76,9 +78,9 @@ class TFIMCalculator:
             rho_err = Z_bob @ self.gs_rho.data @ Z_bob
             p_err = conf.errors.p_bob_phaseflip_error
 
-        if conf.errors.p_excited_mixture != 0:
+        if conf.errors.p_excited_mixture_error != 0:
             rho_err = self.ex1_rho.data
-            p_err = conf.errors.p_excited_mixture
+            p_err = conf.errors.p_excited_mixture_error
 
         if conf.errors.p_excited_superposition_error != 0:
             p_err = conf.errors.p_excited_superposition_error
@@ -97,7 +99,7 @@ class TFIMCalculator:
             # because we are using the superposition state directly,
             # so we will use `p_err=1` to force `rho_error = rho_superposition`.
             p_err = 1
-            rho_err = rho_superposition
+            rho_err = rho_superposition.data
 
         # Update the ground state's density matrix with the error
-        self.gs_rho = DensityMatrix((1 - p_err) * self.gs_rho + p_err * rho_err)
+        self.rho = DensityMatrix((1 - p_err) * self.gs_rho.data + p_err * rho_err)

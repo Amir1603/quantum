@@ -3,12 +3,12 @@ from qiskit.quantum_info import SparsePauliOp
 from qiskit.circuit.library import StatePreparation
 from qiskit_aer.library import SetDensityMatrix
 import numpy as np
-from conf import Conf
+from conf import QuantumSimConf
 from Calculators.tfim_calculator import TFIMCalculator
 import utils
 
 class Observable:
-    def __init__(self, name, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
+    def __init__(self, name, conf: QuantumSimConf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         self.name = name
         self._conf = conf
         self._calc = calc
@@ -27,10 +27,6 @@ class Observable:
     @property
     def J(self):
         return self._conf.J
-    
-    @property
-    def theta(self):
-        return self._conf.theta
 
     @property
     def N(self):
@@ -55,7 +51,7 @@ class Observable:
         """Prepares the ground state for the TFIM."""
         qubits = list(range(self.N+1))
 
-        prep = SetDensityMatrix(self._calc.gs_rho) if use_density_matrix \
+        prep = SetDensityMatrix(self._calc.rho) if use_density_matrix \
                     else StatePreparation(self._calc.gs0)
 
         qc.append(prep, qubits)

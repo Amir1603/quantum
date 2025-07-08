@@ -8,7 +8,7 @@ from collections import defaultdict
 from typing import List, Dict, Tuple, Any
 from run_result import RunResult
 from Observables import ObservableFactory, Observable
-from conf import Conf
+from conf import QuantumSimConf
 
 class Results:
     def __init__(self, output_dir):
@@ -17,11 +17,11 @@ class Results:
         os.makedirs(self.output_dir, exist_ok=True)
 
         # Store raw data temporarily during the run
-        self._raw_results_buffer: List[Tuple[Conf, Observable, str, Dict, Dict, int, str | None]] = []
+        self._raw_results_buffer: List[Tuple[QuantumSimConf, Observable, str, Dict, Dict, int, str | None]] = []
         # Final processed results
         self.processed_results: List[RunResult] = []
 
-    def add_raw_result(self, conf: Conf, obs: Observable, backend_name: str, noise_params: Dict,
+    def add_raw_result(self, conf: QuantumSimConf, obs: Observable, backend_name: str, noise_params: Dict,
                        counts: Dict, total_shots: int, job_id: str | None = None):
         """Temporarily stores raw results from a run."""
         self._raw_results_buffer.append(
@@ -53,7 +53,7 @@ class Results:
             conf_params = {
                 'h': conf.h, 'J': conf.J, 'total_shots': conf.total_shots,
                 'delay_time': conf.delay_time, 'N': conf.N,
-                'p_dephase': conf.p_dephase, 'theta': conf.theta,
+                'p_dephase': conf.p_dephase,
                 'xor_alice_res': conf.xor_alice_res,
                 'alice_basis': getattr(observable, 'alice_basis', None),
                 'p_classical_error': conf.errors.p_classical_error,
@@ -61,7 +61,7 @@ class Results:
                 'p_bitflip_error': conf.errors.p_bitflip_error,
                 'p_alice_phaseflip_error': conf.errors.p_alice_phaseflip_error,
                 'p_bob_phaseflip_error': conf.errors.p_bob_phaseflip_error,
-                'p_excited_mixture_error': conf.errors.p_excited_mixture,
+                'p_excited_mixture_error': conf.errors.p_excited_mixture_error,
                 'p_excited_superposition_error': conf.errors.p_excited_superposition_error,
             }
 
@@ -129,7 +129,7 @@ class Results:
              )
              grouped_results[key][res.observable.name] = res
 
-        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'J', 'theta'], derived_obs)
+        derived_obs = Results._get_unique_derived_observables(['name', 'N', 'h', 'J'], derived_obs)
         for observable in derived_obs:
             if not hasattr(observable, 'is_derived_observable') or not observable.is_derived_observable():
                 continue

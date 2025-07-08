@@ -1,7 +1,7 @@
 from qiskit import QuantumCircuit
 from .observable import Observable
 from Calculators.tfim_calculator import TFIMCalculator
-from conf import Conf
+from conf import QuantumSimConf
 import utils
 
 class Charge(Observable):
@@ -9,7 +9,7 @@ class Charge(Observable):
     Observable for Bob's local charge density (rho_B ~ (I+Z)/2) for arbitrary N,
     under the protocol optimized for energy (Alice measures X, Bob rotates Ry based on theta).
     """
-    def __init__(self, conf: Conf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
+    def __init__(self, conf: QuantumSimConf, alice_basis: utils.AliceBase, calc: TFIMCalculator):
         name = f'charge'
         super().__init__(name=name, conf=conf, alice_basis=alice_basis, calc=calc)
 
@@ -28,8 +28,7 @@ class Charge(Observable):
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
 
-        calc_theta = self._calc.ops['QB'].theta
-        theta = calc_theta if not self.theta else self.theta
+        theta = self._calc.ops['QB'].theta
 
         # Apply the controlled rotation based on Alice's measurement.
         # `if_test` is not supported on real hardware, andfor some reason `c_if` is not working.

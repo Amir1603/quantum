@@ -65,7 +65,7 @@ class ErrorsConf:
         confs = []
         for p in probs:
             new_conf = ErrorsConf()
-            new_conf.p_excited_mixture = p
+            new_conf.p_excited_mixture_error = p
             confs.append(new_conf)
         return confs
 
@@ -86,7 +86,7 @@ class ErrorsConf:
         self.p_bitflip_error = 0.0
         self.p_alice_phaseflip_error = 0.0
         self.p_bob_phaseflip_error = 0.0
-        self.p_excited_mixture = 0.0
+        self.p_excited_mixture_error = 0.0
         self.p_excited_superposition_error = 0.0
 
 
@@ -106,6 +106,20 @@ class Conf:
         return confs
 
     @staticmethod
+    def generate_h_for_J(conf, num_points=40, avoid_0=False):
+        max_h = 4.0
+        min_h = max_h/num_points if avoid_0 else 0.0
+        hs = np.linspace(min_h, max_h, num_points).tolist()
+
+        confs = []
+        for h in hs:
+            new_conf = Conf(conf.N)
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.h = h
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
     def generate_J_for_h(conf, num_points=40, avoid_0=False):
         max_J = 4.0
         min_J = max_J/num_points if avoid_0 else 0.0
@@ -120,12 +134,46 @@ class Conf:
         return confs
 
     @staticmethod
+    def generate_alice_xor(conf):
+        confs = []
+
+        for xor_val in [0, 1]:
+            new_conf = QuantumSimConf(conf.N)
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.xor_alice_res = xor_val
+            confs.append(new_conf)
+
+        return confs
+
+    @staticmethod
+    def generate_from_errors(conf, errors_list: list[ErrorsConf]):
+        confs = []
+
+        for errors in errors_list:
+            new_conf = QuantumSimConf(conf.N)
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.errors = errors
+            confs.append(new_conf)
+
+        return confs
+
+    def __init__(self, N: int):
+        self.N = N
+
+        self.h = 1.0
+        self.J = 1.0
+        self.xor_alice_res = 0
+        self.errors = ErrorsConf()
+
+
+class QuantumSimConf(Conf):
+    @staticmethod
     def generate_p_dephase_values(conf, num_points=1):
         dephases = np.linspace(0, 1.0, num_points).tolist()
 
         confs = []
         for p in dephases:
-            new_conf = Conf(conf.N)
+            new_conf = QuantumSimConf(conf.N)
             new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
             new_conf.p_dephase = p
             confs.append(new_conf)
@@ -139,47 +187,9 @@ class Conf:
     def generate_delays():
         return [0]
 
-    @staticmethod
-    def generate_thetas(conf, num_points=20):
-        thetas = np.linspace(-np.pi, np.pi, num_points).tolist()
-
-        confs = []
-        for theta in thetas:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.theta = theta
-            confs.append(new_conf)
-        return confs
-
-    @staticmethod
-    def generate_alice_xor(conf):
-        confs = []
-
-        for xor_val in [0, 1]:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.xor_alice_res = xor_val
-            confs.append(new_conf)
-
-        return confs
-
-    @staticmethod
-    def generate_from_errors(conf, errors_list: list[ErrorsConf]):
-        confs = []
-
-        for errors in errors_list:
-            new_conf = Conf(conf.N)
-            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
-            new_conf.errors = errors
-            confs.append(new_conf)
-
-        return confs
-
     def __init__(self, N):
-        self.N = N
+        super().__init__(N)
 
-        self.h = 1.0
-        self.J = 1.0
         self.total_shots = 10000
         self.error_mitigation = False
         self.run_simulator = True
@@ -189,24 +199,6 @@ class Conf:
         self.backend = None
         self.draw_circuit = False
         self.delay_time = 0
-        self.theta = None
-        self.xor_alice_res = 0
-        self.errors = ErrorsConf()
-
-
-    def load(self):
-        with open('conf.yaml', 'r') as f:
-            self.__dict__ = yaml.load(f, Loader=yaml.FullLoader)    
-
-
-    def save(self):
-        with open('conf.yaml', 'w') as f:
-            yaml.dump(self.__dict__, f)
-
 
     def __str__(self):
         return str(self.__dict__)
-
-
-    def __repr__(self):
-        return f"<Conf h:{self.h} J:{self.J} total_shots:{self.total_shots} error_mitigation:{self.error_mitigation} run_simulator:{self.run_simulator} run_sampler:{self.run_sampler} run_all:{self.run_all} p_dephase:{self.p_dephase}> <backend:{self.backend}> <draw_circuit:{self.draw_circuit}> <delay_time:{self.delay_time}> <theta:{self.theta}> <N:{self.N}> <xor_alice_res:{self.xor_alice_res}> <p_classical_error:{self.p_classical_error}> <p_depol_error:{self.p_depol_error}> <p_bitflip_error:{self.p_bitflip_error}> <p_alice_phaseflip_error:{self.p_alice_phaseflip_error}> <p_bob_phaseflip_error:{self.p_bob_phaseflip_error}> <p_excited_mixture:{self.p_excited_mixture}> <p_excited_superposition_error:{self.p_excited_superposition_error}>"

@@ -25,17 +25,13 @@ class NumericalTFIM(TFIMCalculator):
         self.gs_rho = NumericalTFIM._compute_density_matrix(self.gs0)
         self.ex1_rho = NumericalTFIM._compute_density_matrix(self.ex1)
 
+        self.apply_errors(conf)
+
         for op in self.ops.values():
             op.shift(self.gs_rho.data)
             op.calc_eta_xi(self.gs_rho.data)
             op.calc_optimal_angle()
-            op.calc_teleported_values()
-
-        # TODO: Currently we want the errors to affect only the density matrix initialized into the
-        #       quantum circuit and not to affect the calculation of the optimal rotation angle theta.
-        #       When applying errors also with numerical theoretical plots, we should introduce the
-        #       errors before the calculations to see how it affect the results.
-        self.apply_errors(conf)
+            op.calc_teleported_values(self.rho.data, conf.errors.p_classical_error)
 
     # Density Matrix Calculation
     def _compute_density_matrix(state):
