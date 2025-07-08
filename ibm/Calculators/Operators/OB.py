@@ -1,5 +1,6 @@
 from .operator import Operator
 from scipy.sparse import csc_matrix
+from scipy.linalg import expm
 import numpy as np
 import utils
 
@@ -37,7 +38,31 @@ class BobOperator(Operator):
     def calc_optimal_angle(self):
         self.theta = 0.5 * np.arctan2(self.eta, self.xi)
 
-    def calc_teleported_values(self):
+    def calc_teleported_values(self, gs_dm: np.ndarray):
+        As = [False, True]
+
+        alice_idx = utils.get_alice_idx(self.N)
+        bob_idx = utils.get_bob_idx(self.N)
+
+        self.teleported_values = {}
+
+        for a in As:
+            rho_B = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
+
+            for mu in [-1, 1]:
+                I = utils.get_pauli_operator_on_site('I', alice_idx, self.N)
+                sigma_A = utils.get_pauli_operator_on_site(self.alice_base, alice_idx, self.N)
+                P_A = 0.5*(I + mu * sigma_A)
+
+                bob_base = utils.AliceBase.X if self.alice_base == utils.AliceBase.Y else utils.AliceBase.Y
+                sigma_B = utils.get_pauli_operator_on_site(bob_base, bob_idx, self.N)
+                U_B = expm(-1j * mu * ((-1)**a) * self.theta * sigma_B.toarray())
+
+                rho_B += U_B @ P_A @ gs_dm @ P_A @ U_B.conj().T
+
+            self.teleported_values[a] = np.trace(rho_B @ self.matrix).real #- np.trace(gs_dm @ self.matrix).real
+
+    def calc_teleported_values_using_eta_xi(self):
         As = [False, True]
 
         numerators = {a: self.xi**2 + (-1)**a * self.eta**2 for a in As}

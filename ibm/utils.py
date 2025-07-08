@@ -116,6 +116,7 @@ def get_pauli_operator_on_site(op_char: str, site_idx: int, N: int):
     # We reverse the indices because the kron product builds operators from left to right,
     # which means the leftmost operator acts on the most significant qubit.
     site_idx = N - site_idx
+    op_char = str(op_char)
 
     # pauli_ops is a dict {'I': I_op, 'X': X_op, ...}
     if not (0 <= site_idx <= N):

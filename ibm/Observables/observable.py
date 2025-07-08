@@ -51,7 +51,7 @@ class Observable:
         """Prepares the ground state for the TFIM."""
         qubits = list(range(self.N+1))
 
-        prep = SetDensityMatrix(self._calc.gs_rho) if use_density_matrix \
+        prep = SetDensityMatrix(self._calc.rho) if use_density_matrix \
                     else StatePreparation(self._calc.gs0)
 
         qc.append(prep, qubits)

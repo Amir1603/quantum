@@ -31,10 +31,9 @@ def single_run(conf: Conf, alice_base: utils.AliceBase, OB_classes: list[type]):
     return OBs
 
 def run_Js(conf: Conf, i: int, N: int, alice_base: utils.AliceBase, OB_classes: list[type], tel_axis):
-    Js = np.linspace(0.0, 10.0, 250).tolist()
-
-    teleported_values = {}
+        teleported_values = {}
     confs = Conf.generate_J_for_h(conf, 250, False)
+Js = [c.J for c in confs]
 
     for c in confs:
         OBs = single_run(c, alice_base, OB_classes)
@@ -64,7 +63,7 @@ errors = {
 }
 
 def run_errors(conf: Conf, i: int, N: int, alice_base: utils.AliceBase, OB_classes: list[type], errs_axis):
-    Js = np.linspace(0, 4.0, 8).tolist()
+    Js = np.linspace(0.5, 4.0, 8).tolist()
 
     for j, (name, generate_err) in enumerate(errors.items()):
         for J in Js:
