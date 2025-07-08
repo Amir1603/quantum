@@ -26,7 +26,7 @@ def single_run(conf: Conf, alice_base: utils.AliceBase, OB_classes: list[type]):
     H = hamiltonian_class(conf.h, conf.J, conf.N)
 
     ntfim = NumericalTFIM(H, list(OBs.values()))
-    ntfim.calc_all(None)
+    ntfim.calc_all(conf)
 
     return OBs
 

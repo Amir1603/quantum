@@ -100,4 +100,4 @@ class TFIMCalculator:
             rho_err = rho_superposition
 
         # Update the ground state's density matrix with the error
-        self.gs_rho = DensityMatrix((1 - p_err) * self.gs_rho + p_err * rho_err)
+        self.gs_rho = DensityMatrix((1 - p_err) * self.gs_rho.data + p_err * rho_err)
