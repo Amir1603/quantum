@@ -53,19 +53,19 @@ def run_Js(conf: Conf, i: int, N: int, alice_base: utils.AliceBase, OB_classes: 
         tel_axis[idx, i].set_title(f"{k} N={N}")
 
 errors = {
-    'p_classical_error': ErrorsConf.generate_classical_error,
-    'p_depol_error': ErrorsConf.generate_depolarization_error,
-    'p_bitflip_error': ErrorsConf.generate_bitflip_error,
-    'p_alice_phaseflip_error': ErrorsConf.generate_alice_phase_flip_error,
-    'p_bob_phaseflip_error': ErrorsConf.generate_bob_phase_flip_error,
-    'p_excited_mixture_error': ErrorsConf.generate_excited_mixture_error,
-    'p_excited_superposition_error': ErrorsConf.generate_excited_superposition_error,
+    'p_classical_error': (ErrorsConf.generate_classical_error, None),
+    'p_depol_error': (ErrorsConf.generate_depolarization_error, None),
+    'p_bitflip_error': (ErrorsConf.generate_bitflip_error, [(-0.1, 0.5), (-2, 4)]),
+    'p_alice_phaseflip_error': (ErrorsConf.generate_alice_phase_flip_error, [(-0.1, 0.5), None]),
+    'p_bob_phaseflip_error': (ErrorsConf.generate_bob_phase_flip_error, [(-0.1, 0.5), None]),
+    'p_excited_mixture_error': (ErrorsConf.generate_excited_mixture_error, [(-0.1, 0.2), (-2, 1.5)]),
+    'p_excited_superposition_error': (ErrorsConf.generate_excited_superposition_error, [(-0.1, 0.2), (-2, 1.5)]),
 }
 
 def run_errors(conf: Conf, i: int, N: int, alice_base: utils.AliceBase, OB_classes: list[type], errs_axis):
     Js = np.linspace(1.0, 4.0, 7).tolist()
 
-    for j, (name, generate_err) in enumerate(errors.items()):
+    for j, (name, (generate_err, ylim)) in enumerate(errors.items()):
         for J in Js:
             conf.J = J
             teleported_values = {}
@@ -87,6 +87,8 @@ def run_errors(conf: Conf, i: int, N: int, alice_base: utils.AliceBase, OB_class
 
                 p_errs = [err_conf.__dict__[name] for err_conf in errs]
                 errs_axis[j][idx, i].plot(p_errs, a0_vals, label=f'J={J}')
+                if ylim and ylim[idx]:
+                    errs_axis[j][idx, i].set_ylim(ylim[idx])
                 errs_axis[j][idx, i].set_title(f"{k} N={N}")
 
 
