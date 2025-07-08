@@ -93,6 +93,8 @@ def run_errors(conf: Conf, i: int, N: int, alice_base: utils.AliceBase, OB_class
 if __name__ == "__main__":
     h = 1.0
 
+    # TODO: Define run configuration class to hold these info instead of complicated dictionary.
+    #       Add also option to control what steps to run - for example 'nn' doesn't need to run errors simulation.
     hamiltonians = {
         'alice': (Operators.alice_H, [Operators.alice_HB, Operators.QB], [utils.AliceBase.X], [1, 2, 3, 4]),
         'nn': (Operators.nn_H, [Operators.nn_HB, Operators.QB], [utils.AliceBase.X, utils.AliceBase.Y], [2, 3, 4]),
