@@ -106,6 +106,20 @@ class Conf:
         return confs
 
     @staticmethod
+    def generate_h_for_J(conf, num_points=40, avoid_0=False):
+        max_h = 4.0
+        min_h = max_h/num_points if avoid_0 else 0.0
+        hs = np.linspace(min_h, max_h, num_points).tolist()
+
+        confs = []
+        for h in hs:
+            new_conf = Conf(conf.N)
+            new_conf.__dict__.update(conf.__dict__)  # Copy existing attributes
+            new_conf.h = h
+            confs.append(new_conf)
+        return confs
+
+    @staticmethod
     def generate_J_for_h(conf, num_points=40, avoid_0=False):
         max_J = 4.0
         min_J = max_J/num_points if avoid_0 else 0.0

@@ -32,7 +32,7 @@ def single_run(conf: Conf, alice_base: utils.AliceBase, OB_classes: list[type]):
 
 def run_Js(conf: Conf, i: int, N: int, alice_base: utils.AliceBase, OB_classes: list[type], tel_axis):
     teleported_values = {}
-    confs = Conf.generate_J_for_h(conf, 250, False)
+    confs = Conf.generate_J_for_h(conf, 100)
     Js = [c.J for c in confs]
 
     for c in confs:
@@ -52,10 +52,32 @@ def run_Js(conf: Conf, i: int, N: int, alice_base: utils.AliceBase, OB_classes: 
         tel_axis[idx, i].plot(Js, a1_vals, label=f'a=1, sigma_A={alice_base}')
         tel_axis[idx, i].set_title(f"{k} N={N}")
 
+def run_hs(conf: Conf, i: int, N: int, alice_base: utils.AliceBase, OB_classes: list[type], tel_axis):
+    teleported_values = {}
+    confs = Conf.generate_h_for_J(conf, 100)
+    hs = [c.h for c in confs]
+
+    for c in confs:
+        OBs = single_run(c, alice_base, OB_classes)
+
+        for k, v in OBs.items():
+            if k not in teleported_values:
+                teleported_values[k] = []
+
+            teleported_values[k].append(v.teleported_values)
+
+    for idx, k in enumerate(teleported_values):
+        a0_vals = [tv[False] for tv in teleported_values[k]]
+        a1_vals = [tv[True] for tv in teleported_values[k]]
+
+        tel_axis[idx, i].plot(hs, a0_vals, label=f'a=0, sigma_A={alice_base}')
+        tel_axis[idx, i].plot(hs, a1_vals, label=f'a=1, sigma_A={alice_base}')
+        tel_axis[idx, i].set_title(f"{k} N={N}")
+
 errors = {
     'p_classical_error': (ErrorsConf.generate_classical_error, None),
     'p_depol_error': (ErrorsConf.generate_depolarization_error, None),
-    'p_bitflip_error': (ErrorsConf.generate_bitflip_error, [(-0.1, 0.5), (-2, 4)]),
+    'p_bitflip_error': (ErrorsConf.generate_bitflip_error, [(-0.1, 0.5), None]),
     'p_alice_phaseflip_error': (ErrorsConf.generate_alice_phase_flip_error, [(-0.1, 0.5), None]),
     'p_bob_phaseflip_error': (ErrorsConf.generate_bob_phase_flip_error, [(-0.1, 0.5), None]),
     'p_excited_mixture_error': (ErrorsConf.generate_excited_mixture_error, [(-0.1, 0.2), (-2, 1.5)]),
@@ -106,9 +128,14 @@ if __name__ == "__main__":
 
     for name, (hamiltonian_class, OB_classes, alice_bases, Ns) in hamiltonians.items():
         # Teleported figure
-        tel_figure, tel_axis = plt.subplots(2, len(Ns), figsize=(10, 6))
-        tel_figure.subplots_adjust(right=0.8)
-        for ax in tel_axis.flat:
+        J_tel_figure, J_tel_axis = plt.subplots(2, len(Ns), figsize=(10, 6))
+        J_tel_figure.subplots_adjust(right=0.8)
+        for ax in J_tel_axis.flat:
+            ax.set_title("", fontsize=10)
+
+        h_tel_figure, h_tel_axis = plt.subplots(2, len(Ns), figsize=(10, 6))
+        h_tel_figure.subplots_adjust(right=0.8)
+        for ax in h_tel_axis.flat:
             ax.set_title("", fontsize=10)
 
         # Errors figure
@@ -132,17 +159,25 @@ if __name__ == "__main__":
                 conf.xor_alice_res = 0
                 conf.errors = ErrorsConf()
 
-                run_Js(conf, i, N, alice_base, OB_classes, tel_axis)
+                run_Js(conf, i, N, alice_base, OB_classes, J_tel_axis)
+                run_hs(conf, i, N, alice_base, OB_classes, h_tel_axis)
 
                 errs_axis = [err_axis for _, err_axis in errs_plot.values()]
                 run_errors(conf, i, N, alice_base, OB_classes, errs_axis)
 
-        tel_handles, tel_labels = get_unique_legend(tel_axis)
-        tel_figure.suptitle('Teleported operators expectation Values for Different N and J', fontsize=14)
-        tel_figure.tight_layout(rect=[0, 0.05, 1, 0.93])
-        tel_figure.legend(tel_handles, tel_labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
-        tel_figure.savefig(f'artifacts/teleported_operators_{name}.png', bbox_inches='tight')
-        plt.close(tel_figure)
+        J_tel_handles, J_tel_labels = get_unique_legend(J_tel_axis)
+        J_tel_figure.suptitle('Teleported operators expectation Values for Different N and J', fontsize=14)
+        J_tel_figure.tight_layout(rect=[0, 0.05, 1, 0.93])
+        J_tel_figure.legend(J_tel_handles, J_tel_labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
+        J_tel_figure.savefig(f'artifacts/teleported_operators_{name}_vs_J.png', bbox_inches='tight')
+        plt.close(J_tel_figure)
+
+        h_tel_handles, h_tel_labels = get_unique_legend(h_tel_axis)
+        h_tel_figure.suptitle('Teleported operators expectation Values for Different N and h', fontsize=14)
+        h_tel_figure.tight_layout(rect=[0, 0.05, 1, 0.93])
+        h_tel_figure.legend(h_tel_handles, h_tel_labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
+        h_tel_figure.savefig(f'artifacts/teleported_operators_{name}_vs_h.png', bbox_inches='tight')
+        plt.close(h_tel_figure)
 
         for err_name, (err_figure, err_axis) in errs_plot.items():
             err_handles, err_labels = get_unique_legend(err_axis)
