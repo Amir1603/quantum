@@ -76,9 +76,9 @@ class TFIMCalculator:
             rho_err = Z_bob @ self.gs_rho.data @ Z_bob
             p_err = conf.errors.p_bob_phaseflip_error
 
-        if conf.errors.p_excited_mixture != 0:
+        if conf.errors.p_excited_mixture_error != 0:
             rho_err = self.ex1_rho.data
-            p_err = conf.errors.p_excited_mixture
+            p_err = conf.errors.p_excited_mixture_error
 
         if conf.errors.p_excited_superposition_error != 0:
             p_err = conf.errors.p_excited_superposition_error

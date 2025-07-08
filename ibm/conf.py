@@ -65,7 +65,7 @@ class ErrorsConf:
         confs = []
         for p in probs:
             new_conf = ErrorsConf()
-            new_conf.p_excited_mixture = p
+            new_conf.p_excited_mixture_error = p
             confs.append(new_conf)
         return confs
 
@@ -86,7 +86,7 @@ class ErrorsConf:
         self.p_bitflip_error = 0.0
         self.p_alice_phaseflip_error = 0.0
         self.p_bob_phaseflip_error = 0.0
-        self.p_excited_mixture = 0.0
+        self.p_excited_mixture_error = 0.0
         self.p_excited_superposition_error = 0.0
 
 
