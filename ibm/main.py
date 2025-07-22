@@ -127,6 +127,7 @@ if __name__ == "__main__":
     parser.add_argument('-N', type=int, default=1, help="Choose value for N - the number of sites (in addition to Alice) in chain")
     parser.add_argument('--system', '-s', type=System, default=System.AliceInteraction, choices=list(System), help="Choose the system (Hamiltonian) to run: Alice site interaction or nearest neighbor interaction. Default is Alice Site interaction.")
     parser.add_argument('--alice-base', type=AliceBase, default=AliceBase.X, choices=list(AliceBase), help="Choose Alice's basis of measurement.")
+    parser.add_argument('--shots', required=False, type=int, help="Number of shots to run for each simulation")
 
     error_group = parser.add_mutually_exclusive_group(required=False)
 
@@ -153,6 +154,9 @@ if __name__ == "__main__":
         service = QiskitRuntimeService(name="amiryona-tau")
     else:
         service = None
+
+    if args.shots:
+        confs[0].total_shots = args.shots
 
     if args.all_hJ:
         confs = [conf for c in confs for conf in Conf.generate_hJ_combinations(c)]
