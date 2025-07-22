@@ -1,6 +1,6 @@
 #!/bin/bash
 
-errors=("classical-errors" "bit-flip-errors" "alice-phase-flip-errors" "bob-phase-flip-errors" "excited-mixture-errors" "excited-superposition-errors")
+errors=("bit-flip-errors" "alice-phase-flip-errors" "bob-phase-flip-errors" "excited-mixture-errors" "excited-superposition-errors")
 Ns=(1 2 3)
 
 for N in "${Ns[@]}"

@@ -56,7 +56,6 @@ class Results:
                 'p_dephase': conf.p_dephase,
                 'xor_alice_res': conf.xor_alice_res,
                 'alice_basis': getattr(observable, 'alice_basis', None),
-                'p_classical_error': conf.errors.p_classical_error,
                 'p_depol_error': conf.errors.p_depol_error,
                 'p_bitflip_error': conf.errors.p_bitflip_error,
                 'p_alice_phaseflip_error': conf.errors.p_alice_phaseflip_error,

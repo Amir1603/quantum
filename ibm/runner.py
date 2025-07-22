@@ -25,7 +25,6 @@ class Runner():
 
     def _create_noise_model(self, conf: QuantumSimConf):
         p_dephase = conf.p_dephase
-        p_cl_error = conf.errors.p_classical_error
 
         noise_model = noise.NoiseModel()
 
@@ -34,14 +33,6 @@ class Runner():
             dephase_error = noise.phase_damping_error(p_dephase)
             # Apply error more selectively if possible based on gate times and delay
             noise_model.add_all_qubit_quantum_error(dephase_error, ['delay', 'id', 'measure', 'h', 'ry', 'sdg', 'rx'])
-
-        if p_cl_error and p_cl_error != 0:
-            readout_error_on_alice = noise.ReadoutError([
-                [1.0 - p_cl_error, p_cl_error], # Probabilities when true state is |0>
-                [p_cl_error, 1.0 - p_cl_error]  # Probabilities when true state is |1>
-            ])
-            # Add this error ONLY to the measurement of Alice's qubit
-            noise_model.add_readout_error(readout_error_on_alice, [utils.get_alice_idx(conf.N)])
 
         self.noise_model = noise_model
 

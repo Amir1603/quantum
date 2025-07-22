@@ -44,10 +44,7 @@ def report_and_plot(results_obj: Results, args):
     h1_file = None
     v_file = None
 
-    if args.classical_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.J'])
-    elif args.depolarization_errors:
+    if args.depolarization_errors:
         energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['E_B'], group_by=['conf_params.J'])
         charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['charge'], group_by=['conf_params.J'])
     elif args.bit_flip_errors:
@@ -130,7 +127,6 @@ if __name__ == "__main__":
 
     error_group = parser.add_mutually_exclusive_group(required=False)
 
-    error_group.add_argument('--classical-errors', action='store_true', help="Run classical error simulation")
     error_group.add_argument('--depolarization-errors', action='store_true', help="Run depolarization error simulation")
     error_group.add_argument('--bit-flip-errors', action='store_true', help="Run bit-flip error simulation")
     error_group.add_argument('--alice-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Alice's site")
@@ -167,9 +163,6 @@ if __name__ == "__main__":
         confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]
 
     errs = []
-
-    if args.classical_errors:
-        errs = ErrorsConf.generate_classical_error()
 
     if args.depolarization_errors:
         errs = ErrorsConf.generate_depolarization_error()
