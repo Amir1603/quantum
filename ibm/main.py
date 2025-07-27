@@ -44,27 +44,27 @@ def report_and_plot(results_obj: Results, args):
     h1_file = None
     v_file = None
 
-    if args.classical_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['E_B'], group_by=['conf_params.J'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_classical_error', filter, obs=['charge'], group_by=['conf_params.J'])
-    elif args.depolarization_errors:
+    if args.depolarization_errors:
         energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['E_B'], group_by=['conf_params.J'])
         charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_depol_error', filter, obs=['charge'], group_by=['conf_params.J'])
     elif args.bit_flip_errors:
         energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['E_B'], group_by=['conf_params.J'], ylim=(-0.1, 0.5))
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['charge'], group_by=['conf_params.J'], ylim=(-2, 4))
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bitflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
     elif args.alice_phase_flip_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['E_B'], group_by=['conf_params.J'], ylim=(-0.1, 0.5))
+        y_lim = (-0.1, 0.5) if args.system == System.AliceInteraction else None
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['E_B'], group_by=['conf_params.J'], ylim=y_lim)
         charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_alice_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
     elif args.bob_phase_flip_errors:
         energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['E_B'], group_by=['conf_params.J'], ylim=(-0.1, 0.5))
         charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_bob_phaseflip_error', filter, obs=['charge'], group_by=['conf_params.J'])
     elif args.excited_mixture_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['E_B'], group_by=['conf_params.J'], ylim=(-0.1, 0.2))
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['charge'], group_by=['conf_params.J'], ylim=(-2, 1.5))
+        y_lim = (-0.1, 0.2) if args.system == System.AliceInteraction else None
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['E_B'], group_by=['conf_params.J'], ylim=y_lim)
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_mixture_error', filter, obs=['charge'], group_by=['conf_params.J'])
     elif args.excited_superposition_errors:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['E_B'], group_by=['conf_params.J'], ylim=(-0.1, 0.2))
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['charge'], group_by=['conf_params.J'], ylim=(-2, 1.5))
+        y_lim = (-0.1, 0.2) if args.system == System.AliceInteraction else None
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['E_B'], group_by=['conf_params.J'], ylim=y_lim)
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['charge'], group_by=['conf_params.J'])
 
     if args.both_alice_values:
         energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['E_B'], group_by=['conf_params.xor_alice_res'])
@@ -127,10 +127,10 @@ if __name__ == "__main__":
     parser.add_argument('-N', type=int, default=1, help="Choose value for N - the number of sites (in addition to Alice) in chain")
     parser.add_argument('--system', '-s', type=System, default=System.AliceInteraction, choices=list(System), help="Choose the system (Hamiltonian) to run: Alice site interaction or nearest neighbor interaction. Default is Alice Site interaction.")
     parser.add_argument('--alice-base', type=AliceBase, default=AliceBase.X, choices=list(AliceBase), help="Choose Alice's basis of measurement.")
+    parser.add_argument('--shots', required=False, type=int, help="Number of shots to run for each simulation")
 
     error_group = parser.add_mutually_exclusive_group(required=False)
 
-    error_group.add_argument('--classical-errors', action='store_true', help="Run classical error simulation")
     error_group.add_argument('--depolarization-errors', action='store_true', help="Run depolarization error simulation")
     error_group.add_argument('--bit-flip-errors', action='store_true', help="Run bit-flip error simulation")
     error_group.add_argument('--alice-phase-flip-errors', action='store_true', help="Run phase-flip error simulation on Alice's site")
@@ -155,6 +155,9 @@ if __name__ == "__main__":
     else:
         service = None
 
+    if args.shots:
+        confs[0].total_shots = args.shots
+
     if args.all_hJ:
         confs = [conf for c in confs for conf in Conf.generate_hJ_combinations(c)]
     elif args.J_for_h:
@@ -167,9 +170,6 @@ if __name__ == "__main__":
         confs = [conf for c in confs for conf in Conf.generate_alice_xor(c)]
 
     errs = []
-
-    if args.classical_errors:
-        errs = ErrorsConf.generate_classical_error()
 
     if args.depolarization_errors:
         errs = ErrorsConf.generate_depolarization_error()
