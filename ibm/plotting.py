@@ -579,7 +579,7 @@ def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, pa
 def plot_counts_hist(results_list, output_dir, obs=['charge'], target_J=1.0):
     try:
         print("\n--- Generating Example Histograms ---")
-        hist_count = 0
+
         # Limit the number of histograms generated to avoid too many files
         max_hists = 5
         plot_filenames = []
@@ -592,7 +592,7 @@ def plot_counts_hist(results_list, output_dir, obs=['charge'], target_J=1.0):
                 )
 
                 # Check if counts data exists and if it matches the target criteria
-                if is_target_hist and result.counts and hist_count < max_hists:
+                if is_target_hist and result.counts and len(plot_filenames) < max_hists:
                     # Create descriptive info for the title and filename
                     h_val = get_nested_value(result, 'conf_params.h')
                     k_val = get_nested_value(result, 'conf_params.J')
@@ -603,15 +603,14 @@ def plot_counts_hist(results_list, output_dir, obs=['charge'], target_J=1.0):
                         counts=result.counts,
                         observable_name=result.observable.name,
                         output_dir=output_dir,
-                        filename_prefix="hist",
+                        filename_prefix=f"hist_J{target_J}",
                         title_info=title_info
                     )
                     if hist_filename:
                         plot_filenames.append(hist_filename)
                         print(f"Generated histogram: {hist_filename}")
-                        hist_count += 1
 
-        if hist_count == 0:
+        if len(plot_filenames) == 0:
                 print("No target results found matching criteria for example histograms.")
 
         return plot_filenames
