@@ -83,7 +83,7 @@ def run_hs(i: int, N: int, alice_base: utils.AliceBase,  hamiltonian_class: type
 
 def run_errors(i: int, N: int, alice_base: utils.AliceBase,  hamiltonian_class: type, OB_classes: list[type], errs_axis):
     Js = np.linspace(1.0, 4.0, 7).tolist()
-
+    res = {}
     print("Running all errors")
 
     for j, err_name in enumerate(NumericalRunConf.get_errors()):
@@ -111,6 +111,9 @@ def run_errors(i: int, N: int, alice_base: utils.AliceBase,  hamiltonian_class: 
                 p_errs = [err_conf.__dict__[err_name] for err_conf in errs]
                 errs_axis[j][idx, i].plot(p_errs, a0_vals, label=f'J={J}')
 
+                if J == 1.0 and err_name == 'p_classical_error':
+                    res[k] = (p_errs, a0_vals)
+
                 ylim = NumericalRunConf.get_ylim(err_name, k)
                 if ylim and ylim[idx]:
                     errs_axis[j][idx, i].set_ylim(ylim[idx])
@@ -118,6 +121,7 @@ def run_errors(i: int, N: int, alice_base: utils.AliceBase,  hamiltonian_class: 
                 errs_axis[j][idx, i].axvline(x=0, color='black', linestyle='--')
                 errs_axis[j][idx, i].axhline(y=0, color='black', linestyle=':')
 
+    return res
 
 if __name__ == "__main__":
     run_confs = [
@@ -161,6 +165,8 @@ if __name__ == "__main__":
 
             print(f"Calculating theoretical values for {run_conf.name}...")
 
+            errs_res_dict = {}
+
             for i, N in enumerate(run_conf.Ns):
                 print(f"Calculating for N={N} with AliceBase={alice_base}...")
 
@@ -168,7 +174,8 @@ if __name__ == "__main__":
                 run_hs(i, N, alice_base, run_conf.H_type, run_conf.OB_types, [h_tel_axis, h_tel_axis_both_bases])
 
                 errs_axis = [err_axis for _, err_axis in errs_plot.values()]
-                run_errors(i, N, alice_base, run_conf.H_type, run_conf.OB_types, errs_axis)
+                res = run_errors(i, N, alice_base, run_conf.H_type, run_conf.OB_types, errs_axis)
+                errs_res_dict[N] = res
 
             J_tel_handles, J_tel_labels = get_unique_legend(J_tel_axis)
             J_tel_figure.suptitle('Teleported operators expectation Values for Different N and J', fontsize=14)
@@ -192,6 +199,18 @@ if __name__ == "__main__":
                 os.makedirs(f'artifacts/errors/{run_conf.name}_{alice_base}', exist_ok=True) 
                 err_figure.savefig(f'artifacts/errors/{run_conf.name}_{alice_base}/{err_name}.png', bbox_inches='tight')
                 plt.close(err_figure)
+
+            for N, res in errs_res_dict.items():
+                class_err_fig, ax = plt.subplots()
+                for obs, (p_errs, a0_vals) in res.items():
+                    ax.plot(p_errs, a0_vals, label=f'N={N}')
+
+                class_err_fig.suptitle(f"{obs} vs. Classical Communication Error for different Ns")
+                ax.set_xlabel("p_err")
+                ax.set_ylabel("Extracted Value")
+                class_err_fig.legend()
+                class_err_fig.savefig(f'artifacts/errors/{run_conf.name}_{alice_base}/{obs}_vs_class_comm_err.png', bbox_inches='tight')
+                plt.close(class_err_fig)
 
         J_tel_handles_both_bases, J_tel_labels_both_bases = get_unique_legend(J_tel_axis_both_bases)
         J_tel_figure_both_bases.suptitle('Teleported operators expectation Values for Different N and J', fontsize=14)
