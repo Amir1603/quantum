@@ -200,8 +200,8 @@ if __name__ == "__main__":
                 err_figure.savefig(f'artifacts/errors/{run_conf.name}_{alice_base}/{err_name}.png', bbox_inches='tight')
                 plt.close(err_figure)
 
+            class_err_fig, ax = plt.subplots()
             for N, res in errs_res_dict.items():
-                class_err_fig, ax = plt.subplots()
                 for obs, (p_errs, a0_vals) in res.items():
                     ax.plot(p_errs, a0_vals, label=f'N={N}')
 
