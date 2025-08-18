@@ -124,9 +124,10 @@ def run_errors(i: int, N: int, alice_base: utils.AliceBase,  hamiltonian_class: 
 
 def run_class_comm_vs_N(alice_base: utils.AliceBase,  hamiltonian_class: type, OB_classes: list[type], errs_axis):
     Ns = list(range(2, 11))
-    print("Running classical communication vs N")
+    print(f"Running classical communication vs N with {alice_base}")
 
     for N in Ns:
+        print(f"N={N}")
         conf = Conf(N)
         run_single_error('p_classical_error', conf, alice_base, hamiltonian_class, OB_classes, errs_axis, f'N={N}', add_N=False)
 
