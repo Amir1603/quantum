@@ -5,7 +5,7 @@ import utils
 from conf import Conf, ErrorsConf
 import os
 from numerical_run_conf import NumericalRunConf
-
+from plot_utils import add_avg_zero_vline_all_axes
 
 # Collect and deduplicate legend handles and labels
 def get_unique_legend(ax_array):
@@ -81,9 +81,38 @@ def run_hs(i: int, N: int, alice_base: utils.AliceBase,  hamiltonian_class: type
             tel_axis[idx, i].plot(hs, a1_vals, label=f'a=1, sigma_A={alice_base}')
             tel_axis[idx, i].set_title(f"{k} N={N}")
 
+def run_single_error(err_name: str, conf: Conf, alice_base: utils.AliceBase, hamiltonian_class: type, OB_classes: list[type], errs_axis, label: str, i: int = None, add_N: bool = True):
+    teleported_values = {}
+
+    errs = NumericalRunConf.generate_errors_configurations(err_name)
+    confs = [c for c in Conf.generate_from_errors(conf, errs)]
+
+    for c in confs:
+        OBs = single_run(c, alice_base,  hamiltonian_class, OB_classes)
+
+        for k, v in OBs.items():
+            if k not in teleported_values:
+                teleported_values[k] = []
+
+            teleported_values[k].append(v.teleported_values)
+
+    for idx, k in enumerate(teleported_values):
+        a0_vals = [tv[False] for tv in teleported_values[k]]
+
+        p_errs = [err_conf.__dict__[err_name] for err_conf in errs]
+
+        axis = errs_axis[idx, i] if i is not None else errs_axis[idx]
+
+        axis.plot(p_errs, a0_vals, label=label)
+
+        ylim = NumericalRunConf.get_ylim(err_name, k)
+        if ylim and ylim[idx]:
+            axis.set_ylim(ylim[idx])
+        title = f"{k} N={conf.N}" if add_N else f"{k}"
+        axis.set_title(f"{title}")
+
 def run_errors(i: int, N: int, alice_base: utils.AliceBase,  hamiltonian_class: type, OB_classes: list[type], errs_axis):
     Js = np.linspace(1.0, 4.0, 7).tolist()
-
     print("Running all errors")
 
     for j, err_name in enumerate(NumericalRunConf.get_errors()):
@@ -91,33 +120,16 @@ def run_errors(i: int, N: int, alice_base: utils.AliceBase,  hamiltonian_class: 
 
         for J in Js:
             conf.J = J
-            teleported_values = {}
+            run_single_error(err_name, conf, alice_base, hamiltonian_class, OB_classes, errs_axis[j], f'J={J}', i)
 
-            errs = NumericalRunConf.generate_errors_configurations(err_name)
-            confs = [c for c in Conf.generate_from_errors(conf, errs)]
+def run_class_comm_vs_N(alice_base: utils.AliceBase,  hamiltonian_class: type, OB_classes: list[type], errs_axis):
+    Ns = list(range(2, 11))
+    print(f"Running classical communication vs N with {alice_base}")
 
-            for c in confs:
-                OBs = single_run(c, alice_base,  hamiltonian_class, OB_classes)
-
-                for k, v in OBs.items():
-                    if k not in teleported_values:
-                        teleported_values[k] = []
-
-                    teleported_values[k].append(v.teleported_values)
-
-            for idx, k in enumerate(teleported_values):
-                a0_vals = [tv[False] for tv in teleported_values[k]]
-
-                p_errs = [err_conf.__dict__[err_name] for err_conf in errs]
-                errs_axis[j][idx, i].plot(p_errs, a0_vals, label=f'J={J}')
-
-                ylim = NumericalRunConf.get_ylim(err_name, k)
-                if ylim and ylim[idx]:
-                    errs_axis[j][idx, i].set_ylim(ylim[idx])
-                errs_axis[j][idx, i].set_title(f"{k} N={N}")
-                errs_axis[j][idx, i].axvline(x=0, color='black', linestyle='--')
-                errs_axis[j][idx, i].axhline(y=0, color='black', linestyle=':')
-
+    for N in Ns:
+        print(f"N={N}")
+        conf = Conf(N)
+        run_single_error('p_classical_error', conf, alice_base, hamiltonian_class, OB_classes, errs_axis, f'N={N}', add_N=False)
 
 if __name__ == "__main__":
     run_confs = [
@@ -159,6 +171,12 @@ if __name__ == "__main__":
                 
                 errs_plot[err_name] = err_figure, err_axis
 
+            # Classical communication vs N figure
+            class_err_figure, class_err_axis = plt.subplots(1, 2, figsize=(10, 6))
+            class_err_figure.subplots_adjust(right=0.8)
+            for ax in class_err_axis.flat:
+                ax.set_title("", fontsize=10)
+
             print(f"Calculating theoretical values for {run_conf.name}...")
 
             for i, N in enumerate(run_conf.Ns):
@@ -169,6 +187,8 @@ if __name__ == "__main__":
 
                 errs_axis = [err_axis for _, err_axis in errs_plot.values()]
                 run_errors(i, N, alice_base, run_conf.H_type, run_conf.OB_types, errs_axis)
+
+            run_class_comm_vs_N(alice_base, run_conf.H_type, run_conf.OB_types, class_err_axis)
 
             J_tel_handles, J_tel_labels = get_unique_legend(J_tel_axis)
             J_tel_figure.suptitle('Teleported operators expectation Values for Different N and J', fontsize=14)
@@ -186,12 +206,22 @@ if __name__ == "__main__":
 
             for err_name, (err_figure, err_axis) in errs_plot.items():
                 err_handles, err_labels = get_unique_legend(err_axis)
+                add_avg_zero_vline_all_axes(err_figure, which='first', vline_kws={'color': 'black', 'linestyle': '--'})
                 err_figure.suptitle(f'Teleported value vs. {err_name} for different Js', fontsize=14)
                 err_figure.tight_layout(rect=[0, 0.05, 1, 0.93])
                 err_figure.legend(err_handles, err_labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
-                os.makedirs(f'artifacts/errors/{run_conf.name}_{alice_base}', exist_ok=True) 
+                os.makedirs(f'artifacts/errors/{run_conf.name}_{alice_base}', exist_ok=True)
                 err_figure.savefig(f'artifacts/errors/{run_conf.name}_{alice_base}/{err_name}.png', bbox_inches='tight')
                 plt.close(err_figure)
+
+            class_err_handles, class_err_labels = get_unique_legend(class_err_axis)
+            add_avg_zero_vline_all_axes(class_err_figure, which='first', vline_kws={'color': 'black', 'linestyle': '--'})
+            class_err_figure.suptitle(f'Teleported value vs. Classical Comm error for different Ns', fontsize=14)
+            class_err_figure.tight_layout(rect=[0, 0.05, 1, 0.93])
+            class_err_figure.legend(class_err_handles, class_err_labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
+            os.makedirs(f'artifacts/errors/{run_conf.name}_{alice_base}', exist_ok=True)
+            class_err_figure.savefig(f'artifacts/errors/{run_conf.name}_{alice_base}/teleported_vs_class_comm_for_Ns.png', bbox_inches='tight')
+            plt.close(class_err_figure)
 
         J_tel_handles_both_bases, J_tel_labels_both_bases = get_unique_legend(J_tel_axis_both_bases)
         J_tel_figure_both_bases.suptitle('Teleported operators expectation Values for Different N and J', fontsize=14)
