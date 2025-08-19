@@ -540,7 +540,7 @@ def plot_expectation_vs_parameter_filtered(results_list, output_dir, parameter_n
         results_list=results_list,
         x_param_path=f'conf_params.{parameter_name}',
         y_param_path='expectation_value',
-        #error_param_path='sem',
+        error_param_path='sem',
         output_dir=output_dir,
         filename_prefix=f"exp_vs_{parameter_name}",
         title_prefix=f"Expectation Value",
@@ -562,7 +562,7 @@ def plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, pa
             y_param_path='expectation_value',
             subplot_params=subplot_params,
             output_dir=output_dir,
-            # error_param_path='sem',
+            error_param_path='sem',
             line_group_by=group_by, # Lines within each subplot correspond to observables
             filter_criteria=filter_criteria,
             observables_to_plot=obs,
