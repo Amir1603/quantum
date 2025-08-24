@@ -3,7 +3,7 @@ set -euo pipefail
 
 # --- CONFIG: set via flags or env vars ---
 DOCKERHUB_USER="${DOCKERHUB_USER:-0504202509}"
-IMAGE_NAME="${IMAGE_NAME:-amir/charge-qkd}"
+IMAGE_NAME="${IMAGE_NAME:-charge-qkd}"
 PUSH="true"                                               # default: push after build
 USE_BUILDX="${USE_BUILDX:-false}"                         # set true to build multi-arch
 PLATFORMS="${PLATFORMS:-linux/amd64}"                     # e.g. "linux/amd64,linux/arm64"
