@@ -3,7 +3,7 @@ import numpy as np
 from Calculators import NumericalTFIM
 import utils
 from conf import Conf, ErrorsConf
-from numerical_run_conf import RunConf, NumericalRunConf
+from numerical_run_conf import SingleNumericalRunConf, NumericalRunConf
 from plot_utils import PlotProperties
 
 def single_run(conf: Conf, alice_base: utils.AliceBase, hamiltonian_class: type, OB_types: dict[str, type]):
@@ -15,7 +15,7 @@ def single_run(conf: Conf, alice_base: utils.AliceBase, hamiltonian_class: type,
 
     return OBs
 
-def run_Js(rc: RunConf):
+def run_Js(rc: SingleNumericalRunConf):
     confs = Conf.generate_J_for_h(Conf(rc.N), 100)
     Js = [c.J for c in confs]
     ys = {}
@@ -41,7 +41,7 @@ def run_Js(rc: RunConf):
         rc.J_pps[name].update_ys(name, f"a=0", np.array(a0_vals))
         rc.J_pps[name].update_ys(name, f"a=1", np.array(a1_vals))
 
-def run_hs(rc: RunConf):
+def run_hs(rc: SingleNumericalRunConf):
     confs = Conf.generate_h_for_J(Conf(rc.N), 100)
     hs = [c.h for c in confs]
     ys = {}
@@ -67,7 +67,7 @@ def run_hs(rc: RunConf):
         rc.h_pps[name].update_ys(name, f"a=0", a0_vals)
         rc.h_pps[name].update_ys(name, f"a=1", a1_vals)
 
-def run_single_error(errs: list[ErrorsConf], conf: Conf, rc: RunConf, err_name: str, run_J: bool = True):
+def run_single_error(errs: list[ErrorsConf], conf: Conf, rc: SingleNumericalRunConf, err_name: str, run_J: bool = True):
     confs = [c for c in Conf.generate_from_errors(conf, errs)]
     p_errs = [err_conf.__dict__[err_name] for err_conf in errs]
     ys = {}
@@ -94,7 +94,7 @@ def run_single_error(errs: list[ErrorsConf], conf: Conf, rc: RunConf, err_name: 
             rc.class_comm_errs_N_pps[name].update_x(err_name, np.array(p_errs))
             rc.class_comm_errs_N_pps[name].update_ys(name, f"N={conf.N}", np.array(y_vals), y_lim=NumericalRunConf.get_ylim(err_name, name, rc.H_type))
 
-def run_errors(rc: RunConf):
+def run_errors(rc: SingleNumericalRunConf):
     Js = np.linspace(1.0, 4.0, 7).tolist()
     print("Running all errors")
 
@@ -151,14 +151,17 @@ if __name__ == "__main__":
         pps.extend(combined_alice_base_J_pps.values())
         pps.extend(combined_alice_base_h_pps.values())
 
-        for N in NumericalRunConf.generate_class_comm_error_Ns(run_conf.name):
-            conf = Conf(N)
-            conf.J = 1.0
-            errs = ErrorsConf.generate_classical_error()
+        class_comm_run_confs = [SingleNumericalRunConf(run_conf.name, run_conf.H_type, run_conf.OB_types, basis) for basis in run_conf.alice_bases]
 
-            run_single_error(errs, conf, run_conf, 'p_classical_error', run_J=False)
+        for rc in class_comm_run_confs:
+            print(f"Calculating classical communication error vs N for {rc.name} with AliceBase={rc.alice_basis}...")
+            for N in NumericalRunConf.generate_class_comm_error_Ns(rc.name):
+                conf = Conf(N)
+                conf.J = 1.0
+                errs = ErrorsConf.generate_classical_error()
 
-            pps.extend(run_conf.class_comm_errs_N_pps.values())
+                run_single_error(errs, conf, rc, 'p_classical_error', run_J=False)
+                pps.extend(rc.class_comm_errs_N_pps.values())
 
     for pp in pps:
         pp.plot()

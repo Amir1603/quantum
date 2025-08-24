@@ -4,8 +4,8 @@ from conf import ErrorsConf
 from plot_utils import PlotProperties
 
 
-class RunConf:
-    def __init__(self, name: str, H_type: type, OB_types: dict[str, type], alice_basis: AliceBase, N: int):
+class SingleNumericalRunConf:
+    def __init__(self, name: str, H_type: type, OB_types: dict[str, type], alice_basis: AliceBase, N: int = None):
         self.name = name
         self.H_type = H_type
         self.OB_types = OB_types
@@ -32,7 +32,7 @@ class RunConf:
 
     def get_all_pps(self) -> list[PlotProperties]:
         """
-        Returns a list of all PlotProperties objects for this RunConf.
+        Returns a list of all PlotProperties objects for this SingleNumericalRunConf.
         """
         pps = []
 
@@ -109,6 +109,11 @@ class NumericalRunConf:
         ]
 
     def __init__(self, name: str, H_type: type, OB_types: dict[str, type], alice_bases: list[AliceBase], Ns: list[int]):
-        self.confs = [RunConf(name, H_type, OB_types, alice_base, N)
+        self.name = name
+        self.H_type = H_type
+        self.OB_types = OB_types
+        self.alice_bases = alice_bases
+
+        self.confs = [SingleNumericalRunConf(name, H_type, OB_types, alice_base, N)
                       for alice_base in alice_bases
                       for N in Ns]
