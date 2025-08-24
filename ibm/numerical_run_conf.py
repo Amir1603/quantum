@@ -60,16 +60,17 @@ class NumericalRunConf:
         )
 
     @staticmethod
-    def get_ylim(error_name: str, H_type: type):
-        if H_type == Operators.alice_H:
-            if error_name == 'p_bitflip_error': return (-0.1, 0.5)
-            if error_name == 'p_alice_phaseflip_error': return (-0.1, 0.5)
-            if error_name == 'p_bob_phaseflip_error': return (-0.1, 0.5)
-            if error_name == 'p_excited_mixture_error': return (-0.1, 0.2)
-            if error_name == 'p_excited_superposition_error': return (-0.1, 0.2)
-        elif H_type == Operators.nn_H:
-            if error_name == 'p_bitflip_error': return (-0.1, 0.5)
-            if error_name == 'p_bob_phaseflip_error': return (-0.1, 0.5)
+    def get_ylim(error_name: str, obs_name: str, H_type: type):
+        if obs_name == 'energy':
+            if H_type == Operators.alice_H:
+                if error_name == 'p_bitflip_error': return (-0.1, 0.5)
+                if error_name == 'p_alice_phaseflip_error': return (-0.1, 0.5)
+                if error_name == 'p_bob_phaseflip_error': return (-0.1, 0.5)
+                if error_name == 'p_excited_mixture_error': return (-0.1, 0.2)
+                if error_name == 'p_excited_superposition_error': return (-0.1, 0.2)
+            elif H_type == Operators.nn_H:
+                if error_name == 'p_bitflip_error': return (-0.1, 0.5)
+                if error_name == 'p_bob_phaseflip_error': return (-0.1, 0.5)
 
         return None
 

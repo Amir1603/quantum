@@ -135,11 +135,12 @@ class PlotProperties:
 
         for y_legend, (y_values, y_lim) in self.ys.items():
             axis.plot(self.x_vals, y_values, label=y_legend)
-            axis.set_ylim(y_lim if y_lim else (None, None))
+            if y_lim:
+                axis.set_ylim(y_lim)
 
-        axis.grid(True)
         axis.set_xlabel(self.x_label)
         axis.set_ylabel(self.y_label)
+        axis.grid(True)
 
         if self.add_v_line:
             PlotProperties._add_avg_zero_vline(axis, which='first', vline_kws={'color': 'black', 'linestyle': '--'})
