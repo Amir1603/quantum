@@ -25,6 +25,10 @@ class RunConf:
         self.errs_pps = {k: {e: PlotProperties(
                 f"{self.name}/{self.alice_basis}/N{self.N}/{k}_vs_{e}.png"
             ) for e in NumericalRunConf.get_errors()} for k in self.OB_types.keys()}
+        self.class_comm_errs_N_pps = {
+            k: PlotProperties(
+                f"{self.name}/{self.alice_basis}/{k}_vs_p_class_comm_err.png"
+            ) for k in self.OB_types.keys()}
 
     def get_all_pps(self) -> list[PlotProperties]:
         """
@@ -83,6 +87,14 @@ class NumericalRunConf:
         if error_name == 'p_bob_phaseflip_error': return ErrorsConf.generate_bob_phase_flip_error()
         if error_name == 'p_excited_mixture_error': return ErrorsConf.generate_excited_mixture_error()
         if error_name == 'p_excited_superposition_error': return ErrorsConf.generate_excited_superposition_error()
+
+    @staticmethod
+    def generate_class_comm_error_Ns(name: str) -> list[int]:
+        Ns = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+        if name == 'alice':
+            Ns = [1] + Ns
+
+        return Ns
 
     @staticmethod
     def get_errors():

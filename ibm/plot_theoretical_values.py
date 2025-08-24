@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from Calculators import NumericalTFIM
 import utils
-from conf import Conf
+from conf import Conf, ErrorsConf
 from numerical_run_conf import RunConf, NumericalRunConf
 from plot_utils import PlotProperties
 
@@ -67,12 +67,15 @@ def run_hs(rc: RunConf):
         rc.h_pps[name].update_ys(name, f"a=0", a0_vals)
         rc.h_pps[name].update_ys(name, f"a=1", a1_vals)
 
-def run_single_error(errs, conf: Conf, rc: RunConf, err_name: str, add_N: bool = True):
+def run_single_error(errs: list[ErrorsConf], conf: Conf, rc: RunConf, err_name: str, run_J: bool = True):
     confs = [c for c in Conf.generate_from_errors(conf, errs)]
     p_errs = [err_conf.__dict__[err_name] for err_conf in errs]
     ys = {}
 
-    print(f"Running {err_name} for J={conf.J}")
+    if run_J:
+        print(f"Running {err_name} for J={conf.J}")
+    else:
+        print(f"Running {err_name} for N={conf.N}")
 
     for c in confs:
         OBs = single_run(c, rc.alice_basis, rc.H_type, rc.OB_types)
@@ -84,8 +87,12 @@ def run_single_error(errs, conf: Conf, rc: RunConf, err_name: str, add_N: bool =
             ys[name].append(v.teleported_values[False])
 
     for name, y_vals in ys.items():
-        rc.errs_pps[name][err_name].update_x(err_name, np.array(p_errs))
-        rc.errs_pps[name][err_name].update_ys(name, f"J={conf.J}", np.array(y_vals), y_lim=NumericalRunConf.get_ylim(err_name, rc.H_type))
+        if run_J:
+            rc.errs_pps[name][err_name].update_x(err_name, np.array(p_errs))
+            rc.errs_pps[name][err_name].update_ys(name, f"J={conf.J}", np.array(y_vals), y_lim=NumericalRunConf.get_ylim(err_name, name, rc.H_type))
+        else:
+            rc.class_comm_errs_N_pps[name].update_x(err_name, np.array(p_errs))
+            rc.class_comm_errs_N_pps[name].update_ys(name, f"N={conf.N}", np.array(y_vals), y_lim=NumericalRunConf.get_ylim(err_name, name, rc.H_type))
 
 def run_errors(rc: RunConf):
     Js = np.linspace(1.0, 4.0, 7).tolist()
@@ -105,7 +112,6 @@ if __name__ == "__main__":
     pps = []
 
     for run_conf in run_confs:
-        class_comm_vs_N_pps = {}
         combined_alice_base_J_pps = {}
         combined_alice_base_h_pps = {}
 
@@ -144,7 +150,15 @@ if __name__ == "__main__":
 
         pps.extend(combined_alice_base_J_pps.values())
         pps.extend(combined_alice_base_h_pps.values())
-        pps.extend(class_comm_vs_N_pps.values())
+
+        for N in NumericalRunConf.generate_class_comm_error_Ns(run_conf.name):
+            conf = Conf(N)
+            conf.J = 1.0
+            errs = ErrorsConf.generate_classical_error()
+
+            run_single_error(errs, conf, run_conf, 'p_classical_error', run_J=False)
+
+            pps.extend(run_conf.class_comm_errs_N_pps.values())
 
     for pp in pps:
         pp.plot()
