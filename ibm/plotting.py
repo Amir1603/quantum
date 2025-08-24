@@ -104,18 +104,14 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
 
     # Create plot
     fig, ax = plt.subplots(figsize=(10, 6))
-    title = f"{title_prefix} vs {x_param_path.split('.')[-1]}"
     filter_strs = []
     if filter_criteria:
          filter_strs.append(", ".join([f"{k.split('.')[-1]}={v}" for k, v in filter_criteria.items()]))
     if observables_to_plot:
          filter_strs.append(f"Obs={','.join(observables_to_plot)}")
-    if filter_strs:
-        title += f"\n(Filtered by: {'; '.join(filter_strs)})"
 
-    ax.set_title(title)
     ax.set_xlabel(x_param_path.split('.')[-1])
-    ax.set_ylabel(y_param_path.split('.')[-1])
+    ax.set_ylabel(observables_to_plot)
 
     for group_label, data in grouped_data.items():
         # Ensure all lists have same length before zipping, pad error if needed
@@ -128,6 +124,9 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
         points = sorted(zip(data['x'], data['y'], err_data))
         x_sorted, y_sorted, err_sorted = zip(*points)
 
+        _, sep, after = group_label.partition(':')
+        group_label = after.lstrip() if sep else group_label
+
         if data.get('error'):
             ax.errorbar(x_sorted, y_sorted, yerr=err_sorted, label=group_label, marker='o', linestyle='-', capsize=3)
         else:
@@ -137,7 +136,6 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
 
     ax.legend()
     ax.grid(True)
-    plt.tight_layout()
 
     # Save plot
     filename_parts = [filename_prefix, "vs", x_param_path.replace('.', '_')]
@@ -237,7 +235,6 @@ def plot_expectation_vs_parameter_subplots(results_list, x_param_path, y_param_p
     nrows = int(np.ceil(n_subplots / ncols))
 
     fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 5, nrows * 4), squeeze=False) # Ensure axes is always 2D
-    fig.suptitle(f"{title_prefix} vs {x_param_path.split('.')[-1]} (Subplots by {', '.join([p.split('.')[-1] for p in subplot_params])})", fontsize=14)
     ax_flat = axes.flatten()
 
     # --- Plotting Each Subplot ---
@@ -297,8 +294,6 @@ def plot_expectation_vs_parameter_subplots(results_list, x_param_path, y_param_p
     for i in range(plot_idx, len(ax_flat)):
         ax_flat[i].set_visible(False)
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) # Adjust layout to prevent title overlap
-
     # --- Save Plot ---
     filename = f"{filename_prefix}_vs_{x_param_path.replace('.', '_')}_by_{'_'.join([p.replace('.', '_') for p in subplot_params])}.png"
     filepath = os.path.join(output_dir, filename)
@@ -348,7 +343,6 @@ def plot_counts_histogram(counts, observable_name, output_dir, filename_prefix="
     ax.set_xticks(x_pos)
     ax.set_xticklabels(bitstrings, rotation=45, ha='right') # Rotate labels if many outcomes
     ax.grid(True, axis='y')
-    plt.tight_layout()
 
     # Save plot
     # Make filename safe
@@ -507,8 +501,6 @@ def plot_heatmap_vs_hk(results_list, h_param_path, k_param_path, z_param_path, o
     # Optional: Set ticks explicitly if needed, otherwise imshow uses extent
     # ax.set_xticks(...)
     # ax.set_yticks(...)
-
-    plt.tight_layout()
 
     # --- Save Plot ---
     filename_parts = [filename_prefix, z_param_path.replace('.', '_'), 'vs']

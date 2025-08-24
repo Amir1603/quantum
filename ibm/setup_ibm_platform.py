@@ -14,7 +14,7 @@ QiskitRuntimeService.save_account(
     # token = "pQEdEQlNKTo9cn_6SWTEWQhqiuau3xYVk-j8F_X05eAb",
     # name = "yonaamir",
 
-    # noyavraham3@gnail.com
+    # noyavraham3@gmail.com
     instance = "crn:v1:bluemix:public:quantum-computing:us-east:a/a3bb5d1d765e4c49b1c3bc0d8076444e:0919c3a5-19f7-4f3d-98de-c1e299fd4c54::",
     token = "xX9lecB631A73LN23FnK-iGQ8UnxVQnz-1v01uH4gFoi",
     name = "Noy Avraham",
