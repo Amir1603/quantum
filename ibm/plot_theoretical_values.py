@@ -121,35 +121,26 @@ if __name__ == "__main__":
             pps.extend(rc.get_all_pps())
 
             for k, v in rc.J_pps.items():
+                new_key = f"{rc.name}_{rc.N}_{k}"
                 if k not in combined_alice_base_J_pps:
-                    combined_alice_base_J_pps[k] = PlotProperties(f"{rc.name}/N{rc.N}/{k}_vs_h.png")
+                    combined_alice_base_J_pps[new_key] = PlotProperties(f"{rc.name}/N{rc.N}/{k}_vs_J.png")
 
-                combined_alice_base_J_pps[k].update_x("J", v.x_vals)
+                combined_alice_base_J_pps[new_key].update_x("J", v.x_vals)
                 y_vals, y_lim = v.ys["a=0"]
-                combined_alice_base_J_pps[k].update_ys(k, f"a=0, alice_basis={rc.alice_basis}", y_vals, y_lim)
+                combined_alice_base_J_pps[new_key].update_ys(k, f"a=0, alice_basis={rc.alice_basis}", y_vals, y_lim)
                 y_vals, y_lim = v.ys["a=1"]
-                combined_alice_base_J_pps[k].update_ys(k, f"a=1, alice_basis={rc.alice_basis}", y_vals, y_lim)
+                combined_alice_base_J_pps[new_key].update_ys(k, f"a=1, alice_basis={rc.alice_basis}", y_vals, y_lim)
             
             for k, v in rc.h_pps.items():
+                new_key = f"{rc.name}_{rc.N}_{k}"
                 if k not in combined_alice_base_h_pps:
-                    combined_alice_base_h_pps[k] = PlotProperties(f"{rc.name}/N{rc.N}/{k}_vs_h.png")
+                    combined_alice_base_h_pps[new_key] = PlotProperties(f"{rc.name}/N{rc.N}/{k}_vs_h.png")
 
-                combined_alice_base_h_pps[k].update_x("h", v.x_vals)
+                combined_alice_base_h_pps[new_key].update_x("h", v.x_vals)
                 y_vals, y_lim = v.ys["a=0"]
-                combined_alice_base_h_pps[k].update_ys(k, f"a=0, alice_basis={rc.alice_basis}", y_vals, y_lim)
+                combined_alice_base_h_pps[new_key].update_ys(k, f"a=0, alice_basis={rc.alice_basis}", y_vals, y_lim)
                 y_vals, y_lim = v.ys["a=1"]
-                combined_alice_base_h_pps[k].update_ys(k, f"a=1, alice_basis={rc.alice_basis}", y_vals, y_lim)
-
-            for k, v in rc.errs_pps.items():
-                v = v['p_classical_error']
-                new_key = f"{rc.alice_basis}_{k}"
-
-                if new_key not in class_comm_vs_N_pps:
-                    class_comm_vs_N_pps[new_key] = PlotProperties(f"{rc.name}/{rc.alice_basis}/{k}_vs_class_error_for_Ns.png")
-
-                class_comm_vs_N_pps[new_key].update_x("p_classical_comm_error", v.x_vals)
-                y_vals, y_lim = v.ys["J=1.0"]
-                class_comm_vs_N_pps[new_key].update_ys(k, f"N={rc.N}", y_vals, y_lim)
+                combined_alice_base_h_pps[new_key].update_ys(k, f"a=1, alice_basis={rc.alice_basis}", y_vals, y_lim)
 
         pps.extend(combined_alice_base_J_pps.values())
         pps.extend(combined_alice_base_h_pps.values())
