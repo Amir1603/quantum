@@ -56,12 +56,10 @@ if $is_git_repo; then
   if git describe --tags --exact-match >/dev/null 2>&1; then
     EXACT_TAG="$(git describe --tags --exact-match)"
     VERSION="$EXACT_TAG"
-    ROLLING_BRANCH_SHA="${BRANCH}-${SHA}"
     LAST_TAG="$EXACT_TAG"
   else
     LAST_TAG="$(git describe --tags --abbrev=0 2>/dev/null || echo 0.0.0)"
     VERSION="${LAST_TAG}-${BRANCH}-${SHA}"
-    ROLLING_BRANCH_SHA="${BRANCH}-${SHA}"
   fi
 else
   BRANCH="no-git"
@@ -70,13 +68,12 @@ else
   DATE_ISO="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   LAST_TAG="0.0.0"
   VERSION="0.0.0-standalone-${SHA}"
-  ROLLING_BRANCH_SHA="${VERSION}"
 fi
 
 # --- Tag strategy ---
 # Always: :<version> and :<branch>-<sha>
 # If branch is main/master: also :latest
-TAGS=("${IMAGE}:${VERSION}" "${IMAGE}:${ROLLING_BRANCH_SHA}")
+TAGS=("${IMAGE}:${VERSION}")
 if [[ "${BRANCH}" == "main" || "${BRANCH}" == "master" ]]; then
   TAGS+=("${IMAGE}:latest")
 fi
