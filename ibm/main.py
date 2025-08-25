@@ -37,7 +37,7 @@ def report_and_plot(results_obj: Results, args):
 
     # --- Plotting ---
     filter = {}
-    # filter = {'conf_params.xor_alice_res': 0}
+    # filter = {'conf_params.a': 0}
 
     energy_file = None
     charge_file = None
@@ -67,18 +67,18 @@ def report_and_plot(results_obj: Results, args):
         charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_excited_superposition_error', filter, obs=['charge'], group_by=['conf_params.J'])
 
     if args.both_alice_values:
-        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['E_B'], group_by=['conf_params.xor_alice_res'])
-        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['charge'], group_by=['conf_params.xor_alice_res'])
-        h1_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['H1_B'], group_by=['conf_params.xor_alice_res'])
-        v_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['V_B'], group_by=['conf_params.xor_alice_res'])
+        energy_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['E_B'], group_by=['conf_params.a'])
+        charge_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['charge'], group_by=['conf_params.a'])
+        h1_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['H1_B'], group_by=['conf_params.a'])
+        v_file = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'J', filter, obs=['V_B'], group_by=['conf_params.a'])
 
     if energy_file: plot_filenames.append(energy_file)
     if charge_file: plot_filenames.append(charge_file)
     if h1_file: plot_filenames.append(h1_file)
     if v_file: plot_filenames.append(v_file)
 
-    # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['E_B'], group_by=['conf_params.xor_alice_res'])
-    # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.xor_alice_res'])
+    # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['E_B'], group_by=['conf_params.a'])
+    # file_name = plotting.plot_expectation_vs_parameter_filtered_subplots(results_list, output_dir, 'J', subplot_params=['conf_params.p_dephase'], obs=['charge'], group_by=['conf_params.a'])
 
     # filter = {'conf_params.h': 1.0, 'conf_params.J': 1.0}
     # file_name = plotting.plot_expectation_vs_parameter_filtered(results_list, output_dir, 'p_dephase')
