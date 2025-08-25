@@ -9,7 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Create a virtualenv (you said you use venv)
-RUN python -m venv "$VIRTUAL_ENV" && pip install --upgrade pip
+RUN pip install --upgrade pip
 
 # Workdir & app files
 WORKDIR /app

@@ -26,16 +26,14 @@
 #
 set -euo pipefail
 
-# --------- REQUIRED: remote docker host ----------
-: "${DOCKER_HOST:?Set DOCKER_HOST, e.g. 'export DOCKER_HOST=ssh://me@remote-host'}"
-
 # --------- CONFIG (override by exporting env vars) ----------
-IMAGE="${IMAGE:-amir/charge-qkd:latest}"
+IMAGE="${IMAGE:-0504202509/charge-qkd:latest}"
 OUT_DIR="${OUT_DIR:-./artifacts}"
 PARALLEL_LIMIT="${PARALLEL_LIMIT:-0}"     # 0 = unlimited
 CLEAN_IMAGE="${CLEAN_IMAGE:-true}"
 SAVE_LOGS="${SAVE_LOGS:-true}"
 DOCKER_RUN_EXTRA="${DOCKER_RUN_EXTRA:-}"  # e.g. "--gpus all -e FOO=1"
+DOCKER_REMOTE_HOST="${DOCKER_HOST:-ssh://amir@home-nuc.local}"
 # -----------------------------------------------------------
 
 # Split DOCKER_RUN_EXTRA into an array safely (if set)
@@ -51,7 +49,7 @@ sanitize() {
 }
 
 running_count() {
-  docker ps --filter "label=job_group=${RUN_ID}" --format '{{.ID}}' | wc -l | xargs
+  docker -H "$DOCKER_REMOTE_HOST" ps --filter "label=job_group=${RUN_ID}" --format '{{.ID}}' | wc -l | xargs
 }
 
 throttle() {
@@ -115,19 +113,19 @@ echo "[$(timestamp)] Tasks:       ${#TASKS[@]}"
 echo
 
 # Pull image on remote if missing
-docker image inspect "$IMAGE" >/dev/null 2>&1 || docker pull "$IMAGE" >/dev/null
+docker -H "$DOCKER_REMOTE_HOST" image inspect "$IMAGE" >/dev/null 2>&1 || docker -H "$DOCKER_REMOTE_HOST" pull "$IMAGE" >/dev/null
 
 # Trap to force-kill & remove on error/interrupt (best-effort)
 cleanup_trap() {
   echo
   echo "[$(timestamp)] Trap: cleaning any leftover containers for ${RUN_ID}..."
   # Stop quickly (if any still running), then remove with volumes
-  ids="$(docker ps -aq --filter "label=job_group=${RUN_ID}")" || true
+  ids="$(docker -H "$DOCKER_REMOTE_HOST" ps -aq --filter "label=job_group=${RUN_ID}")" || true
   if [[ -n "${ids:-}" ]]; then
-    docker rm -fv $ids >/dev/null 2>&1 || true
+    docker -H "$DOCKER_REMOTE_HOST" rm -fv $ids >/dev/null 2>&1 || true
   fi
   if [[ "${CLEAN_IMAGE}" == "true" ]]; then
-    docker rmi "$IMAGE" >/dev/null 2>&1 || true
+    docker -H "$DOCKER_REMOTE_HOST" rmi "$IMAGE" >/dev/null 2>&1 || true
   fi
 }
 trap cleanup_trap EXIT INT TERM
@@ -149,7 +147,8 @@ for entry in "${TASKS[@]}"; do
   # We override entrypoint so we can keep your "echo | python ..." behavior.
   # Working dir is /app (from Dockerfile). PATH already includes venv bin.
   # We also ensure /app/artifacts exists (harmless if already there).
-  docker run -d \
+  docker -H "$DOCKER_REMOTE_HOST" \
+    run -d \
     --name "$cname" \
     --label "job_group=${RUN_ID}" \
     "${RUN_EXTRA_ARR[@]}" \
@@ -166,7 +165,7 @@ echo "[$(timestamp)] Waiting for jobs to finish..."
 declare -A EXITCODES=()
 
 for cname in "${CONTAINERS[@]}"; do
-  code="$(docker wait "$cname")" || code="$?"
+  code="$(docker -H "$DOCKER_REMOTE_HOST" wait "$cname")" || code="$?"
   EXITCODES["$cname"]="$code"
   echo "[$(timestamp)] Done: ${JOB2NAME[$cname]} -> exit $code"
 done
@@ -180,7 +179,7 @@ for cname in "${CONTAINERS[@]}"; do
   mkdir -p "$dest"
 
   # Copy artifacts (contents) from container
-  if docker cp "${cname}:/app/artifacts/." "$dest/" 2>/dev/null; then
+  if docker -H "$DOCKER_REMOTE_HOST" cp "${cname}:/app/artifacts/." "$dest/" 2>/dev/null; then
     :
   else
     echo "  (no artifacts for ${job})"
@@ -188,7 +187,7 @@ for cname in "${CONTAINERS[@]}"; do
 
   # Save logs for debugging / provenance
   if [[ "${SAVE_LOGS}" == "true" ]]; then
-    docker logs "$cname" > "${dest}/container.log" 2>&1 || true
+    docker -H "$DOCKER_REMOTE_HOST" logs "$cname" > "${dest}/container.log" 2>&1 || true
   fi
 done
 
@@ -196,12 +195,12 @@ done
 echo
 echo "[$(timestamp)] Cleaning containers and anonymous volumes on remote..."
 for cname in "${CONTAINERS[@]}"; do
-  docker rm -v "$cname" >/dev/null 2>&1 || true
+  docker -H "$DOCKER_REMOTE_HOST" rm -v "$cname" >/dev/null 2>&1 || true
 done
 
 if [[ "${CLEAN_IMAGE}" == "true" ]]; then
   echo "[$(timestamp)] Removing remote image: $IMAGE"
-  docker rmi "$IMAGE" >/dev/null 2>&1 || true
+  docker -H "$DOCKER_REMOTE_HOST" rmi "$IMAGE" >/dev/null 2>&1 || true
 fi
 
 # Disarm trap (we already cleaned)
