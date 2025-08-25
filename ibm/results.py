@@ -54,7 +54,7 @@ class Results:
                 'h': conf.h, 'J': conf.J, 'total_shots': conf.total_shots,
                 'delay_time': conf.delay_time, 'N': conf.N,
                 'p_dephase': conf.p_dephase,
-                'xor_alice_res': conf.xor_alice_res,
+                'a': conf.xor_alice_res,
                 'alice_basis': getattr(observable, 'alice_basis', None),
                 'p_depol_error': conf.errors.p_depol_error,
                 'p_bitflip_error': conf.errors.p_bitflip_error,
