@@ -28,7 +28,7 @@ set -euo pipefail
 
 # --------- CONFIG (override by exporting env vars) ----------
 IMAGE="${IMAGE:-0504202509/charge-qkd:latest}"
-OUT_DIR="${OUT_DIR:-./artifacts}"
+OUT_DIR="${OUT_DIR:-./artifacts/remote_runs}"
 PARALLEL_LIMIT="${PARALLEL_LIMIT:-0}"     # 0 = unlimited
 CLEAN_IMAGE="${CLEAN_IMAGE:-true}"
 SAVE_LOGS="${SAVE_LOGS:-true}"
@@ -175,7 +175,8 @@ echo
 echo "[$(timestamp)] Collecting artifacts into: $OUT_DIR"
 for cname in "${CONTAINERS[@]}"; do
   job="${JOB2NAME[$cname]}"
-  dest="${OUT_DIR}/$(sanitize "$job")"
+  jobname="$(sanitize "$job")"
+  dest="${OUT_DIR}"
   mkdir -p "$dest"
 
   # Copy artifacts (contents) from container
@@ -187,7 +188,7 @@ for cname in "${CONTAINERS[@]}"; do
 
   # Save logs for debugging / provenance
   if [[ "${SAVE_LOGS}" == "true" ]]; then
-    docker -H "$DOCKER_REMOTE_HOST" logs "$cname" > "${dest}/container.log" 2>&1 || true
+    docker -H "$DOCKER_REMOTE_HOST" logs "$cname" > "${dest}/${jobname}.log" 2>&1 || true
   fi
 done
 
