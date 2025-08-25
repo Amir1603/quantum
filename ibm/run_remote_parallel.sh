@@ -177,7 +177,9 @@ for cname in "${CONTAINERS[@]}"; do
   job="${JOB2NAME[$cname]}"
   jobname="$(sanitize "$job")"
   dest="${OUT_DIR}"
+  logsdir="${dest}/logs"
   mkdir -p "$dest"
+  mkdir -p "$logsdir"
 
   # Copy artifacts (contents) from container
   if docker -H "$DOCKER_REMOTE_HOST" cp "${cname}:/app/artifacts/." "$dest/" 2>/dev/null; then
@@ -188,7 +190,7 @@ for cname in "${CONTAINERS[@]}"; do
 
   # Save logs for debugging / provenance
   if [[ "${SAVE_LOGS}" == "true" ]]; then
-    docker -H "$DOCKER_REMOTE_HOST" logs "$cname" > "${dest}/${jobname}.log" 2>&1 || true
+    docker -H "$DOCKER_REMOTE_HOST" logs "$cname" > "${logsdir}/${jobname}.log" 2>&1 || true
   fi
 done
 
