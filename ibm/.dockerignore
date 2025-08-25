@@ -8,6 +8,6 @@ __pycache__/
 venv/
 build/
 dist/
-.artifacts/        # if you have a different local cache folder
-artifacts/         # don't bake previous run results into the image
+artifacts
+artifacts/
 Dockerfile
