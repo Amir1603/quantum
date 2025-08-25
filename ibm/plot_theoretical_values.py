@@ -107,7 +107,6 @@ def run_errors(rc: SingleNumericalRunConf):
             run_single_error(errs, conf, rc, err_name)
 
 if __name__ == "__main__":
-    plt.autoscale(enable=True, axis='both', tight=None)
     run_confs = [NumericalRunConf.AliceConf(), NumericalRunConf.NNConf()]
     pps = []
 
@@ -129,7 +128,7 @@ if __name__ == "__main__":
             for k, v in rc.J_pps.items():
                 new_key = f"{rc.name}_{rc.N}_{k}"
                 if k not in combined_alice_base_J_pps:
-                    combined_alice_base_J_pps[new_key] = PlotProperties(f"{rc.name}/N{rc.N}/{k}_vs_J.png")
+                    combined_alice_base_J_pps[new_key] = PlotProperties(f"{rc.name}/both_bases/N{rc.N}/{k}_vs_J.png")
 
                 combined_alice_base_J_pps[new_key].update_x("J", v.x_vals)
                 y_vals, y_lim = v.ys["a=0"]
@@ -140,7 +139,7 @@ if __name__ == "__main__":
             for k, v in rc.h_pps.items():
                 new_key = f"{rc.name}_{rc.N}_{k}"
                 if k not in combined_alice_base_h_pps:
-                    combined_alice_base_h_pps[new_key] = PlotProperties(f"{rc.name}/N{rc.N}/{k}_vs_h.png")
+                    combined_alice_base_h_pps[new_key] = PlotProperties(f"{rc.name}/both_bases/N{rc.N}/{k}_vs_h.png")
 
                 combined_alice_base_h_pps[new_key].update_x("h", v.x_vals)
                 y_vals, y_lim = v.ys["a=0"]
@@ -148,8 +147,10 @@ if __name__ == "__main__":
                 y_vals, y_lim = v.ys["a=1"]
                 combined_alice_base_h_pps[new_key].update_ys(k, f"a=1, alice_basis={rc.alice_basis}", y_vals, y_lim)
 
-        pps.extend(combined_alice_base_J_pps.values())
-        pps.extend(combined_alice_base_h_pps.values())
+        if len(combined_alice_base_J_pps) > 1:
+            pps.extend(combined_alice_base_J_pps.values())
+        if len(combined_alice_base_h_pps) > 1:
+            pps.extend(combined_alice_base_h_pps.values())
 
         class_comm_run_confs = [SingleNumericalRunConf(run_conf.name, run_conf.H_type, run_conf.OB_types, basis) for basis in run_conf.alice_bases]
 

@@ -141,12 +141,10 @@ class PlotProperties:
         axis.set_xlabel(self.x_label)
         axis.set_ylabel(self.y_label)
         axis.grid(True)
+        axis.legend()
 
         if self.add_v_line:
             PlotProperties._add_avg_zero_vline(axis, which='first', vline_kws={'color': 'black', 'linestyle': '--'})
-
-        handles, labels = PlotProperties.get_unique_legend(axis)
-        fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3)
 
         os.makedirs(os.path.dirname(self.path), exist_ok=True)
         fig.savefig(self.path, bbox_inches='tight')
