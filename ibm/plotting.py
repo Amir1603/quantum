@@ -111,7 +111,10 @@ def plot_expectation_vs_parameter(results_list, x_param_path, y_param_path, outp
          filter_strs.append(f"Obs={','.join(observables_to_plot)}")
 
     ax.set_xlabel(x_param_path.split('.')[-1])
-    ax.set_ylabel(observables_to_plot)
+    if len(observables_to_plot) == 1:
+        ax.set_ylabel(observables_to_plot[0])
+    else:
+        ax.set_ylabel(observables_to_plot)
 
     for group_label, data in grouped_data.items():
         # Ensure all lists have same length before zipping, pad error if needed
