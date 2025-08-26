@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 from Calculators import NumericalTFIM
 import utils
@@ -126,8 +125,9 @@ if __name__ == "__main__":
             pps.extend(rc.get_all_pps())
 
             for k, v in rc.J_pps.items():
-                new_key = f"{rc.name}_{rc.alice_basis}_{rc.N}_{k}"
-                if k not in combined_alice_base_J_pps:
+                new_key = f"{rc.name}_{rc.N}_{k}"
+
+                if new_key not in combined_alice_base_J_pps:
                     combined_alice_base_J_pps[new_key] = PlotProperties(f"{rc.name}/both_bases/N{rc.N}/{k}_vs_J.png")
 
                 combined_alice_base_J_pps[new_key].update_x("J", v.x_vals)
@@ -137,8 +137,9 @@ if __name__ == "__main__":
                 combined_alice_base_J_pps[new_key].update_ys(k, f"a=1, alice_basis={rc.alice_basis}", y_vals, y_lim)
             
             for k, v in rc.h_pps.items():
-                new_key = f"{rc.name}_{rc.alice_basis}_{rc.N}_{k}"
-                if k not in combined_alice_base_h_pps:
+                new_key = f"{rc.name}_{rc.N}_{k}"
+
+                if new_key not in combined_alice_base_h_pps:
                     combined_alice_base_h_pps[new_key] = PlotProperties(f"{rc.name}/both_bases/N{rc.N}/{k}_vs_h.png")
 
                 combined_alice_base_h_pps[new_key].update_x("h", v.x_vals)

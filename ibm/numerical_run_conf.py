@@ -19,15 +19,15 @@ class SingleNumericalRunConf:
         }
         self.h_pps = {
             k: PlotProperties(
-                f"{self.name}/{self.alice_basis}/N{self.N}/{k}_vs_h.png", True
+                f"{self.name}/{self.alice_basis}/N{self.N}/{k}_vs_h.png"
             ) for k in self.OB_types.keys()
         }
         self.errs_pps = {k: {e: PlotProperties(
-                f"{self.name}/{self.alice_basis}/N{self.N}/{k}_vs_{e}.png"
+                f"{self.name}/{self.alice_basis}/N{self.N}/{k}_vs_{e}.png", True
             ) for e in NumericalRunConf.get_errors()} for k in self.OB_types.keys()}
         self.class_comm_errs_N_pps = {
             k: PlotProperties(
-                f"{self.name}/{self.alice_basis}/{k}_vs_p_class_comm_err.png"
+                f"{self.name}/{self.alice_basis}/{k}_vs_p_class_comm_err.png", True
             ) for k in self.OB_types.keys()}
 
     def get_all_pps(self) -> list[PlotProperties]:
