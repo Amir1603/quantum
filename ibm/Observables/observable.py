@@ -49,12 +49,24 @@ class Observable:
 
     def apply_ground_state(self, qc: QuantumCircuit, use_density_matrix: bool):
         """Prepares the ground state for the TFIM."""
-        qubits = list(range(self.N+1))
+        if self.N == 1 and not use_density_matrix:
+            # stable β in [0, π/2]
+            # (either form is fine; keep one to avoid roundoff pitfalls)
+            beta = 0.5 * np.atan2(self.J, -2.0*self.h)
 
-        prep = SetDensityMatrix(self._calc.rho) if use_density_matrix \
-                    else StatePreparation(self._calc.gs0)
+            a = utils.get_alice_idx(self.N)
+            b = utils.get_bob_idx(self.N)
 
-        qc.append(prep, qubits)
+            qc.ry(-2.0*beta, a)   # cosβ|0> - sinβ|1>
+            qc.cx(a, b)           # -> cosβ|00> - sinβ|11>
+        else:
+            qubits = list(range(self.N+1))
+
+            prep = SetDensityMatrix(self._calc.rho) if use_density_matrix \
+                        else StatePreparation(self._calc.gs0)
+
+            qc.append(prep, qubits)
+
 
     def _get_operator_matrix(self, pauli_string: str) -> np.ndarray | None:
         """Helper to get sparse matrix for a given Pauli string."""
