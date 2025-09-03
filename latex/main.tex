@@ -1,0 +1,89 @@
+\documentclass[10pt,twocolumn]{article}
+
+% PAGE LAYOUT
+\usepackage[a4paper,margin=1.8cm]{geometry} % adjust margins as needed
+\setlength{\columnsep}{0.6cm} % space between columns
+
+% LANGUAGE, ENCODING, FONTS
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}  % or use \usepackage{mathptmx} for math+text Times font
+\usepackage[hyphens]{url}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+% MATH PACKAGES
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{braket}
+\usepackage{bm}
+\usepackage{physics}
+
+% GRAPHICS & FLOATS
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{placeins}
+\usepackage{silence}
+\usepackage{stfloats}   % enables bottom double-column floats
+\fnbelowfloat           % (optional) keep footnotes below bottom floats
+
+% REFERENCES
+\usepackage[numbers,sort&compress]{natbib}
+
+% LINKS (disable for some journal submissions)
+\usepackage[colorlinks=true,citecolor=blue,linkcolor=blue,urlcolor=blue]{hyperref}
+
+% CUSTOM COMMANDS
+\newcommand{\ketgs}{\ket{\text{gs}}}
+\newcommand{\brags}{\bra{\text{gs}}}
+
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.8}
+\renewcommand{\dbltopfraction}{0.9}
+\renewcommand{\dblfloatpagefraction}{0.8}
+
+% TITLE & AUTHORS
+\title{\bfseries Quantum Key Distribution via Charge Teleportation}
+\author{Amir Yona \\ \small Tel Aviv University}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\input{1 - introduction}
+\input{2 - protocol}
+\input{3 - hamiltonians}
+\input{4 - numerical simulation}
+\input{5 - qiskit simulation}
+\input{6 - noise and errors}
+\input{7 - summary}
+
+\FloatBarrier
+
+\clearpage
+\appendix
+\section*{Appendix}
+\addcontentsline{toc}{section}{Appendix}
+\input{Appendix/protocol}
+\input{Appendix/hamiltonians}
+\input{Appendix/numerical simulation}
+\FloatBarrier
+\clearpage
+\input{Appendix/qiskit simulation}
+\input{Appendix/statistical analysis}
+\input{Appendix/noise and errors}
+
+\clearpage
+\input{bibliography}
+
+\clearpage
+\input{Backlog}
+
+\end{document}

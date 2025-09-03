@@ -1,0 +1,252 @@
+\section{Hamiltonians}
+\label{sec:hamiltonians}
+
+\subsection{Star-Coupled TFIM Hamiltonian}
+
+\subsubsection{Star-Coupled TFIM Hamiltonian Definition}
+\label{sec:alice_hamiltonian}
+
+We consider the first type of Hamiltonian, denoted \( H^{(1)} \), in which a central site (denoted as site $0$ - Alice's site) interacts locally with all other spins via transverse Ising-type couplings (star interaction). The system is defined as:
+
+\begin{equation}
+H^{(1)} = J \sum_{k=1}^{N} X_0 X_k + h \sum_{k=0}^{N} Z_k,
+\label{eq:H1}
+\end{equation}
+
+where the global state resides in the Hilbert space \( \mathcal{H} = (\mathbb{C}^2)^{\otimes (N+1)} \). The site \( 0 \) is assigned to Alice, while site \( N \) is assigned to Bob. The corresponding localized Hamiltonian on Bob’s side, derived from the global Hamiltonian by isolating terms involving site \( N \), is:
+
+\begin{equation}
+H_B^{(1)} = h Z_N + J X_0 X_N.
+\end{equation}
+
+\subsubsection{Teleportation Protocol with \texorpdfstring{\( \sigma_A = X_0 \)}{sigmaAX0}}
+
+In this configuration, Alice measures her qubit (site 0) using the Pauli operator \( X_0 \), and sends the result \( b \in \{0,1\} \) to Bob. The measurement corresponds to the projector:
+\begin{equation}
+P_A(b) = \frac{1}{2} \left( I - (-1)^b X_0 \right).
+\end{equation}
+Upon receiving the classical bit \( b \), Bob applies the conditional rotation:
+\begin{equation}
+U_B(b) = \exp\left( -i \theta (-1)^b Y_N \right),
+\end{equation}
+where \( \theta \) is a protocol-dependent angle chosen to optimize the extraction of the target observable.
+
+The choice \( \sigma_A = X_0 \) is dictated by a structural requirement of the teleportation protocol. In order for Bob’s observable to exhibit a nontrivial response following Alice’s measurement, it is necessary that the measurement projector \( P_A(b) \) commute with Bob’s local Hamiltonian:
+\begin{equation}
+[H_B, P_A(b)] = 0.
+\end{equation}
+But in the current case, Bob's local Hamiltonian is
+\begin{equation*}
+H_B^{(1)} = h Z_N + J X_0 X_N.
+\end{equation*}
+This Hamiltonian involves the operator \( X_0 \), and thus commutes with the projector \( P_A(b) \) if and only if it is defined using \( \sigma_A = X_0 \). If we were to choose, for example, \( \sigma_A = Y_0 \), then \( P_A(b) \) would no longer commute with \( H_B^{(1)} \), violating a core requirement of the protocol and destroying the condition for coherent observable transfer.
+
+This commutation condition ensures that Alice’s measurement introduces no direct disturbance into Bob’s local energy configuration beyond what is mediated by classical communication and pre-existing entanglement. It is therefore essential for enabling observable teleportation in this setting.
+
+\subsubsection{Evaluation of Energy Extraction for \texorpdfstring{\( H_B^{(1)} \)}{HB1}}
+
+We analyze the teleportation of Bob’s local energy observable \( H_B^{(1)} = h Z_N + J X_0 X_N \). Following standard derivations, the relevant quantities for computing the extracted energy are:
+
+\begin{equation}
+    \xi = -2h \langle Z_N \rangle - 2J \langle X_0 X_N \rangle = -2\langle H_B^{(1)} \rangle \\
+\end{equation}
+\begin{equation}
+    \eta = 2h \langle X_0 X_N \rangle - 2J \langle Z_N \rangle
+\end{equation}
+
+Hence, assuming \( a = 0 \), i.e., Bob uses the correct bit from Alice (no flip), the expected value of Bob’s energy change, optimized over \( \theta \), becomes:
+
+\begin{equation}
+\label{eq:delta_HB1}
+    \begin{aligned}
+        \langle \Delta H_B^{(1)} \rangle =&{} -\left( h\langle Z_N\rangle + J\langle X_0X_N\rangle\right) \nonumber\\
+        & - \sqrt{\left( h^2 + J^2\right)\left( \langle Z_N\rangle^2 + \langle X_0X_N\rangle^2 \right)}
+    \end{aligned}
+\end{equation}
+
+\subsubsection{Interpretation and Observable Behavior}
+
+Based on the properties of the ground state for \( H^{(1)} \), it holds that \( \langle X_0 \rangle = \langle X_N \rangle = 0 \), and \( \langle Z_N \rangle \in [-1, 1] \). Hence, all contributions to observables teleportation depend on the correlations \( \langle X_0 X_N \rangle \) and \( \langle Z_N \rangle \). Notably, in the limit \( J \ll h \), we recover:
+
+\begin{equation*}
+\langle \Delta H_B^{(1)} \rangle \to 0, \quad \langle \Delta Q_B \rangle \to 0,
+\end{equation*}
+
+and in the strong coupling limit \( J \gg h \), we again obtain:
+
+\begin{equation*}
+\langle \Delta H_B^{(1)} \rangle \to 0, \quad \langle \Delta Q_B \rangle \to -\frac{1}{2} (-1)^a,
+\end{equation*}
+
+where \( a \in \{0,1\} \) is chosen by Alice according to the described protocol.
+
+This confirms that although energy teleportation vanishes in the asymptotic regimes, charge teleportation may still retain bit-dependent signatures, making it more suitable for QKD applications. These observations match the simulations presented in Sections \ref{sec:numerical_sim} and \ref{sec:qiskit_sim} of this work.
+
+\subsection{Nearest-Neighbors Hamiltonian}
+
+\subsubsection{Nearest Neighbors Hamiltonian}
+\label{sec:nn_hamiltonian}
+
+We now consider the second type of Hamiltonian, denoted \( H^{(2)} \), in which each spin interacts only with its nearest neighbors, forming a 1D transverse field Ising chain. The system Hamiltonian is given by:
+
+\begin{equation}
+H^{(2)} = J \sum_{k=1}^{N} X_{k-1} X_k + h \sum_{k=0}^{N} Z_k
+\label{eq:H2}
+\end{equation}
+
+where, again, site \( 0 \) is assigned to Alice and site \( N \) to Bob. The Hilbert space is \( \mathcal{H} = (\mathbb{C}^2)^{\otimes (N+1)} \). The localized Hamiltonian for Bob’s site (site \( N \)) includes the interaction with its nearest neighbor and is given by:
+
+\begin{equation}
+H_B^{(2)} = h Z_N + J X_{N-1} X_N.
+\end{equation}
+
+\paragraph{Note on the Case \( N = 1 \):} For a system with $2$ sites, the global Hamiltonian \( H^{(2)} \) reduces to:
+
+\begin{equation*}
+H^{(2)} = J X_0 X_1 + h (Z_0 + Z_1),
+\end{equation*}
+
+which is identical to \( H^{(1)} \). In this case, the measurement basis must again be \( \sigma_A = X_0 \) to satisfy the commutation requirement. Therefore, the flexibility of using \( \sigma_A = Y_0 \) is only applicable when \( N \geq 2 \).
+
+\subsubsection{Teleportation Protocol with \texorpdfstring{\( \sigma_A = X_0 \)}{sigmaAX0}}
+
+For \( N \geq 2 \), Alice may choose \( \sigma_A = X_0 \), leading to the following measurement and rotation steps:
+
+\begin{equation}
+P_A^{(X)}(b) = \frac{1}{2} \left( I - (-1)^b X_0 \right),
+\end{equation}
+\begin{equation}
+U_B^{(X)}(b) = \exp\left( -i \theta (-1)^b Y_N \right),
+\end{equation}
+
+where \( b \in \{0,1\} \) is the classical bit sent from Alice to Bob. The choice \( \sigma_A = X_0 \) is compatible with \( H_B^{(2)} \) because the operator \( X_0 \) appears only indirectly via the entanglement structure of the ground state, and the measurement projector \( P_A^{(X)}(b) \) commutes with \( H_B^{(2)} \) due to the spatial separation.
+
+\subsubsection{Teleportation Protocol with \texorpdfstring{\( \sigma_A = Y_0 \)}{sigmaAY0}}
+
+Alternatively, Alice may choose \( \sigma_A = Y_0 \), using the measurement projector:
+
+\begin{equation}
+P_A^{(Y)}(b) = \frac{1}{2} \left( I - (-1)^b Y_0 \right),
+\end{equation}
+\begin{equation}
+U_B^{(Y)}(b) = \exp\left( -i \theta (-1)^b X_N \right).
+\end{equation}
+
+In contrast to the \( H^{(1)} \) case, this choice is valid here because \( H_B^{(2)} \) does not contain \( X_0 \) explicitly. Thus, both \( P_A^{(X)}(b) \) and \( P_A^{(Y)}(b) \) commute with \( H_B^{(2)} \), and the protocol remains structurally consistent.
+
+\subsubsection{Evaluation of Energy Extraction for \texorpdfstring{\( H_B^{(2)} \)}{HB2}}
+
+\subsubsection*{Case 1: \texorpdfstring{\( \sigma_A = X_0 \)}{sigmaAX0}}
+
+In this configuration, the protocol is defined by Alice’s measurement using \( X_0 \) and Bob’s rotation with \( Y_N \). The protocol analysis yields the following:
+
+\begin{align}
+\label{eq:HB2_xi_eta}
+\xi &= -2h \langle Z_N \rangle - 2J \langle X_{N-1} X_N \rangle = -2 \langle H_B^{(2)} \rangle \\
+\eta &= 2h \langle X_0 X_N \rangle - 2J \langle X_0 X_{N-1} Z_N \rangle
+\end{align}
+
+These expectation values are taken in the ground state of the global Hamiltonian. The teleported energy is then given by the expression in \eqref{eq:delta_HB2}.
+
+\begin{figure*}[tb!]
+    \centering
+    {\small
+    \begin{equation}
+    \label{eq:delta_HB2}
+    \begin{aligned}
+      &\langle \Delta H_B^{(2)} \rangle = -h\langle Z_N \rangle - J\langle X_{N-1} X_N \rangle \\
+            & - \frac{
+                h^2\left(\langle Z_N \rangle^2 + (-1)^a\langle X_0X_N \rangle^2\right)
+                - 2hJ\left(\langle Z_N \rangle\langle X_{N-1}X_N \rangle - (-1)^a\langle X_0X_N \rangle\langle X_0X_{N-1}Z_N \rangle\right)
+                {}+ J^2\left(\langle X_0X_N \rangle^2 + (-1)^a\langle X_0X_{N-1}Z_N \rangle^2\right)
+            }{
+            \sqrt{
+                h^2\left(\langle Z_N \rangle^2 + \langle X_0X_N \rangle^2\right)
+                - 2hJ\left(\langle Z_N \rangle\langle X_{N-1}X_N \rangle - \langle X_0X_N \rangle\langle X_0X_{N-1}Z_N \rangle\right)
+                + J^2\left(\langle X_0X_N \rangle^2 + \langle X_0X_{N-1}Z_N \rangle^2\right)
+            }}
+    \end{aligned}
+    \end{equation}
+    }
+    \caption*{Energy extracted by Bob for $H^{(2)}$ for $\sigma_A = X_0$ (\textbf{\textcolor{BrickRed}{TODO: Find a better way to show it, maybe in appendix - but what about consistency with other expressions shown in paper?}})}
+\end{figure*}
+
+\subsubsection*{Case 2: \texorpdfstring{\( \sigma_A = Y_0 \)}{sigmaAY0}}
+
+When Alice measures using \( Y_0 \), the analysis proceeds similarly but with distinct correlation terms:
+
+\begin{align}
+\xi &= -2h \langle Z_N \rangle \\
+\eta &= -2h \langle Y_0 X_N \rangle
+\end{align}
+
+So the optimal teleported energy becomes:
+
+\begin{equation}
+\label{eq:delta_HB2_Y}
+    \begin{aligned}
+        \langle \Delta H_B^{(2)} \rangle &{}= -h\langle Z_N \rangle - h\frac{\langle Z_N \rangle^2 + (-1)^a\langle Y_0Y_N \rangle^2}{\sqrt{\langle Z_N \rangle^2 + \langle Y_0Y_N \rangle^2}} \nonumber\\
+        &\xrightarrow[]{a=0} -h\langle Z_N \rangle - h\sqrt{\langle Z_N \rangle^2 + \langle Y_0Y_N \rangle^2}
+    \end{aligned}    
+\end{equation}
+
+\subsubsection*{Summary and Remarks}
+
+Unlike the star-coupled Hamiltonian \( H^{(1)} \), where only \( \sigma_A = X_0 \) is valid due to commutation constraints, the structure of \( H^{(2)} \) permits both \( X_0 \) and \( Y_0 \) as valid measurement observables. The corresponding expressions show distinct operator correlations, enabling energy teleportation through different symmetry channels in the entangled ground state. This is important for security reasons in order to prevent an attacker (Eve) from learning, using weak measurements, about imperfections of the shared state between Alice and Bob.
+
+These exact expressions form the basis for evaluating and comparing the performance of QET or QKD protocols across different measurement strategies and coupling regimes.
+
+\subsubsection{Interpretation and Observable Behavior}
+
+In contrast to \( H^{(1)} \), the Hamiltonian \( H^{(2)} \) generates indirect entanglement between Alice and Bob only through intermediate sites. As a result, correlations are weaker but non-zero for \( N \geq 2 \). This permits observable teleportation using either basis \( X_0 \) or \( Y_0 \), although the efficiency of the protocol depends on the specific entangled correlations in the ground state.
+
+In particular, numerical simulations indicate that the two bases lead to qualitatively similar but quantitatively distinct energy and charge profiles as functions of the coefficients \( J/h \).
+
+\subsection{Analytical Analysis}
+\subsubsection{Feasibility of Analytical Solutions}
+
+As discussed earlier, the Hilbert space for the system scales as \( 2^{N+1} \), making analytical treatment rapidly intractable as \( N \) increases. Specifically, for \( N = 2 \) (i.e., a 3-site system), one must diagonalize an \( 8 \times 8 \) Hamiltonian matrix. Although symmetry considerations allow decomposition into smaller blocks—e.g., a \( 2 \times 2 \) and a \( 6 \times 6 \) block—there is no closed-form solution for the ground state for arbitrary values of \( h \) and \( J \) when \( N \geq 2 \).
+
+Therefore, complete analytical derivation of the ground state and the corresponding teleportation dynamics is feasible only for \( N = 1 \), corresponding to a 2-site system. This serves as a fundamental benchmark for validating numerical simulations and establishing intuition for the energy and charge teleportation mechanisms.
+
+\subsubsection{\texorpdfstring{$N = 1$}{N1} Case: Exact Ground State and Teleportation Dynamics}
+
+For the 2-site system (\( N = 1 \)), the Hamiltonian takes the form:
+\begin{equation}
+    H = h(Z_0 + Z_1) + J X_0 X_1.
+\end{equation}
+
+Importantly, in this minimal model, the two types of interaction Hamiltonians coincide:
+\begin{equation*}
+    H^{(1)}_{N=1} = H^{(2)}_{N=1}.
+\end{equation*}
+
+This symmetry ensures that the protocol and its analytical consequences are identical in both cases. Following the derivation in \cite{Hotta2011,Ikeda2023}, the exact ground state is:
+\begin{equation}
+    \ket{gs} = \frac{1}{\sqrt{2E_0}} \left( -\sqrt{E_0 - h} \ket{00} + \sqrt{E_0 + h} \ket{11} \right),
+\end{equation}
+where the auxiliary variables are defined as:
+\begin{equation}
+    J = 2k, \quad E_0 = \sqrt{h^2 + k^2}, \quad r = \frac{k}{E_0}.
+\end{equation}
+
+Applying the teleportation protocol described in previous sections, the analytically calculated expectation values for the change in Bob’s local energy and charge observables are:
+\begin{align}
+    \langle \Delta H_B \rangle &= h + Jr - \frac{ \left( h^2 + (-1)^a J^2 \right) \left( 1 + (-1)^a r^2 \right) }{ \sqrt{ (h^2 + J^2)(1 + r^2) } }, \\
+    \langle \Delta Q_B \rangle &= \frac{1}{2} \left( 1 - \frac{ 1 + (-1)^a r^2 }{ \sqrt{1 + r^2} } \right).
+\end{align}
+
+These expressions explicitly capture the dependence of the teleportation process on the coupling ratio \( J/h \). The charge teleportation result \( \langle \Delta Q_B \rangle \) is dimensionless and solely determined by this ratio, while the energy teleportation \( \langle \Delta H_B \rangle \) is expressed in natural energy units, which can be scaled using either \( h \) or \( J \) depending on context.
+
+\subsubsection{Interpretation and Implications}
+
+The analytical solution for \( N=1 \) provides crucial insight into the behavior of both energy and charge teleportation in the presence of entanglement. While the model is too simple to capture long-range correlations present in larger systems, it nonetheless illustrates:
+
+\begin{itemize}
+    \item The nontrivial dependence of teleportation on the measurement bit \( a \), evident in the sign alternation terms \( (-1)^a \).
+    \item The distinct scaling behaviors of energy versus charge teleportation, suggesting potential for protocol optimization depending on the physical observable of interest.
+    \item That charge teleportation may exhibit larger bit-dependent contrast even in the strong-coupling regime \( J \gg h \), a key feature for QKD applicability.
+\end{itemize}
+
+This analytical benchmark not only validates the broader numerical framework used for larger systems (\( N \geq 2 \)), but also provides a reference point for identifying operational regimes and for calibrating hardware implementations.
+

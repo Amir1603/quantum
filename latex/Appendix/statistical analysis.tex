@@ -1,0 +1,93 @@
+\section{Statistical Framework for Quantum Circuit Simulations}
+\label{appendix:stats-analysis}
+
+The results presented in Section~\ref{sec:qiskit_sim} of the main paper are derived from simulations of quantum circuits executed on Qiskit's `aer\_simulator` and on real quantum hardware. Each execution, or "shot," is a probabilistic measurement of the system's $(N+1)$ qubits in the computational basis. This appendix details the statistical methodology used to calculate the expectation values of observables and their associated uncertainties.
+
+\subsection{Core Assumptions}
+Our analysis is based on the following standard assumptions for quantum circuit simulations:
+\begin{itemize}
+    \item \textbf{Independent and Identically Distributed (i.i.d.) Trials:} Each shot is an independent measurement drawn from the same underlying probability distribution defined by the final quantum state. The outcome of one shot does not influence any other.
+    \item \textbf{Multinomial Distribution:} For a total of $n_{\text{shots}}$ trials, the set of counts $\{c_0, c_1, \dots, c_{2^{N+1}-1}\}$ for each of the $2^{N+1}$ basis states follows a multinomial distribution.
+    \item \textbf{Central Limit Theorem (CLT):} The expectation value of an observable $\langle O \rangle$ is a sample mean calculated from a large number of shots. According to the CLT, for a sufficiently large $n_{\text{shots}}$, the sampling distribution of this mean is well-approximated by a Normal (Gaussian) distribution. This justifies the use of standard error as a measure of statistical uncertainty.
+\end{itemize}
+
+\subsection{Calculating Expectation Values and Statistical Uncertainty}
+
+\subsubsection{Expectation Value}
+An observable $O$ is measured by post-processing the counts from the simulation. The expectation value $\langle O \rangle$ is computed as:
+\begin{equation}
+    \langle O \rangle = \sum_{i=0}^{2^{N+1}-1} p_i \lambda_i
+\end{equation}
+where $p_i = c_i / n_{\text{shots}}$ is the estimated probability of measuring the basis state $|i\rangle$, and $\lambda_i = \langle i | O | i \rangle$ is the corresponding eigenvalue of the observable $O$.
+
+\subsubsection{Statistical Uncertainty (Standard Error of the Mean)}
+The statistical uncertainty of the estimated expectation value is given by the Standard Error of the Mean (SEM), denoted $\sigma_{\langle O \rangle}$. This is the quantity represented by the error bars in the plots. The SEM is calculated as:
+\begin{equation}
+    \sigma_{\langle O \rangle} = \frac{\sigma_O}{\sqrt{n_{\text{shots}}}}
+\end{equation}
+where $\sigma_O$ is the standard deviation of a \textit{single} measurement of the observable $O$. The variance, $\sigma_O^2$, is calculated directly from the simulation results using the formula:
+\begin{equation}
+    \begin{aligned}
+        \sigma_O^2 &= \text{Var}(O) = \langle O^2 \rangle - \langle O \rangle^2 \\
+        &= \left( \sum_{i} p_i \lambda_i^2 \right) - \left( \sum_{i} p_i \lambda_i \right)^2
+    \end{aligned}
+\end{equation}
+This provides a direct method to quantify the statistical noise inherent in the Monte Carlo nature of the simulation.
+
+\subsection{Application to Teleportation Observables}
+
+We now apply this framework to the specific observables measured in the charge and energy teleportation protocols.
+
+\subsubsection{Charge Teleportation (\texorpdfstring{$Q_B$}{QB})}
+The charge at Bob's site is given by the operator $Q_B = \frac{1}{2}(I + Z_N)$. Since $Q_B$ is a projector, its eigenvalues are 0 and 1. The variance of a single measurement is:
+\begin{equation}
+    \text{Var}(Q_B) = \langle Q_B^2 \rangle - \langle Q_B \rangle^2 = \langle Q_B \rangle - \langle Q_B \rangle^2
+\end{equation}
+Using the relation $\langle Q_B \rangle = \frac{1}{2}(1 + \langle Z_N \rangle)$, we find:
+\begin{equation}
+    \begin{aligned}
+        \text{Var}(Q_B) &= \frac{1}{2}(1 + \langle Z_N \rangle) - \frac{1}{4}(1 + \langle Z_N \rangle)^2 \\
+        &= \frac{1}{4}(1 - \langle Z_N \rangle^2)
+    \end{aligned}
+\end{equation}
+Thus, the SEM for the charge measurement is:
+\begin{equation}
+    \sigma_{\langle Q_B \rangle} = \frac{1}{2\sqrt{n_{\text{shots}}}} \sqrt{1 - \langle Z_N \rangle^2}
+\end{equation}
+Since this calculation relies on a single circuit execution (measuring in the Z-basis), the statistical analysis is straightforward.
+
+\subsubsection{Energy Teleportation (\texorpdfstring{$H_B$}{HB})}
+Bob's local Hamiltonian, for instance in the nearest-neighbor model ($H^{(2)}$), is $H_B = hZ_N + JX_{N-1}X_N$. The two terms, $Z_N$ and $X_{N-1}X_N$, do not commute and must be measured in separate circuit executions. This necessitates the use of error propagation to find the total uncertainty.
+
+The expectation value is $\langle H_B \rangle = h\langle Z_N \rangle + J\langle X_{N-1}X_N \rangle$. Since the measurements for $\langle Z_N \rangle$ and $\langle X_{N-1}X_N \rangle$ are from independent sets of shots, their statistical errors are uncorrelated. The total variance of the mean is the sum of the individual variances:
+\begin{equation}
+    \begin{aligned}
+        \sigma_{\langle H_B \rangle}^2 &= \text{Var}(h\langle Z_N \rangle) + \text{Var}(J\langle X_{N-1}X_N \rangle) \\
+        &= h^2 \sigma_{\langle Z_N \rangle}^2 + J^2 \sigma_{\langle X_{N-1}X_N \rangle}^2
+    \end{aligned}
+\end{equation}
+The individual SEMs are calculated as:
+\begin{align}
+    \sigma_{\langle Z_N \rangle}^2 &= \frac{1}{n_{\text{shots,Z}}} \left( \langle Z_N^2 \rangle - \langle Z_N \rangle^2 \right) \nonumber\\
+    &= \frac{1}{n_{\text{shots,Z}}} \left( 1 - \langle Z_N \rangle^2 \right) \\
+    \sigma_{\langle X_{N-1}X_N \rangle}^2 &= \frac{1}{n_{\text{shots,X}}} \left( 1 - \langle X_{N-1}X_N \rangle^2 \right)
+\end{align}
+The final expression for the uncertainty in the energy measurement is:
+\begin{equation}
+    \sigma_{\langle H_B \rangle} = \sqrt{
+        \begin{aligned}    
+        &\frac{h^2}{n_{\text{shots,Z}}} (1 - \langle Z_N \rangle^2) \\
+        &+ \frac{J^2}{n_{\text{shots,X}}} (1 - \langle X_{N-1}X_N \rangle^2)
+        \end{aligned}
+    }
+\end{equation}
+This explicitly shows that the statistical uncertainty for the energy is a combination of noise from two independent experiments, quantitatively explaining the increased fluctuations observed in the Qiskit energy plots compared to the charge plots.
+
+\subsection{Summary and Conclusions}
+
+This analysis provides a rigorous basis for the statistical error bars and the discussion of noise in the main text. Key conclusions include:
+\begin{itemize}
+    \item The increased statistical noise in energy measurements is a direct consequence of error propagation from measuring non-commuting observables in separate experiments.
+    \item The "meaningful statistical noise" observed for larger systems (e.g., $N=3, 4$ in the nearest-neighbor model) is a result of a decreasing Signal-to-Noise Ratio (SNR). As $N$ increases, the teleported signal $|\langle O \rangle|$ diminishes due to weaker correlations, while the single-shot variance $\sigma_O^2$ remains approximately constant (approaching 1). Consequently, the SEM $\sigma_{\langle O \rangle}$ becomes comparable to or larger than the signal itself, requiring a significantly larger $n_{\text{shots}}$ to resolve.
+    \item The stability of the charge teleportation protocol is attributed to its reliance on a single measurement basis and a consistently strong signal across different coupling regimes.
+\end{itemize}
