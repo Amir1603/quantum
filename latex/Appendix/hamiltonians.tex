@@ -1,0 +1,251 @@
+\section{Detailed Analytical Derivations for Quantum Observable Teleportation}
+
+\subsection{Energy Extraction in the Star-Coupled Hamiltonian \texorpdfstring{$H^{(1)}$}{H1}}
+
+\subsubsection{System Definition and Local Hamiltonian}
+
+The star-coupled Hamiltonian is defined as:
+\begin{equation}
+H^{(1)} = J \sum_{k=1}^{N} X_0 X_k + h \sum_{k=0}^{N} Z_k.
+\end{equation}
+
+The localized Hamiltonian at Bob's site (site \( N \)) is obtained by isolating the terms acting on site \( N \):
+\begin{equation}
+H_B^{(1)} = h Z_N + J X_0 X_N.
+\end{equation}
+
+\subsubsection{Protocol and Teleported Energy}
+
+In this protocol, Alice measures \( \sigma_A = X_0 \), with projection:
+\begin{equation}
+P_A(b) = \frac{1}{2} \left( I - (-1)^b X_0 \right),
+\end{equation}
+and Bob applies:
+\begin{equation}
+U_B(b) = \exp(-i \theta (-1)^b Y_N).
+\end{equation}
+
+The extracted energy after applying the operation is derived via:
+\begin{equation}
+\langle \Delta H_B \rangle = \text{Tr}[\rho' H_B] - \text{Tr}[\rho H_B],
+\end{equation}
+where \( \rho \) is the ground state and \( \rho' \) is the post-rotation state.
+
+Define:
+\begin{align}
+\xi &= -2 \langle H_B^{(1)} \rangle = -2h \langle Z_N \rangle - 2J \langle X_0 X_N \rangle, \\
+\eta &= 2h \langle X_0 X_N \rangle - 2J \langle Z_N \rangle.
+\end{align}
+
+Then the energy extracted at Bob, maximized over \( \theta \), is:
+\begin{equation}
+\langle \Delta H_B^{(1)} \rangle = -\frac{\xi}{2} - \frac{1}{2} \sqrt{\xi^2 + \eta^2}.
+\end{equation}
+
+This leads to the explicit form:
+\begin{align}
+\langle \Delta H_B^{(1)} \rangle ={}& -h \langle Z_N \rangle - J \langle X_0 X_N \rangle \nonumber \\
+& - \sqrt{(h^2 + J^2)(\langle Z_N \rangle^2 + \langle X_0 X_N \rangle^2)}.
+\end{align}
+
+\subsection{Energy Extraction in the Nearest-Neighbor Hamiltonian \texorpdfstring{$H^{(2)}$}{H2}}
+
+\subsubsection{System Definition and Local Hamiltonian}
+
+The nearest-neighbor Hamiltonian is:
+\begin{equation}
+H^{(2)} = J \sum_{k=1}^{N} X_{k-1} X_k + h \sum_{k=0}^{N} Z_k,
+\end{equation}
+and the corresponding local Hamiltonian on Bob's site is:
+\begin{equation}
+H_B^{(2)} = h Z_N + J X_{N-1} X_N.
+\end{equation}
+
+We analyze two cases separately.
+
+\subsubsection{Case I: \texorpdfstring{$\sigma_A = X_0$}{sigmaAX0}}
+
+\paragraph{Measurement and Rotation.}
+Alice projects using:
+\begin{equation}
+P_A^{(X)}(b) = \frac{1}{2} \left( I - (-1)^b X_0 \right),
+\end{equation}
+and Bob rotates with:
+\begin{equation}
+U_B^{(X)}(b) = \exp(-i \theta (-1)^b Y_N).
+\end{equation}
+
+\paragraph{Energy Extraction Parameters.}
+The relevant quantities for calculating energy change are:
+\begin{align}
+\xi &= -2h \langle Z_N \rangle - 2J \langle X_{N-1} X_N \rangle, \\
+\eta &= 2h \langle X_0 X_N \rangle - 2J \langle X_0 X_{N-1} Z_N \rangle.
+\end{align}
+
+Hence, the extracted energy is:
+\begin{equation}
+\langle \Delta H_B^{(2)} \rangle = -\frac{\xi}{2} - \frac{1}{2} \sqrt{\xi^2 + \eta^2}.
+\end{equation}
+
+This expression is structurally identical to the \( H^{(1)} \) case but involves longer-range correlations (e.g., \( \langle X_0 X_{N-1} Z_N \rangle \)) due to the indirect connectivity.
+
+\subsubsection{Case II: \texorpdfstring{$\sigma_A = Y_0$}{sigmaAY0}}
+
+\paragraph{Measurement and Rotation.}
+Alice now measures:
+\begin{equation}
+P_A^{(Y)}(b) = \frac{1}{2} \left( I - (-1)^b Y_0 \right),
+\end{equation}
+and Bob again uses:
+\begin{equation}
+U_B^{(Y)}(b) = \exp(-i \theta (-1)^b Y_N).
+\end{equation}
+
+\paragraph{Energy Extraction Parameters.}
+The expressions simplify because the correlator \( \langle X_{N-1} X_N \rangle \) vanishes under this measurement. Define:
+\begin{align}
+\xi &= -2h \langle Z_N \rangle, \\
+\eta &= -2h \langle Y_0 X_N \rangle.
+\end{align}
+
+Therefore, for \( a = 0 \), the teleported energy becomes:
+\begin{align}
+\langle \Delta H_B^{(2)} \rangle &= -h\langle Z_N \rangle - h\frac{\langle Z_N \rangle^2 + \langle Y_0Y_N \rangle^2}{\sqrt{\langle Z_N \rangle^2 + \langle Y_0Y_N \rangle^2}} \nonumber \\
+&= -\frac{\xi}{2} - \frac{1}{2} \sqrt{\xi^2 + \eta^2},
+\end{align}
+which again matches the general QET structure.
+
+\subsection{Detailed Analytical Derivation for the \texorpdfstring{$N=1$}{N=1} Case}
+
+\subsubsection{System Hamiltonian and Matrix Representation}
+
+We consider the minimal model of the quantum teleportation protocol for a two-qubit system, \( N = 1 \), with Alice assigned to site 0 and Bob to site 1. In this case, both interaction Hamiltonians coincide:
+\begin{equation}
+    H^{(1)} = H^{(2)} = J X_0 X_1 + h(Z_0 + Z_1),
+\end{equation}
+where \( J \) is the coupling strength between the qubits and \( h \) is the strength of the local transverse field.
+
+In the computational basis \( \{ \ket{00}, \ket{01}, \ket{10}, \ket{11} \} \), the Pauli operators are given by:
+\begin{equation*}
+Z_0 + Z_1 = 
+\begin{pmatrix}
+2 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 \\
+0 & 0 & 0 & -2
+\end{pmatrix}, \quad
+X_0 X_1 =
+\begin{pmatrix}
+0 & 0 & 0 & 1 \\
+0 & 0 & 1 & 0 \\
+0 & 1 & 0 & 0 \\
+1 & 0 & 0 & 0
+\end{pmatrix}.
+\end{equation*}
+
+The total Hamiltonian becomes:
+\begin{equation}
+H =
+\begin{pmatrix}
+2h & 0 & 0 & J \\
+0 & 0 & J & 0 \\
+0 & J & 0 & 0 \\
+J & 0 & 0 & -2h
+\end{pmatrix}.
+\end{equation}
+
+This matrix can be decomposed into two independent blocks based on parity symmetry:
+\[
+H =
+\begin{pmatrix}
+\text{Block}_{\text{even}} & 0 \\
+0 & \text{Block}_{\text{odd}}
+\end{pmatrix},
+\]
+where the even-parity subspace is spanned by \( \{\ket{00}, \ket{11}\} \) and the odd-parity subspace by \( \{\ket{01}, \ket{10}\} \). The Hamiltonian thus becomes:
+\begin{align}
+H_{\text{even}} &= 
+\begin{pmatrix}
+2h & J \\
+J & -2h
+\end{pmatrix}, \quad
+H_{\text{odd}} = 
+\begin{pmatrix}
+0 & J \\
+J & 0
+\end{pmatrix}.
+\end{align}
+
+\subsubsection{Ground State Derivation}
+
+The ground state resides in the even-parity subspace since it contains the lowest eigenvalue of the total Hamiltonian. The eigenvalues of \( H_{\text{even}} \) are:
+\begin{equation}
+E_{\pm} = \pm \sqrt{4h^2 + J^2}.
+\end{equation}
+
+We define \( J = 2k \), such that \( E_0 = \sqrt{h^2 + k^2} \), and the ground state energy becomes \( E_{gs} = -2E_0 \).
+
+The normalized ground state is:
+\begin{equation}
+\ket{gs} = \frac{1}{\sqrt{2E_0}} \left( -\sqrt{E_0 - h} \ket{00} + \sqrt{E_0 + h} \ket{11} \right).
+\end{equation}
+
+\subsubsection{Expectation Values and Correlations}
+
+Let us define the ratio:
+\begin{equation}
+r = \frac{k}{E_0} = \frac{J/2}{\sqrt{h^2 + (J/2)^2}}.
+\end{equation}
+
+We now compute the relevant correlation functions in the ground state:
+\begin{align}
+\langle Z_0 \rangle &= \langle gs | Z_0 | gs \rangle = \frac{h}{E_0}, \\
+\langle Z_1 \rangle &= \langle gs | Z_1 | gs \rangle = \frac{h}{E_0}, \\
+\langle X_0 X_1 \rangle &= \langle gs | X_0 X_1 | gs \rangle = -\frac{k}{E_0}, \\
+\langle X_0 \rangle &= \langle X_1 \rangle = \langle Y_0 \rangle = \langle Y_1 \rangle = 0.
+\end{align}
+
+The charge operator is defined as:
+\begin{equation}
+Q_B = \frac{1 - Z_1}{2},
+\end{equation}
+and thus its expectation value becomes:
+\begin{equation}
+\langle Q_B \rangle = \frac{1 - \langle Z_1 \rangle}{2} = \frac{1}{2} \left(1 - \frac{h}{E_0} \right).
+\end{equation}
+
+\subsubsection{Analytical Expressions for Teleported Energy and Charge}
+
+Following the teleportation protocol where Bob receives the classical bit \( a \in \{0, 1\} \), and assuming the optimal rotation angle is chosen, the expectation values of the teleported observables are:
+
+\paragraph{Energy:}
+\begin{equation}
+\langle \Delta H_B \rangle = h + Jr - \frac{ \left( h^2 + (-1)^a J^2 \right) \left( 1 + (-1)^a r^2 \right) }{ \sqrt{ (h^2 + J^2)(1 + r^2) } }
+\end{equation}
+
+\paragraph{Charge:}
+\begin{equation}
+\langle \Delta Q_B \rangle = \frac{1}{2} \left( 1 - \frac{ 1 + (-1)^a r^2 }{ \sqrt{1 + r^2} } \right)
+\end{equation}
+
+These expressions make explicit the dependence on the classical bit \( a \), as well as on the ratio \( r = k/E_0 \), which encapsulates the coupling-to-field ratio \( J/h \). Both expressions are smooth and analytic in the parameter \( r \), and provide a clear demonstration of how bit-dependent observable differences arise from the underlying quantum correlations in the ground state.
+
+\subsubsection{Limit Behavior and Interpretation}
+
+Let us consider the limiting cases:
+
+\paragraph{Weak Coupling (\( J \ll h \))}:
+\[
+r \to 0 \Rightarrow \langle \Delta H_B \rangle \to 0, \quad \langle \Delta Q_B \rangle \to 0.
+\]
+
+\paragraph{Strong Coupling (\( J \gg h \))}:
+\[
+r \to 1 \Rightarrow \langle \Delta H_B \rangle \to 0, \quad \langle \Delta Q_B \rangle \to -\frac{1}{2} (-1)^a.
+\]
+
+Hence, energy teleportation vanishes in both limits, while charge teleportation asymptotically converges to a maximal bit-dependent value. This reinforces the interpretation that energy teleportation is optimal in intermediate coupling regimes, while charge teleportation retains discriminative power even in asymptotic regimes, which is crucial for its application in secure quantum key distribution (QKD).
+
+\subsubsection{Conclusion}
+
+This detailed analytical derivation of the two-qubit system illustrates the entire teleportation protocol explicitly, including the dependence of teleported observables on the bit \( a \), the system parameters \( h, J \), and the resulting physical correlations. These results validate the structure of the QET protocol, justify the expressions used in the main text, and serve as a precise benchmark for simulations conducted in larger systems.

@@ -1,0 +1,215 @@
+\section{Qiskit Simulation}
+\label{sec:qiskit_sim}
+
+In this section, we analyze the implementation of the quantum teleportation protocols using real quantum circuits simulated via Qiskit. Our aim is to bridge the gap between ideal numerical simulations, presented in earlier sections, and the practical realizations of quantum teleportation of observables on both simulators and real quantum hardware.
+
+\subsection{Circuit Implementations and Simulation Strategy}
+
+The teleportation protocols for both energy and charge observables were implemented as quantum circuits tailored to the specific measurement settings discussed throughout the thesis. 
+Figure~\ref{fig:charge_qc} shows the charge-teleportation circuit \(Q_B\) measured at Bob’s site. The energy components \(H_B\) and \(V\) are shown in the appendix. The circuit closely follows the implementation used by Ikeda in the quantum energy teleportation experiment on superconducting hardware~\cite{Ikeda2023}.
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.48\textwidth]{plots/qiskit/qcs/charge_qc.png}
+    \caption{Quantum circuit used to extract Bob's charge expectation value in the charge teleportation protocol.}
+    \label{fig:charge_qc}
+\end{figure}
+
+Each circuit represents a specific measurement setting derived for a chosen value of \( J \) and \( h \), resulting in a corresponding optimal rotation angle \( \theta \) applied at Bob's site. The full derivation of these angles, and the basis in which Alice measures, are described in detail in Appendix~\ref{appendix:charge_teleportation}. These circuits are initialized to the entangled ground state of the relevant TFIM model by directly loading either the density matrix or the state itself into the circuit using a Qiskit initializer.
+
+\subsubsection{Comparison with Ideal Numerical Simulations and Hardware Execution}
+
+Unlike the ideal numerical simulations presented in earlier sections—which compute the exact expectation values from the full many-body ground state—the Qiskit-based approach simulates the entire teleportation protocol circuit including:
+\begin{itemize}
+    \item Preparation of the ground state as a density matrix (in simulation),
+    \item Explicit measurements on Alice's qubit(s),
+    \item Classical communication and conditional rotations,
+    \item Measurement of Bob's observable.
+\end{itemize}
+
+The \textbf{simulated circuit execution} using Qiskit's `aer simulator` allows for a more realistic modeling of the teleportation process, but still assumes idealized, noise-free conditions. In contrast, results from \textbf{real quantum hardware} (discussed in Section~\ref{sec:hardware_results}) are subject to noise, decoherence, and gate errors, providing valuable insight into the feasibility of implementing QET-based protocols in practice.
+
+This comparison between three levels of abstraction—analytical prediction, noiseless quantum circuit simulation, and real hardware execution—forms the foundation for assessing the practicality, robustness, and scalability of QET and charge teleportation protocols.
+
+\subsection{Star-Coupled Hamiltonian Results}
+
+We begin by examining the teleportation protocol under the star-type interaction Hamiltonian \( H^{(1)} \), where Alice interacts simultaneously with all other sites. Qiskit simulations were executed for both energy and charge teleportation protocols at system sizes \( N = 1, 2, 3 \), using the circuits introduced in the previous subsection. All simulations were averaged over 10{,}000 shots to approximate expectation values from discrete measurement outcomes.
+
+Figure~\ref{fig:qiskit_star_results} presents the results of these simulations: the top row shows Bob’s extracted energy values, and the bottom row shows the corresponding charge values, all plotted against the coupling strength \( J \).
+
+The data points in the figure represent the expectation values of the target observables, calculated by averaging over a large number of experimental runs, or "shots" ($n_{\text{shots}}$). The error bars correspond to the statistical uncertainty of this average, quantified by the standard error of the mean (SEM). The SEM is derived from the standard deviation of a single measurement and the total number of shots. A complete derivation of the statistical framework and the specific formulas used to calculate the SEM for both charge and energy observables is provided in Appendix~\ref{appendix:stats-analysis}.
+
+\begin{figure*}[tb!]
+    \centering
+    \begin{subfigure}{0.33\textwidth}
+        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N1_energy_vs_J.png}
+        \caption{Energy, \( N = 1 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.33\textwidth}
+        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N2_energy_vs_J.png}
+        \caption{Energy, \( N = 2 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.33\textwidth}
+        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N3_energy_vs_J.png}
+        \caption{Energy, \( N = 3 \)}
+    \end{subfigure}
+
+    \vspace{0.5em}
+
+    \begin{subfigure}{0.33\textwidth}
+        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N1_charge_vs_J.png}
+        \caption{Charge, \( N = 1 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.33\textwidth}
+        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N2_charge_vs_J.png}
+        \caption{Charge, \( N = 2 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.33\textwidth}
+        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N3_charge_vs_J.png}
+        \caption{Charge, \( N = 3 \)}
+    \end{subfigure}
+
+    \caption{Qiskit simulation results for Energy (top) and Charge (bottom) teleportation protocol using the Star-Coupled Hamiltonian \( H^{(1)} \). All results are averaged over 10{,}000 shots.}
+    \label{fig:qiskit_star_results}
+\end{figure*}
+
+\subsubsection*{Analysis and Comparison with Numerical Results}
+
+As system size \( N \) increases, the \textbf{statistical noise} in the energy teleportation results becomes more pronounced. This effect is especially visible in panel (c), where the observable fluctuations for \( N = 3 \) exhibit substantial variance due to the low signal-to-noise ratio of energy teleportation at larger \( N \). Charge teleportation, in contrast, remains smooth and symmetric across all system sizes, highlighting its superior robustness to finite-shot sampling errors.
+
+Despite the increased variance, the Qiskit results align well with the ideal numerical simulations discussed in Section~\ref{sec:alice_hamiltonian}, both in structure and value range. Key features preserved include:
+\begin{itemize}
+    \item The \textbf{asymmetry} of energy teleportation with respect to Alice’s measurement result (bit \( b \)),
+    \item The \textbf{mirror symmetry} in charge teleportation, where the two branches (for \( b = 0 \) and \( b = 1 \)) are nearly perfect reflections,
+    \item The locations of the \textbf{maximal extracted values} near intermediate \( J \) values (around \( J \sim 1 \)).
+\end{itemize}
+
+In summary, these results demonstrate that Qiskit simulations capture the essential physics of the QET protocol under the Star-Coupled Hamiltonian. While averaging over many shots mitigates sampling noise, the energy protocol remains more sensitive to shot noise, especially at larger system sizes, whereas the charge protocol proves more reliable and scalable in this regime.
+
+\subsection{Nearest Neighbors Hamiltonian Results}
+
+We now analyze the behavior of the teleportation protocol under the nearest-neighbors Hamiltonian \( H^{(2)} \), where Alice interacts only with her immediate neighbor. As described in Section~\ref{sec:hamiltonians}, this modifies the communication channel between Alice and Bob from a direct interaction to one mediated by intermediate qubits. As in the previous case, we perform Qiskit simulations for both energy and charge teleportation, but now for system sizes \( N = 2 \) and \( N = 3 \) (since \( N = 1 \) reduces to the star interaction case). We consider two different measurement bases for Alice: \( \sigma_A = X_0 \) and \( \sigma_A = Y_0 \).
+
+All simulations are averaged over a large number of shots to mitigate statistical noise: for \( N = 2 \), we average over 500{,}000 shots; for \( N = 3 \), we use 5{,}000{,}000 shots for the \( \sigma_A = X_0 \) basis and 500{,}000 for \( \sigma_A = Y_0 \). This aggressive sampling strategy is necessary due to the increasing weakness of the signal as the system grows in size and complexity.
+
+\begin{figure*}[t!]
+    \centering
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/X/N2_energy_vs_J.png}
+        \caption{Energy, \( N = 2 \), \( \sigma_A = X_0 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/X/N3_energy_vs_J.png}
+        \caption{Energy, \( N = 3 \), \( \sigma_A = X_0 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/Y/N2_energy_vs_J.png}
+        \caption{Energy, \( N = 2 \), \( \sigma_A = Y_0 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/Y/N3_energy_vs_J.png}
+        \caption{Energy, \( N = 3 \), \( \sigma_A = Y_0 \)}
+    \end{subfigure}
+
+    \vspace{0.5em}
+
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/X/N2_charge_vs_J.png}
+        \caption{Charge, \( N = 2 \), \( \sigma_A = X_0 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/X/N3_charge_vs_J.png}
+        \caption{Charge, \( N = 3 \), \( \sigma_A = X_0 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/Y/N2_charge_vs_J.png}
+        \caption{Charge, \( N = 2 \), \( \sigma_A = Y_0 \)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/Y/N3_charge_vs_J.png}
+        \caption{Charge, \( N = 3 \), \( \sigma_A = Y_0 \)}
+    \end{subfigure}
+    
+    \caption{Qiskit simulation results for Energy (top) and Charge (bottom) teleportation using the nearest-neighbor Hamiltonian for both Alice's bases choices.}
+    \label{fig:qiskit_nn}
+\end{figure*}
+
+\subsubsection*{Discussion}
+
+The results shown in Figure~\ref{fig:qiskit_nn} present a significantly noisier behavior compared to the Star-Coupled Hamiltonian case. This increased noisiness arises from multiple sources:
+
+\begin{itemize}
+    \item \textbf{Propagation through intermediate sites:} In the nearest-neighbors model, Alice and Bob are no longer directly coupled. The teleportation signal must propagate through a chain of intermediate qubits, weakening the effect as \( N \) increases.
+    \item \textbf{Statistical sampling noise:} The extracted signal, particularly for energy, is significantly smaller in magnitude. As a result, many more shots are required to resolve expectation values. This is clearly seen in the \( N = 3 \) case, where energy plots fluctuate heavily even after 5{,}000{,}000 shots.
+    \item \textbf{Circuit separation:} Since the two components of Bob's energy — \( H^{(1)} \) and \( V \) — do not commute, they must be measured in separate circuits. This lack of coherence between components introduces additional statistical noise in the energy reconstruction.
+\end{itemize}
+
+It is also noteworthy that the \textbf{charge teleportation protocol is less sensitive} to these complications. Across both bases, the extracted charge shows a more stable and consistent pattern with respect to the coupling strength \( J \). Although the Y-basis appears to be a bit more sensitive to noise, which may result also from the small absolute values extracted by Bob. This emphasizes the importance of careful basis selection in realistic implementations.
+
+These results underscore the relative robustness of charge-based teleportation in hardware-limited scenarios, as well as the practical challenges in implementing QET for energy observables in extended systems.
+
+\subsection{Qiskit Experiment on Real Quantum Hardware}
+\label{sec:hardware_results}
+
+\begin{figure*}[t!]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{plots/qiskit/real hw/real_hw_charge_vs_J.png}
+        \caption{Charge teleportation}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{plots/qiskit/real hw/real_hw_energy_vs_J.png}
+        \caption{Energy teleportation}
+    \end{subfigure}
+    \caption{Experimental protocol results obtained from real quantum hardware for \( N = 1 \), using Alice’s \( \sigma_A = X_0 \) basis. Each point represents an independent execution for a fixed value of coupling \( J \).\newline\textbf{\textcolor{BrickRed}{TODO: Update to new results with error bars after running the protocol}}}
+    \label{fig:real_hw_results}
+\end{figure*}
+
+To complete the analysis, we also implement the teleportation protocol on an actual quantum processor via the IBM Q backend. The experiment was conducted for the minimal configuration with \( N = 1 \) using Alice's basis \( \sigma_A = X_0 \), which corresponds to both the \( H^{(1)} \) and \( H^{(2)} \) models in this simple setting. The charge and energy observables were measured separately using the circuits introduced earlier.
+
+Although the data points are fewer than in the simulated case—due to the significant overhead and resource demand of real hardware runs—the results clearly indicate that the protocol operates as expected even in the presence of device noise. For both energy and charge, the results exhibit the characteristic split between the two classical outcomes (\( c \) or \( c \oplus 1 \)), affirming the correctness of the teleportation mechanism.
+
+The robustness of charge teleportation is particularly evident here, aligning with our earlier observations from simulations. This experiment provides practical validation that observable teleportation is feasible on real quantum hardware using only local operations and classical communication, without requiring full quantum state teleportation or entanglement swapping.
+
+\subsection{Summary: Insights from Qiskit Simulations}
+
+The results presented in this section highlight both the promise and practical limitations of observable teleportation protocols when implemented in real or simulated quantum systems:
+
+\begin{itemize}
+    \item \textbf{Charge vs. Energy Teleportation:} Across all experiments, charge teleportation demonstrates higher stability, cleaner signal separation, and reduced statistical noise, especially as the system size \( N \) increases. This robustness makes it a strong candidate for near-term applications such as QKD.
+
+    \item \textbf{Hardware Scalability:} While teleportation works well for small \( N \), scaling to larger systems introduces challenges. In the nearest-neighbor model, indirect interaction between Alice and Bob weakens the effective signal and increases the number of shots required for convergence. This highlights the trade-off between physical model realism and practical observability.
+
+    \item \textbf{Measurement-Induced Noise:} For energy teleportation, the need to separately estimate components of Bob’s Hamiltonian (due to non-commuting terms) introduces statistical inconsistencies. This is exacerbated in longer chains where signal propagation is more fragile.
+
+    \item \textbf{Basis Sensitivity:} Simulations with different measurement bases for Alice (\( \sigma_A = X_0 \) vs. \( \sigma_A = Y_0 \)) show that the protocol’s output and robustness are basis-dependent. The X basis typically exhibits more resilience to noise, making it more suitable for experimental implementations.
+
+    \item \textbf{Practical Feasibility:} Most importantly, all results consistently support the theoretical predictions of the QET protocol. The Qiskit simulations reproduce the numerical results with high fidelity, and the real hardware experiment—despite lower resolution—demonstrates that the protocol is experimentally realizable even under present-day quantum hardware constraints.
+\end{itemize}
+
+Together, these insights underscore the power of observable teleportation as a physically meaningful and technically feasible protocol for quantum information processing.
+
+A key observation from the simulations is the difference in statistical stability between the charge and energy teleportation protocols. The increased fluctuations in the energy plots are not merely noise but a direct and predictable consequence of the measurement process itself. As derived in Appendix~\ref{appendix:stats-analysis}, Bob's local Hamiltonian $H_B$ consists of non-commuting terms that must be measured in separate experiments. The total statistical error on $\langle H_B \rangle$ is therefore a sum in quadrature of the uncertainties from each independent measurement, a process known as error propagation. This inherently leads to a larger final uncertainty compared to the charge observable $Q_B$, which is determined from a single experimental setup.
+
+Furthermore, the degradation of the signal for larger systems (e.g., $N=3, 4$ in the nearest-neighbor model) can be understood through the Signal-to-Noise Ratio (SNR). As the distance between Alice and Bob increases, the teleported signal $\abs{\langle O \rangle}$ weakens, while the intrinsic variance of a single-shot measurement remains roughly constant. Consequently, the SEM becomes comparable to the signal itself, requiring an exponentially larger number of shots to resolve the expectation value from the statistical noise floor.
+
+These results highlight the statistical robustness of the charge teleportation protocol. Its reliance on a single measurement basis and a strong, consistent signal across different coupling regimes makes it a more resilient and practical candidate for applications like QKD, particularly in the presence of finite-shot noise characteristic of near-term quantum devices.

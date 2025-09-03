@@ -1,0 +1,106 @@
+\section{Protocol Definition}
+\subsection{Detailed Mathematical Derivation of Generic Observable Teleportation}
+\label{appendix:detailed-protocol-analysis}
+
+This appendix provides a detailed mathematical derivation of the generalized observable teleportation protocol, explicitly including the parameter $a$ representing Alice’s decision to communicate the true measurement outcome or the opposite bit.
+
+\subsubsection{Protocol Definitions}
+We start from the definitions established in the main text and in section 2.1 of the thesis document:
+\begin{itemize}
+\item Alice's measurement projection: 
+\begin{equation}
+P_A(b,\sigma_A)=\frac{1-(-1)^b\sigma_A}{2},\quad b\in\{0,1\}.
+\end{equation}
+\item Alice’s communicated bit: $c=b\oplus a$, with $a=0$ for the true bit and $a=1$ for the opposite bit.
+\item Bob’s rotation:
+\begin{equation}
+U_B(c,\sigma_B)=e^{-i\theta(-1)^c\sigma_B}.
+\end{equation}
+\end{itemize}
+
+\subsubsection{General Observable Expectation Value}
+
+Expanding explicitly and using commutation properties $[P_A,O_B]=0$ and $[P_A,U_B]=0$, we derive the teleported observable expectation:
+\begin{align}
+\langle\Delta O_B\rangle&=\frac{1}{2}\sum_b\Tr\left[\rho_{gs}(1-(-1)^b\sigma_A)(e^{-i\theta(-1)^{b\oplus a}\sigma_B}O_B e^{i\theta(-1)^{b\oplus a}\sigma_B}-O_B)\right]\nonumber\\
+&=\frac{\xi}{2}(1-\cos 2\theta)-\frac{(-1)^a\eta}{2}\sin 2\theta,
+\end{align}
+where we defined:
+\begin{equation}
+\xi=\Tr[\rho_{gs}\sigma_B O_B\sigma_B]-\Tr[\rho_{gs}O_B],\quad\eta=i\Tr[\rho_{gs}[O_B,\sigma_B]].
+\end{equation}
+
+\subsubsection{Optimal Rotation Angle and Final Expression}
+
+The optimal rotation angle $\theta$ maximizing $\langle\Delta O_B\rangle$ is chosen assuming $a=0$:
+\begin{equation}
+\tan(2\theta)=\frac{\eta}{\xi}.
+\end{equation}
+
+Thus, the maximal observable teleportation shift becomes:
+\begin{equation}
+\langle\Delta O_B\rangle=\frac{\xi}{2}-\frac{\sqrt{\xi^2+(-1)^a\eta^2}}{2}.
+\end{equation}
+
+This detailed derivation, explicitly including Alice’s choice of bit transmission, supports the implementation of secure quantum key distribution (QKD) protocols, ensuring robustness and optimality of the teleportation scheme.
+
+\subsection{Detailed Analysis of Charge Teleportation}
+\label{appendix:charge_teleportation}
+
+We derive the expectation value shift for the charge operator \( Q_B = \frac{1}{2}(I + Z_N) \) using the general teleportation framework for commuting observables. The steps closely follow the procedure outlined.
+
+\subsubsection{Charge Operator and Teleportation Protocol}
+
+The charge operator acts as a projector onto the \(|0\rangle\) state and satisfies:
+\[
+Q_B |0\rangle = |0\rangle, \qquad Q_B |1\rangle = 0.
+\]
+
+Following the teleportation protocol with Alice measuring \( \sigma_A \in \{X_0, Y_0\} \) and Bob applying a rotation \( U_B(b\oplus a, \sigma_B) = e^{-i\theta(-1)^{b\oplus a}\sigma_B} \), we analyze two operator pairings:
+\begin{align*}
+(\sigma_A, \sigma_B) = (X_0, Y_N), \quad (\sigma_A, \sigma_B) = (Y_0, X_N).
+\end{align*}
+
+We denote \( a \in \{0,1\} \) as Alice’s classical decision bit controlling whether she sends the true measurement outcome or its flipped value.
+
+\subsubsection{Computing \texorpdfstring{$\xi$}{xi} and \texorpdfstring{$\eta$}{eta}}
+
+We define:
+\begin{align}
+\xi &= \Tr[\rho_{gs} \sigma_B Q_B \sigma_B] - \Tr[\rho_{gs} Q_B], \\
+\eta &= i \Tr[\rho_{gs} \sigma_A [Q_B, \sigma_B]].
+\end{align}
+
+For \( Q_B = \frac{1}{2}(I + Z_N) \), using \( \sigma_B^2 = I \) and the identity \( \sigma_B Z_N \sigma_B = -Z_N \) for \( \sigma_B \in \{X_N, Y_N\} \), we find:
+\begin{equation}
+\sigma_B Q_B \sigma_B = \frac{1}{2}(I - Z_N) \quad \Rightarrow \quad \xi = -\langle Z_N \rangle.
+\end{equation}
+
+For the commutator term:
+\[
+[Z_N, \sigma_B] =
+\begin{cases}
+2i Y_N & \text{if } \sigma_B = X_N, \\
+-2i X_N & \text{if } \sigma_B = Y_N,
+\end{cases}
+\]
+we obtain:
+\begin{align}
+\text{If } (\sigma_A, \sigma_B) = (X_0, Y_N) &\Rightarrow \eta = 2 \langle X_0 X_N \rangle, \\
+\text{If } (\sigma_A, \sigma_B) = (Y_0, X_N) &\Rightarrow \eta = -2 \langle Y_0 Y_N \rangle.
+\end{align}
+
+\subsubsection{Final Expression and Interpretation}
+
+Inserting into the general expression:
+\begin{equation}
+\langle \Delta Q_B \rangle = \frac{1}{2} \xi - \frac{1}{2} \sqrt{\xi^2 + (-1)^a \eta^2},
+\end{equation}
+we obtain:
+\begin{equation}
+\langle \Delta Q_B \rangle = \frac{1}{2} \langle Z_N \rangle - \frac{1}{2} \sqrt{ \langle Z_N \rangle^2 + 4 \langle O_A O_B \rangle^2 },
+\end{equation}
+with \( O_A O_B = X_0 X_N \) or \( Y_0 Y_N \) depending on the measurement basis.
+
+This expression encapsulates the full analytical result for the teleportation of the charge observable, and underlies the mechanism by which logical bits can be extracted from sign changes in the expectation value. The classical bit $a$ determines the logical encoding convention and enforces the QKD protocol’s security.
+
