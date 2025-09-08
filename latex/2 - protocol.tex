@@ -21,7 +21,7 @@ We explicitly define the protocol steps as follows~\cite{QKDbyQET}:
     where $\sigma_A=\hat{n}\cdot\vec{\sigma}_A$ is randomly selected from a predefined set (for instance, $\{X_0,Y_0\}$), obtaining measurement outcome $b$.
 
     \item \textbf{Classical Communication:}
-    Alice decides if she communicates her true measurement result ($b$) or its opposite ($b\oplus 1$). This decision is captured by a classical bit $a\in\{0,1\}$, where $a=0$ indicates the true result transmission, and $a=1$ its opposite. Alice communicates the classical bit $c=b\oplus a$ and the chosen measurement basis $\sigma_A$ to Bob.
+    Alice decides if she communicates her true measurement result ($b$) or its opposite ($b\oplus 1$). This decision is captured by a classical bit $a\in\{0,1\}$, where $a=0$ indicates the true result transmission, and $a=1$ its opposite. Alice communicates the classical bit $c=b\oplus a$ and the chosen measurement basis $\sigma_A$ to Bob. Note that Bob can deduce neither Alice's secret bit $a$ nor her raw measurement outcome $b$ from the public communication of $c$ and $\sigma_A$ alone.
 
     \item \textbf{Bob’s Conditional Rotation:}
     Based on the classical information received, Bob applies a conditional rotation on his subsystem at site $N$:
@@ -52,7 +52,7 @@ Considering a generic observable $O_B$ commuting with Alice’s measurement, i.e
 with parameters:
 \begin{align}
 &{}\xi=\Tr[\rho_{gs}\sigma_B O_B \sigma_B]-\Tr[\rho_{gs}O_B] \nonumber\\
-&\eta=i\Tr[\rho_{gs}[O_B,\sigma_B]]
+&\eta=i\Tr[\rho_{gs}\sigma_A[O_B,\sigma_B]]
 \end{align}
 
 Bob chooses the optimal rotation angle assuming Alice sent her true result ($a=0$), thus maximizing the magnitude of $\langle\Delta O_B\rangle$:
@@ -106,7 +106,7 @@ We now apply the general observable teleportation protocol to the charge operato
 \begin{equation}
 Q_B = \frac{1}{2}(I + Z_N),
 \end{equation}
-which acts as a projector onto the logical \(|0\rangle\) state. This observable is Hermitian, diagonal in the computational basis, and naturally suited for logical bit interpretation in a QKD scheme.
+which acts as a projector onto the logical \( \ket{0} \) state. This observable is Hermitian, diagonal in the computational basis, and naturally suited for logical bit interpretation in a QKD scheme.
 
 From the general analysis in Section~\ref{sec:generic_teleportation}, we specialize the result for commuting observables to the case of $Q_B$, yielding:
 \begin{equation}
@@ -131,5 +131,7 @@ The teleported expectation value $\langle \Delta Q_B \rangle$ is positive or neg
 > 0 & \Rightarrow \text{logical bit } 0.
 \end{cases}
 \end{equation}
+
+This charge-based observable was specifically chosen for this protocol. As we will demonstrate, its perfectly symmetric response to Alice's classical bit $a$ provides a clean, unambiguous mapping to a logical key bit, forming the basis for a more robust and reliable QKD protocol compared to other observables like energy.
 
 This behavior is at the heart of QKD via observable teleportation: Bob cannot distinguish which logical value was intended unless he knows Alice's classical bit $a$. The security stems from the fact that the expectation value's sign flips based on $a$, yet neither the quantum state nor the classical communicated bit alone is sufficient to decode the logical value.

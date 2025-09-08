@@ -26,7 +26,7 @@
         \includegraphics[width=\textwidth]{plots/numerical/Alice/N4_charge_vs_J.png}
         \caption{\( N = 4 \)}
     \end{subfigure}
-    \caption{Bob’s extracted values for charge vs. the coupling \( J \), for \( H^{(1)} \), with fixed \( h=1 \) and \( \sigma_A = X_0 \).}
+    \caption{Bob’s charge vs. the coupling \( J \), for the star-coupled model \( H^{(1)} \), with fixed \( h=1 \) and \( \sigma_A = X_0 \).}
     \label{fig:alice_x_vs_j}
 \end{figure*}
 
@@ -49,7 +49,7 @@
         \includegraphics[width=\textwidth]{plots/numerical/NearestNeighbors/X/N4_charge_vs_J.png}
         \caption{\( N = 4 \)}
     \end{subfigure}
-    \caption{Bob’s extracted values for charge vs. the coupling \( J \), for \( H^{(2)} \), with fixed \( h=1 \) and \( \sigma_A = X_0 \).}
+    \caption{Bob’s charge vs. the coupling \( J \), for the nearest-neighbors model \( H^{(2)} \), with fixed \( h=1 \) and \( \sigma_A = X_0 \).}
     \label{fig:nn_x_vs_j}
 \end{figure*}
 
@@ -88,7 +88,7 @@ Figure~\ref{fig:alice_x_vs_j} shows the simulated expectation values of Bob’s 
         \includegraphics[width=\textwidth]{plots/numerical/NearestNeighbors/Y/N4_charge_vs_J.png}
         \caption{\( N = 4 \)}
     \end{subfigure}
-    \caption{Bob’s extracted values for charge vs. the coupling \( J \), for \( H^{(2)} \), with fixed \( h=1 \) and \( \sigma_A = Y_0 \).}
+    \caption{Bob’s charge vs. the coupling \( J \), for the nearest-neighbors model \( H^{(2)} \), with fixed \( h=1 \) and \( \sigma_A = Y_0 \).}
     \label{fig:nn_y_vs_j}
 \end{figure*}
 
@@ -125,6 +125,7 @@ Although energy and charge teleportation protocols share the same structure of l
     \item \textbf{Charge teleportation}, in contrast, exhibits more symmetric and robust behavior. The observable expectation values at Bob’s site respond linearly and predictably to Alice's bit, enabling straightforward mapping to key bits in QKD. This symmetry not only improves interpretability but also offers resilience to noise and misalignment in measurement bases.
     
     \item \textbf{Scalability of extracted signal—} Importantly, since both energy and charge observables were rescaled to arbitrary units, we may compare their relative magnitudes. Our simulations reveal that the charge expectation value at Bob’s site remains approximately constant as the system size \( N \) increases, whereas the extracted energy diminishes. This suggests that charge teleportation may be more favorable for large-scale implementations, especially in distributed QKD architectures.
+    This suggests that charge teleportation may be more favorable for large-scale implementations, especially in distributed QKD architectures. Furthermore, the perfect symmetry of the charge signal is a decisive advantage for cryptography; it ensures that the logical '0' and '1' are equally distinguishable, preventing any potential bias in the raw key that an eavesdropper might exploit.
 \end{itemize}
 
 These findings corroborate the observations in~\cite{IkedaTeleportingCharge, QKDbyQET}, where the symmetry and noise robustness of charge-like observables were highlighted. Furthermore, since energy teleportation can depend on subtle inter-site Hamiltonian partitionings (cf. Eq.~(8) in~\cite{QKDbyQET}), it might be less generalizable than charge teleportation for QKD networks involving multiple recipients.
