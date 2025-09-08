@@ -16,3 +16,7 @@ In order to __deactivate__, just run:
 1) unset VIRTUAL_ENV
 2) unset VIRTUAL_ENV_PROMPT
 3) `export PS1=`[PS1 var without (.venv) prefeix]
+
+#### Build Latex
+use this line:
+`latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main.tex` so all output files will be collected tp a `build` subfolder.
