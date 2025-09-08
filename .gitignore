@@ -164,3 +164,103 @@ cython_debug/
 # Artifacts
 */artifacts/
 *.png
+
+# =========================
+# Core LaTeX aux/build files
+# =========================
+*.aux
+*.log
+*.toc
+*.out
+*.lof
+*.lot
+*.loa
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.nav
+*.snm
+*.vrb
+*.dvi
+*.xdv
+*.ps
+*.pdfsync
+*.lyx~          # in case you have LyX files
+
+# =========================
+# BibTeX / Biber
+# =========================
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+
+# =========================
+# Indexes, glossaries, nomencl
+# =========================
+*.idx
+*.ilg
+*.ind
+*.ist
+*.glo
+*.glg
+*.gls
+*.glsdefs
+*.acn
+*.acr
+*.alg
+*.nlo
+*.nls
+
+# =========================
+# Listings / Other lists
+# =========================
+*.lol   # list of listings
+*.lox   # list of fixmes/todos (if used)
+
+# =========================
+# TikZ externalization cache
+# (adjust if you set a custom prefix)
+# =========================
+*-figure*.pdf
+*-figure*.png
+*-figure*.jpg
+*-figure*.md5
+*-figure*.dpth
+*-figure*.log
+
+# =========================
+# minted / pygments
+# =========================
+_minted*/
+minted-output/
+
+# =========================
+# PythonTeX / SageTeX
+# =========================
+*.pytxcode
+pythontex-files-*/
+*.sagetex.sage
+*.sagetex.scmd
+*.sagetex.sout
+*.sagetex.py
+
+# =========================
+# Editors / OS cruft
+# =========================
+*~
+#*#
+.*.swp
+.*.swo
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+auto/           # AUCTeX auto dir
+
+# =========================
+# Optional: PDFs
+# If you DO NOT want to track generated PDFs, uncomment:
+# =========================
+*.pdf
