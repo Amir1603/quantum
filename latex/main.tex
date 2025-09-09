@@ -1,40 +1,23 @@
-\documentclass[10pt,twocolumn]{article}
+\documentclass[aps,prx,reprint,superscriptaddress,floatfix]{revtex4-2}
 
-% PAGE LAYOUT
-\usepackage[a4paper,margin=1.8cm]{geometry} % adjust margins as needed
-\setlength{\columnsep}{0.6cm} % space between columns
-
-% LANGUAGE, ENCODING, FONTS
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{times}  % or use \usepackage{mathptmx} for math+text Times font
-\usepackage[hyphens]{url}
+\usepackage{times}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{booktabs}
 \usepackage{tabularx}
-
-% MATH PACKAGES
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{braket}
 \usepackage{bm}
 \usepackage{physics}
-
-% GRAPHICS & FLOATS
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{placeins}
 \usepackage{silence}
-\usepackage{stfloats}   % enables bottom double-column floats
-\fnbelowfloat           % (optional) keep footnotes below bottom floats
-
-% REFERENCES
-\usepackage[numbers,sort&compress]{natbib}
-
-% LINKS (disable for some journal submissions)
+\usepackage{stfloats}
 \usepackage[colorlinks=true,citecolor=blue,linkcolor=blue,urlcolor=blue]{hyperref}
 
-% CUSTOM COMMANDS
 \newcommand{\ketgs}{\ket{\text{gs}}}
 \newcommand{\brags}{\bra{\text{gs}}}
 
@@ -48,26 +31,52 @@
 \renewcommand{\dbltopfraction}{0.9}
 \renewcommand{\dblfloatpagefraction}{0.8}
 
-% TITLE & AUTHORS
-\title{\bfseries Quantum Key Distribution via Charge Teleportation}
-\author{Amir Yona \\ \small Tel Aviv University}
+\begin{document}
+
+%Title of paper
+\title{Quantum Key Distribution via Charge Teleportation}
+\author{Amir Yona}
+\email[]{amir.yona@example.com}
+%\homepage[]{Your web page}
+%\thanks{}
+%\altaffiliation{}
+\affiliation{Tel Aviv University, Tel Aviv, Israel}
+
+%Collaboration name if desired (requires use of superscriptaddress
+%option in \documentclass). \noaffiliation is required (may also be
+%used with the \author command).
+%\collaboration can be followed by \email, \homepage, \thanks as well.
+%\collaboration{}
+%\noaffiliation
+
 \date{\today}
 
-\begin{document}
+\begin{abstract}
+In this work, we have proposed, simulated, and analyzed a Quantum Key Distribution (QKD) protocol based on the teleportation of a local charge observable. By studying two distinct Transverse Field Ising Models—one with a central star-coupling interaction ($H^{(1)}$) and another with nearest-neighbor interactions ($H^{(2)}$)—we have systematically compared the performance of charge teleportation against energy teleportation. Our investigation, conducted through both numerical simulations and Qiskit-based quantum circuit implementations, confirms that charge teleportation offers significant advantages for cryptographic applications. Our primary finding is the superior stability and robustness of the charge-based protocol. While energy teleportation can, in certain regimes, yield a larger absolute signal ($\langle \Delta H_B \rangle$), it is highly sensitive to statistical noise and exhibits an asymmetric response to Alice's classical bit choice. In contrast, the teleported charge expectation value ($\langle \Delta Q_B \rangle$) shows a perfect mirror symmetry, which is crucial for a reliable bit-to-key mapping. This symmetry, combined with a signal that remains stable and scalable as the system size $N$ increases, makes the charge protocol inherently more resilient to the finite-shot noise that characterizes near-term quantum hardware. Critically, our protocol was validated on real quantum hardware for a minimal two-qubit system ($N=1$). Despite the presence of device noise, the experimental results successfully reproduced the characteristic separation of Bob's observable expectation values, confirming the fundamental viability of the QKD mechanism.
+\end{abstract}
 
 \maketitle
 
 \input{1 - introduction}
+\FloatBarrier
 \input{2 - protocol}
+\FloatBarrier
 \input{3 - hamiltonians}
+\FloatBarrier
 \input{4 - numerical simulation}
+\FloatBarrier
 \input{5 - qiskit simulation}
+\FloatBarrier
 \input{6 - noise and errors}
+\FloatBarrier
 \input{7 - summary}
-
 \FloatBarrier
 
-\clearpage
+% If you have acknowledgments, this puts in the proper section head.
+\begin{acknowledgments}
+% put your acknowledgments here.
+\end{acknowledgments}
+
 \appendix
 \section*{Appendix}
 \addcontentsline{toc}{section}{Appendix}
@@ -81,9 +90,8 @@
 \input{Appendix/noise and errors}
 
 \clearpage
-\input{bibliography}
 
-\clearpage
-\input{Backlog}
+% Create the reference section using BibTeX:
+\bibliography{references}
 
 \end{document}
