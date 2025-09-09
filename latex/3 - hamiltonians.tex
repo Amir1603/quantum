@@ -148,9 +148,8 @@ In this configuration, the protocol is defined by Alice’s measurement using \(
 
 These expectation values are taken in the ground state of the global Hamiltonian. The teleported energy is then given by the expression in \eqref{eq:delta_HB2}.
 
-\begin{figure*}[tb!]
-    \centering
-    {\small
+\begin{widetext}
+    {\scriptsize
     \begin{equation}
     \label{eq:delta_HB2}
     \begin{aligned}
@@ -158,7 +157,7 @@ These expectation values are taken in the ground state of the global Hamiltonian
             & - \frac{
                 h^2\left(\langle Z_N \rangle^2 + (-1)^a\langle X_0X_N \rangle^2\right)
                 - 2hJ\left(\langle Z_N \rangle\langle X_{N-1}X_N \rangle - (-1)^a\langle X_0X_N \rangle\langle X_0X_{N-1}Z_N \rangle\right)
-                {}+ J^2\left(\langle X_0X_N \rangle^2 + (-1)^a\langle X_0X_{N-1}Z_N \rangle^2\right)
+                + J^2\left(\langle X_0X_N \rangle^2 + (-1)^a\langle X_0X_{N-1}Z_N \rangle^2\right)
             }{
             \sqrt{
                 h^2\left(\langle Z_N \rangle^2 + \langle X_0X_N \rangle^2\right)
@@ -168,8 +167,8 @@ These expectation values are taken in the ground state of the global Hamiltonian
     \end{aligned}
     \end{equation}
     }
-    \caption*{Energy extracted by Bob for $H^{(2)}$ for $\sigma_A = X_0$ (\textbf{\textcolor{BrickRed}{TODO: Find a better way to show it, maybe in appendix - but what about consistency with other expressions shown in paper?}})}
-\end{figure*}
+    Energy extracted by Bob for $H^{(2)}$ for $\sigma_A = X_0$ (\textbf{\textcolor{BrickRed}{TODO: Find a better way to show it, maybe in appendix - but what about consistency with other expressions shown in paper?}})
+\end{widetext}
 
 \subsubsection*{Case 2: \texorpdfstring{\( \sigma_A = Y_0 \)}{sigmaAY0}}
 
@@ -249,4 +248,3 @@ The analytical solution for \( N=1 \) provides crucial insight into the behavior
 \end{itemize}
 
 This analytical benchmark not only validates the broader numerical framework used for larger systems (\( N \geq 2 \)), but also provides a reference point for identifying operational regimes and for calibrating hardware implementations.
-

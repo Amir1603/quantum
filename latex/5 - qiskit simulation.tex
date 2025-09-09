@@ -3,17 +3,17 @@
 
 In this section, we analyze the implementation of the quantum teleportation protocols using real quantum circuits simulated via Qiskit. Our aim is to bridge the gap between ideal numerical simulations, presented in earlier sections, and the practical realizations of quantum teleportation of observables on both simulators and real quantum hardware.
 
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{plots/qiskit/qcs/charge_qc.png}
+    \caption{Quantum circuit used to extract Bob's charge expectation value in the charge teleportation protocol.}
+    \label{fig:charge_qc}
+\end{figure}
+
 \subsection{Circuit Implementations and Simulation Strategy}
 
 The teleportation protocols for both energy and charge observables were implemented as quantum circuits tailored to the specific measurement settings discussed throughout the thesis. 
 Figure~\ref{fig:charge_qc} shows the charge-teleportation circuit \(Q_B\) measured at Bob’s site. The energy components \(H_B\) and \(V\) are shown in the appendix. The circuit closely follows the implementation used by Ikeda in the quantum energy teleportation experiment on superconducting hardware~\cite{Ikeda2023}.
-
-\begin{figure}[ht!]
-    \centering
-    \includegraphics[width=0.48\textwidth]{plots/qiskit/qcs/charge_qc.png}
-    \caption{Quantum circuit used to extract Bob's charge expectation value in the charge teleportation protocol.}
-    \label{fig:charge_qc}
-\end{figure}
 
 Each circuit represents a specific measurement setting derived for a chosen value of \( J \) and \( h \), resulting in a corresponding optimal rotation angle \( \theta \) applied at Bob's site. The full derivation of these angles, and the basis in which Alice measures, are described in detail in Appendix~\ref{appendix:charge_teleportation}. These circuits are initialized to the entangled ground state of the relevant TFIM model by directly loading either the density matrix or the state itself into the circuit using a Qiskit initializer.
 
@@ -33,49 +33,43 @@ This comparison between three levels of abstraction—analytical prediction, noi
 
 \subsection{Star-Coupled Hamiltonian Results}
 
+\begin{figure*}
+    \centering
+    \subfloat[Energy, \( N = 1 \)]{
+        \includegraphics[width=0.3\textwidth]{plots/qiskit/Alice/N1_energy_vs_J.png}
+    }
+    \hfill
+    \subfloat[Energy, \( N = 2 \)]{
+        \includegraphics[width=0.3\textwidth]{plots/qiskit/Alice/N2_energy_vs_J.png}
+    }
+    \hfill
+    \subfloat[Energy, \( N = 3 \)]{
+        \includegraphics[width=0.3\textwidth]{plots/qiskit/Alice/N3_energy_vs_J.png}
+    }
+
+    \vspace{0.5em}
+
+    \subfloat[Charge, \( N = 1 \)]{
+        \includegraphics[width=0.3\textwidth]{plots/qiskit/Alice/N1_charge_vs_J.png}
+    }
+    \hfill
+    \subfloat[Charge, \( N = 2 \)]{
+        \includegraphics[width=0.3\textwidth]{plots/qiskit/Alice/N2_charge_vs_J.png}
+    }
+    \hfill
+    \subfloat[Charge, \( N = 3 \)]{
+        \includegraphics[width=0.3\textwidth]{plots/qiskit/Alice/N3_charge_vs_J.png}
+    }
+
+    \caption{Qiskit simulation results for Energy (top) and Charge (bottom) teleportation protocol using the Star-Coupled Hamiltonian \( H^{(1)} \). All results are averaged over 10{,}000 shots.}
+    \label{fig:qiskit_star_results}
+\end{figure*}
+
 We begin by examining the teleportation protocol under the star-type interaction Hamiltonian \( H^{(1)} \), where Alice interacts simultaneously with all other sites. Qiskit simulations were executed for both energy and charge teleportation protocols at system sizes \( N = 1, 2, 3 \), using the circuits introduced in the previous subsection. All simulations were averaged over 10{,}000 shots to approximate expectation values from discrete measurement outcomes.
 
 Figure~\ref{fig:qiskit_star_results} presents the results of these simulations: the top row shows Bob’s extracted energy values, and the bottom row shows the corresponding charge values, all plotted against the coupling strength \( J \).
 
 The data points in the figure represent the expectation values of the target observables, calculated by averaging over a large number of experimental runs, or "shots" ($n_{\text{shots}}$). The error bars correspond to the statistical uncertainty of this average, quantified by the standard error of the mean (SEM). The SEM is derived from the standard deviation of a single measurement and the total number of shots. A complete derivation of the statistical framework and the specific formulas used to calculate the SEM for both charge and energy observables is provided in Appendix~\ref{appendix:stats-analysis}.
-
-\begin{figure*}[tb!]
-    \centering
-    \begin{subfigure}{0.33\textwidth}
-        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N1_energy_vs_J.png}
-        \caption{Energy, \( N = 1 \)}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.33\textwidth}
-        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N2_energy_vs_J.png}
-        \caption{Energy, \( N = 2 \)}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.33\textwidth}
-        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N3_energy_vs_J.png}
-        \caption{Energy, \( N = 3 \)}
-    \end{subfigure}
-
-    \vspace{0.5em}
-
-    \begin{subfigure}{0.33\textwidth}
-        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N1_charge_vs_J.png}
-        \caption{Charge, \( N = 1 \)}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.33\textwidth}
-        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N2_charge_vs_J.png}
-        \caption{Charge, \( N = 2 \)}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.33\textwidth}
-        \includegraphics[width=\textwidth]{plots/qiskit/Alice/N3_charge_vs_J.png}
-        \caption{Charge, \( N = 3 \)}
-    \end{subfigure}
-
-    \caption{Qiskit simulation results for Energy (top) and Charge (bottom) teleportation protocol using the Star-Coupled Hamiltonian \( H^{(1)} \). All results are averaged over 10{,}000 shots.}
-    \label{fig:qiskit_star_results}
-\end{figure*}
 
 \subsubsection*{Analysis and Comparison with Numerical Results}
 
@@ -92,65 +86,49 @@ In summary, these results demonstrate that Qiskit simulations capture the essent
 
 \subsection{Nearest Neighbors Hamiltonian Results}
 
-We now analyze the behavior of the teleportation protocol under the nearest-neighbors Hamiltonian \( H^{(2)} \), where Alice interacts only with her immediate neighbor. As described in Section~\ref{sec:hamiltonians}, this modifies the communication channel between Alice and Bob from a direct interaction to one mediated by intermediate qubits. As in the previous case, we perform Qiskit simulations for both energy and charge teleportation, but now for system sizes \( N = 2 \) and \( N = 3 \) (since \( N = 1 \) reduces to the star interaction case). We consider two different measurement bases for Alice: \( \sigma_A = X_0 \) and \( \sigma_A = Y_0 \).
-
-All simulations are averaged over a large number of shots to mitigate statistical noise: for \( N = 2 \), we average over 500{,}000 shots; for \( N = 3 \), we use 5{,}000{,}000 shots for the \( \sigma_A = X_0 \) basis and 500{,}000 for \( \sigma_A = Y_0 \). This aggressive sampling strategy is necessary due to the increasing weakness of the signal as the system grows in size and complexity.
-
 \begin{figure*}[t!]
     \centering
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/X/N2_energy_vs_J.png}
-        \caption{Energy, \( N = 2 \), \( \sigma_A = X_0 \)}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 2 \), \( \sigma_A = X_0 \)]{
+        \includegraphics[width=0.225\textwidth]{plots/qiskit/NearestNeighbors/X/N2_energy_vs_J.png}
+    }
     \hfill
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/X/N3_energy_vs_J.png}
-        \caption{Energy, \( N = 3 \), \( \sigma_A = X_0 \)}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 3 \), \( \sigma_A = X_0 \)]{
+        \includegraphics[width=0.225\textwidth]{plots/qiskit/NearestNeighbors/X/N3_energy_vs_J.png}
+    }
     \hfill
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/Y/N2_energy_vs_J.png}
-        \caption{Energy, \( N = 2 \), \( \sigma_A = Y_0 \)}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 2 \), \( \sigma_A = Y_0 \)]{
+        \includegraphics[width=0.225\textwidth]{plots/qiskit/NearestNeighbors/Y/N2_energy_vs_J.png}
+    }
     \hfill
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/Y/N3_energy_vs_J.png}
-        \caption{Energy, \( N = 3 \), \( \sigma_A = Y_0 \)}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 3 \), \( \sigma_A = Y_0 \)]{
+        \includegraphics[width=0.225\textwidth]{plots/qiskit/NearestNeighbors/Y/N3_energy_vs_J.png}
+    }
 
     \vspace{0.5em}
 
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/X/N2_charge_vs_J.png}
-        \caption{Charge, \( N = 2 \), \( \sigma_A = X_0 \)}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 2 \), \( \sigma_A = X_0 \)]{
+        \includegraphics[width=0.225\textwidth]{plots/qiskit/NearestNeighbors/X/N2_charge_vs_J.png}
+    }
     \hfill
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/X/N3_charge_vs_J.png}
-        \caption{Charge, \( N = 3 \), \( \sigma_A = X_0 \)}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 3 \), \( \sigma_A = X_0 \)]{
+        \includegraphics[width=0.225\textwidth]{plots/qiskit/NearestNeighbors/X/N3_charge_vs_J.png}
+    }
     \hfill
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/Y/N2_charge_vs_J.png}
-        \caption{Charge, \( N = 2 \), \( \sigma_A = Y_0 \)}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 2 \), \( \sigma_A = Y_0 \)]{
+        \includegraphics[width=0.225\textwidth]{plots/qiskit/NearestNeighbors/Y/N2_charge_vs_J.png}
+    }
     \hfill
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{plots/qiskit/NearestNeighbors/Y/N3_charge_vs_J.png}
-        \caption{Charge, \( N = 3 \), \( \sigma_A = Y_0 \)}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 3 \), \( \sigma_A = Y_0 \)]{
+        \includegraphics[width=0.225\textwidth]{plots/qiskit/NearestNeighbors/Y/N3_charge_vs_J.png}
+    }
     
     \caption{Qiskit simulation results for Energy (top) and Charge (bottom) teleportation using the nearest-neighbor Hamiltonian for both Alice's bases choices.}
     \label{fig:qiskit_nn}
 \end{figure*}
+
+We now analyze the behavior of the teleportation protocol under the nearest-neighbors Hamiltonian \( H^{(2)} \), where Alice interacts only with her immediate neighbor. As described in Section~\ref{sec:hamiltonians}, this modifies the communication channel between Alice and Bob from a direct interaction to one mediated by intermediate qubits. As in the previous case, we perform Qiskit simulations for both energy and charge teleportation, but now for system sizes \( N = 2 \) and \( N = 3 \) (since \( N = 1 \) reduces to the star interaction case). We consider two different measurement bases for Alice: \( \sigma_A = X_0 \) and \( \sigma_A = Y_0 \).
+
+All simulations are averaged over a large number of shots to mitigate statistical noise: for \( N = 2 \), we average over 500{,}000 shots; for \( N = 3 \), we use 5{,}000{,}000 shots for the \( \sigma_A = X_0 \) basis and 500{,}000 for \( \sigma_A = Y_0 \). This aggressive sampling strategy is necessary due to the increasing weakness of the signal as the system grows in size and complexity.
 
 \subsubsection*{Discussion}
 
@@ -171,15 +149,13 @@ These results underscore the relative robustness of charge-based teleportation i
 
 \begin{figure*}[t!]
     \centering
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\textwidth]{plots/qiskit/real hw/real_hw_charge_vs_J.png}
-        \caption{Charge teleportation}
-    \end{subfigure}
+    \subfloat[Charge teleportation]{
+        \includegraphics[width=0.45\textwidth]{plots/qiskit/real hw/real_hw_charge_vs_J.png}
+    }
     \hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\textwidth]{plots/qiskit/real hw/real_hw_energy_vs_J.png}
-        \caption{Energy teleportation}
-    \end{subfigure}
+    \subfloat[Energy teleportation]{
+        \includegraphics[width=0.45\textwidth]{plots/qiskit/real hw/real_hw_energy_vs_J.png}
+    }
     \caption{Experimental protocol results obtained from real quantum hardware for \( N = 1 \), using Alice’s \( \sigma_A = X_0 \) basis. Each point represents an independent execution for a fixed value of coupling \( J \).\newline\textbf{\textcolor{BrickRed}{TODO: Update to new results with error bars after running the protocol}}}
     \label{fig:real_hw_results}
 \end{figure*}

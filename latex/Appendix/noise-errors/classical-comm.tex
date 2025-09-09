@@ -1,24 +1,16 @@
-\WarningFilter{latex}{Text page 25 contains only floats}
-
 \begin{figure*}[tb!]
     \centering
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/Alice/Alice_energy_vs_p_class_comm_err.png}
-        \caption{$H^{(1)}$}
-    \end{subfigure}
+    \subfloat[Star-Coupled interaction \( H^{(1)} \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/Alice/Alice_energy_vs_p_class_comm_err.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/NN_X_energy_vs_p_class_comm_err.png}
-        \caption{$H^{(2)}$, $\sigma_A = X_0$}
-    \end{subfigure}
+    \subfloat[Nearest-Neighbors interaction \( H^{(2)} \), \( \sigma_A = X_0 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/NN_X_energy_vs_p_class_comm_err.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/NN_Y_energy_vs_p_class_comm_err.png}
-        \caption{$H^{(2)}$, $\sigma_A = Y_0$}
-    \end{subfigure}
+    \subfloat[Nearest-Neighbors interaction \( H^{(2)} \), \( \sigma_A = Y_0 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/NN_Y_energy_vs_p_class_comm_err.png}
+    }
 
     \caption{Energy vs. Classical communication error for different \(N\) values. The linear degradation of the signal is evident across all models, with a consistent failure threshold where the expectation value crosses zero. The signal magnitude for the $H^{(2)}$ model visibly diminishes with increasing system size $N$.}
     \label{fig:energy_vs_classical_err_for_n}
@@ -26,55 +18,40 @@
 
 \begin{figure*}[tb!]
     \centering
-    \begin{subfigure}[b]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/Alice/N1/N1_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=1$}
-    \end{subfigure}
+    
+    \subfloat[Energy, \( N = 1 \)]{
+        \includegraphics[width=0.225\textwidth]{Appendix/plots/errors/numerical/Alice/N1/N1_energy_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/Alice/N2/N2_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=2$}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 2 \)]{
+        \includegraphics[width=0.225\textwidth]{Appendix/plots/errors/numerical/Alice/N2/N2_energy_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/Alice/N3/N3_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=3$}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 3 \)]{
+        \includegraphics[width=0.225\textwidth]{Appendix/plots/errors/numerical/Alice/N3/N3_energy_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/Alice/N4/N4_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=4$}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 4 \)]{
+        \includegraphics[width=0.225\textwidth]{Appendix/plots/errors/numerical/Alice/N4/N4_energy_vs_p_classical_error.png}
+    }
 
     \vspace{0.5em}
     
-    \begin{subfigure}[b]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/Alice/N1/N1_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=1$}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 1 \)]{
+        \includegraphics[width=0.225\textwidth]{Appendix/plots/errors/numerical/Alice/N1/N1_charge_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/Alice/N2/N2_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=2$}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 2 \)]{
+        \includegraphics[width=0.225\textwidth]{Appendix/plots/errors/numerical/Alice/N2/N2_charge_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/Alice/N3/N3_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=3$}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 3 \)]{
+        \includegraphics[width=0.225\textwidth]{Appendix/plots/errors/numerical/Alice/N3/N3_charge_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/Alice/N4/N4_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=4$}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 4 \)]{
+        \includegraphics[width=0.225\textwidth]{Appendix/plots/errors/numerical/Alice/N4/N4_charge_vs_p_classical_error.png}
+    }
 
     \caption{Classical communication error vs the coupling \(J\) for the star-interaction Hamiltonian $H^{(1)}$.}
     \label{fig:classical_err_alice_ham}
@@ -82,43 +59,32 @@
 
 \begin{figure*}[tb!]
     \centering
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{plots/errors/numerical/N2_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=2$}
-    \end{subfigure}
+    
+    \subfloat[Energy, \( N = 2 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N2/X_N2_energy_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N3/X_N3_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=3$}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 3 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N3/X_N3_energy_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N4/X_N4_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=4$}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 4 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N4/X_N4_energy_vs_p_classical_error.png}
+    }
 
     \vspace{0.5em}
-    
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N2/X_N2_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=2$}
-    \end{subfigure}
+
+    \subfloat[Charge, \( N = 2 \)]{
+        \includegraphics[width=0.3\textwidth]{plots/errors/numerical/N2_charge_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N3/X_N3_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=3$}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 3 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N3/X_N3_charge_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N4/X_N4_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=4$}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 4 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N4/X_N4_charge_vs_p_classical_error.png}
+    }
 
     \caption{Classical communication error vs the coupling \(J\) for the nearest-neighbor Hamiltonian $H^{(2)}$ with Alice Base \(\sigma_A = X_0\).}
     \label{fig:classical_err_nn_ham_x}
@@ -126,43 +92,32 @@
 
 \begin{figure*}[tb!]
     \centering
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N2/Y_N2_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=2$}
-    \end{subfigure}
+    
+    \subfloat[Energy, \( N = 2 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N2/Y_N2_energy_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N3/Y_N3_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=3$}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 3 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N3/Y_N3_energy_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N4/Y_N4_charge_vs_p_classical_error.png}
-        \caption{Charge, $N=4$}
-    \end{subfigure}
+    \subfloat[Energy, \( N = 4 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N4/Y_N4_energy_vs_p_classical_error.png}
+    }
 
     \vspace{0.5em}
-    
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N2/Y_N2_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=2$}
-    \end{subfigure}
+
+    \subfloat[Charge, \( N = 2 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N2/Y_N2_charge_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N3/Y_N3_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=3$}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 3 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N3/Y_N3_charge_vs_p_classical_error.png}
+    }
     \hfill
-    \begin{subfigure}[b]{0.29\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N4/Y_N4_energy_vs_p_classical_error.png}
-        \caption{Energy, $N=4$}
-    \end{subfigure}
+    \subfloat[Charge, \( N = 4 \)]{
+        \includegraphics[width=0.3\textwidth]{Appendix/plots/errors/numerical/NearestNeighbors/N4/Y_N4_charge_vs_p_classical_error.png}
+    }
 
     \caption{Classical communication error vs the coupling \(J\) for the nearest-neighbor Hamiltonian $H^{(2)}$ with Alice Base \(\sigma_A = Y_0\).}
     \label{fig:classical_err_nn_ham_y}

@@ -1,25 +1,16 @@
-\documentclass[aps,prx,reprint,superscriptaddress,floatfix]{revtex4-2}
+\documentclass[reprint,prx,amsmath,amssymb,aps,floatfix]{revtex4-2}
 
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{times}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{booktabs}
 \usepackage{tabularx}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{braket}
+\usepackage{dcolumn}
 \usepackage{bm}
 \usepackage{physics}
 \usepackage{graphicx}
-\usepackage{caption}
-\usepackage{subcaption}
+\usepackage[caption=false]{subfig}
 \usepackage{placeins}
 \usepackage{silence}
-\usepackage{stfloats}
-\usepackage[colorlinks=true,citecolor=blue,linkcolor=blue,urlcolor=blue]{hyperref}
-
-\newcommand{\ketgs}{\ket{\text{gs}}}
-\newcommand{\brags}{\bra{\text{gs}}}
+\usepackage[colorlinks=true]{hyperref}
 
 \setcounter{topnumber}{2}
 \setcounter{bottomnumber}{2}
@@ -31,12 +22,15 @@
 \renewcommand{\dbltopfraction}{0.9}
 \renewcommand{\dblfloatpagefraction}{0.8}
 
+\WarningFilter[label]{nameref}{The definition of}
+
+\bibliographystyle{apsrev4-2}
 \begin{document}
 
 %Title of paper
 \title{Quantum Key Distribution via Charge Teleportation}
 \author{Amir Yona}
-\email[]{amir.yona@example.com}
+\email[]{yonaamir@gmail.com}
 %\homepage[]{Your web page}
 %\thanks{}
 %\altaffiliation{}
@@ -58,19 +52,12 @@ In this work, we have proposed, simulated, and analyzed a Quantum Key Distributi
 \maketitle
 
 \input{1 - introduction}
-\FloatBarrier
 \input{2 - protocol}
-\FloatBarrier
 \input{3 - hamiltonians}
-\FloatBarrier
 \input{4 - numerical simulation}
-\FloatBarrier
 \input{5 - qiskit simulation}
-\FloatBarrier
 \input{6 - noise and errors}
-\FloatBarrier
 \input{7 - summary}
-\FloatBarrier
 
 % If you have acknowledgments, this puts in the proper section head.
 \begin{acknowledgments}
@@ -83,8 +70,6 @@ In this work, we have proposed, simulated, and analyzed a Quantum Key Distributi
 \input{Appendix/protocol}
 \input{Appendix/hamiltonians}
 \input{Appendix/numerical simulation}
-\FloatBarrier
-\clearpage
 \input{Appendix/qiskit simulation}
 \input{Appendix/statistical analysis}
 \input{Appendix/noise and errors}

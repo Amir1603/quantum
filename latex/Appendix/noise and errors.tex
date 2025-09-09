@@ -6,14 +6,9 @@
 
 This appendix provides an extended analysis of the QKD protocol's performance under various noise models, complementing the discussion in Section~\ref{sec:noise-errors}. We present a comprehensive set of numerical simulations for both the star-interaction Hamiltonian ($H^{(1)}$) and the nearest-neighbor Hamiltonian ($H^{(2)}$), examining the resilience of both charge and energy teleportation.
 
-\input{Appendix/noise-errors/classical-comm}
-\input{Appendix/noise-errors/excited-mixture}
-\input{Appendix/noise-errors/excited-superposition}
-\input{Appendix/noise-errors/bitfilp}
-\input{Appendix/noise-errors/alice-phaseflip}
-\input{Appendix/noise-errors/bob-phaseflip}
-
 \subsection{Classical Communication Error}
+
+\input{Appendix/noise-errors/classical-comm}
 
 Since the protocol is designed such that the intended signal $\langle\Delta O_{B}\rangle_{a=0}$ is negative and the flipped signal $\langle\Delta O_{B}\rangle_{a=1}$ is positive and of similar magnitude, the overall expectation value is attenuated linearly as $p$ increases, moving from a negative value towards a positive one. The protocol fails when this value crosses zero, as this constitutes a bit-error in the generated key, rendering it insecure.
 
@@ -31,6 +26,8 @@ Figures \ref{fig:classical_err_alice_ham}, \ref{fig:classical_err_nn_ham_x}, and
 In summary, while the protocol is fundamentally vulnerable to classical communication errors with a consistent failure threshold, the charge teleportation protocol demonstrates superior stability and resilience, especially in the nearest-neighbor model, where its signal magnitude degrades less rapidly with system size compared to energy teleportation. This makes it a more robust choice for practical implementations.
 
 \subsection{Mixture with an Excited State}
+
+\input{Appendix/noise-errors/excited-mixture}
 
 Perfect ground state preparation is experimentally challenging; a common imperfection is a residual population of excited states. This section analyzes the protocol's performance when the initial resource state is not the pure ground state $\rho_{gs} = |gs\rangle\langle gs|$, but rather a statistical mixture with the first excited state, $\rho_1$. This error model is particularly relevant for systems with a small energy gap, where distinguishing the ground state from low-lying excitations is difficult \cite{QKDbyQET}. The state is modeled as:
 \begin{equation*}
@@ -52,6 +49,8 @@ The Qiskit simulations, shown in Figures \ref{fig:alice_qiskit_mixture_error_app
 
 \subsection{Superposition with an Excited State}
 
+\input{Appendix/noise-errors/excited-superposition}
+
 A coherent error in state preparation can result in a superposition of the ground state $\ket{\psi_{gs}}$ and the first excited state $\ket{\psi_{1}}$. Unlike a statistical mixture, this creates a pure state with contributions from both energy levels, modeled as:
 \begin{equation*}
 \ket{\psi} = \sqrt{1-p}\ket{\psi_{gs}} + e^{i\alpha}\sqrt{p}\ket{\psi_{1}}
@@ -66,6 +65,8 @@ The Qiskit simulations presented in Figures \ref{fig:alice_qiskit_superposition_
 
 \subsection{Bit-Flip Error}
 
+\input{Appendix/noise-errors/bitfilp}
+
 We now consider the effect of a local bit-flip error channel on the shared resource state. This error is modeled by the transformation $\rho \rightarrow (1-p)\rho + pX_{n}\rho X_{n}$, which applies a Pauli-\(X\) gate to the qubit at site $n$ with probability $p$. Due to the local nature of the protocol's key operators, it is sufficient to analyze the impact of such errors occurring at Alice's site ($n=0$) and Bob's site ($n=N$) \cite{QKDbyQET}.
 
 A remarkable feature of the protocol is its inherent robustness to bit-flip errors on Alice's qubit when she measures in the corresponding basis. If a bit-flip error ($X_0$) occurs on Alice's qubit in the resource state before her measurement in the $\sigma_A = X_0$ basis, it has no effect on Bob's final expectation value. This is because the measurement operator $P_A(b)$ projects the state onto an eigenstate of $X_0$. Since the error operator $X_0$ commutes with the measurement projectors, the term corresponding to the error state, $P_A(b)X_0\rho_{gs}X_0P_A(b)$, reduces to $P_A(b)\rho_{gs}P_A(b)$, making the error undetectable and harmless in this specific configuration.
@@ -75,6 +76,8 @@ The more impactful scenario is a bit-flip error on Bob's qubit, which directly c
 The Qiskit simulations presented in Figures \ref{fig:alice_qiskit_bitflip_error_appendix} and \ref{fig:nn_qiskit_bitflip_error_appendix} validate these numerical findings. The results show a stable decay, confirming that the protocol's relative robustness to bit-flip errors on Bob's qubit is well-represented at the quantum circuit level.
 
 \subsection{Alice site Phase-Flip Error}
+
+\input{Appendix/noise-errors/alice-phaseflip}
 
 A phase-flip error on Alice's qubit, modeled by the channel $\rho \rightarrow (1-p)\rho + pZ_{0}\rho Z_{0}$, represents a significant threat to the protocol's integrity. The impact of this error is fundamentally different from a bit-flip, as it directly interferes with the measurement process itself.
 
@@ -91,6 +94,8 @@ The simulation results presented in Figures \ref{fig:alice_num_alice_phaseflip_e
 In summary, a phase-flip error on Alice's qubit is a detrimental noise source that attacks the core mechanism of the teleportation protocol by decohering the measurement basis. Its impact is severe for both energy and charge observables, establishing a critical error threshold beyond which secure key distribution is not possible.
 
 \subsection{Bob site Phase-Flip Error}
+
+\input{Appendix/noise-errors/bob-phaseflip}
 
 A phase-flip error occurring at Bob's site ($n=N$), modeled by the channel $\rho \rightarrow (1-p)\rho + pZ_{N}\rho Z_{N}$, is particularly detrimental to the protocol. Unlike an error on Alice's qubit which degrades the measurement, an error on Bob's qubit directly sabotages his corrective operation.
 
