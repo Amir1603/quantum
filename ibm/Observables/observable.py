@@ -50,6 +50,7 @@ class Observable:
     def apply_ground_state(self, qc: QuantumCircuit, use_density_matrix: bool):
         """Prepares the ground state for the TFIM."""
         if self.N == 1 and not use_density_matrix:
+            print("Using rotation method for N=1 ground state.")
             # stable β in [0, π/2]
             # (either form is fine; keep one to avoid roundoff pitfalls)
             beta = 0.5 * np.atan2(self.J, -2.0*self.h)
@@ -60,6 +61,8 @@ class Observable:
             qc.ry(-2.0*beta, a)   # cosβ|0> - sinβ|1>
             qc.cx(a, b)           # -> cosβ|00> - sinβ|11>
         else:
+            s = "DM" if use_density_matrix else "SV"
+            print(f"Using qc.append preparation with {s}.")
             qubits = list(range(self.N+1))
 
             prep = SetDensityMatrix(self._calc.rho) if use_density_matrix \
