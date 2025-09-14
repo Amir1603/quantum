@@ -17,8 +17,6 @@ class Charge(Observable):
         alice_idx = utils.get_alice_idx(self.N)
         utils.apply_basis(qc, self._alice_basis, alice_idx)
 
-        qc.measure(alice_idx, alice_idx)
-
     # TODO: What is the different from energy? Can the operation be unified?
     def apply_bob_operation(self, qc: QuantumCircuit, xor_res):
         """

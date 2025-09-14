@@ -15,7 +15,10 @@ QiskitRuntimeService.save_account(
     # name = "yonaamir",
 
     # noyavraham3@gmail.com
+    # Open
     instance = "crn:v1:bluemix:public:quantum-computing:us-east:a/a3bb5d1d765e4c49b1c3bc0d8076444e:0919c3a5-19f7-4f3d-98de-c1e299fd4c54::",
+    # Payed
+    # instance = "crn:v1:bluemix:public:quantum-computing:us-east:a/a3bb5d1d765e4c49b1c3bc0d8076444e:cf387a6b-3c01-4d6b-a909-da1eaa63ae7c::",
     token = "xX9lecB631A73LN23FnK-iGQ8UnxVQnz-1v01uH4gFoi",
     name = "Noy Avraham",
 

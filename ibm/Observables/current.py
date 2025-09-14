@@ -19,8 +19,6 @@ class Current(Observable):
         alice_idx = utils.get_alice_idx(self.N)
         utils.apply_basis(qc, self._alice_basis, alice_idx)
 
-        qc.measure(alice_idx, alice_idx)
-
     def apply_bob_operation(self, qc: QuantumCircuit, xor_res):
         """
         Bob's conditional operation based on Alice's Z measurement (outcome m).
