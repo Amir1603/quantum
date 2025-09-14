@@ -62,9 +62,10 @@ class Runner():
         # Alice's qubit basis was already applied so apply on Bob's neighbor only if different.
         if alice_idx != bob_neighbor_idx:
             utils.apply_basis(qc, bob_meas_basis, bob_neighbor_idx)
-            qc.measure(alice_idx, alice_idx)
 
-        qc.measure(bob_neighbor_idx, bob_neighbor_idx)
+        qc.measure(alice_idx, alice_idx)
+        if alice_idx != bob_neighbor_idx:
+            qc.measure(bob_neighbor_idx, bob_neighbor_idx)
         qc.measure(bob_idx, bob_idx)
 
     def _qet_circuit(self, obs: Observable, conf: QuantumSimConf, is_simulator: bool):
