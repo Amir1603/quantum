@@ -8,10 +8,6 @@ A primary metric for protocol failure is the sign reversal of the teleported exp
 \subsection{Classical Communication Error}
 \label{subsec:classical-comm}
 
-An error in the classical channel, where the bit Alice sends is flipped with probability $p$, causes Bob to apply the incorrect unitary operation. This effectively creates a statistical mixture of the intended ($a=0$) and flipped ($a=1$) outcomes. As analyzed in \cite{QKDbyQET}, this leads to a linear degradation of the expected signal: $\langle\Delta O_B\rangle_p = (1-p)\langle\Delta O_B\rangle_{a=0} + p\langle\Delta O_B\rangle_{a=1}$. Since $\langle\Delta O_B\rangle_{a=0}$ is negative and $\langle\Delta O_B\rangle_{a=1}$ is positive, the signal is attenuated and moves towards zero.
-
-The numerical results in Figure~\ref{fig:cls-Ns-main} show this linear decay for all simulated configurations. For the star-interaction model $H^{(1)}$, a clear sign-flip threshold appears around $p \approx 0.25$, consistent with the findings in \cite{QKDbyQET}. While the absolute magnitude of the energy signal is larger than that of the charge signal in this model, both are similarly vulnerable to this error (see Appendix Fig.~\ref{fig:classical_err_alice_ham} and Fig.~\ref{fig:classical_err_nn_ham_x} for a direct comparison). However, for the more realistic nearest-neighbor model ($H^{(2)}$), the energy signal diminishes rapidly with system size $N$, whereas the charge signal remains more stable (a trend clearly visible in the energy data in Appendix Fig.~\ref{fig:energy_vs_classical_err_for_n}). This highlights that for larger distances, the charge protocol's signal is more resilient, even though the fundamental error threshold remains similar.
-
 \begin{figure}[ht]
   \centering
   \subfloat[\(H^{(1)}\) (Star-Coupling interaction)]{
@@ -29,6 +25,10 @@ The numerical results in Figure~\ref{fig:cls-Ns-main} show this linear decay for
   \label{fig:cls-Ns-main}
 \end{figure}
 
+An error in the classical channel, where the bit Alice sends is flipped with probability $p$, causes Bob to apply the incorrect unitary operation. This effectively creates a statistical mixture of the intended ($a=0$) and flipped ($a=1$) outcomes. As analyzed in \cite{QKDbyQET}, this leads to a linear degradation of the expected signal: $\langle\Delta O_B\rangle_p = (1-p)\langle\Delta O_B\rangle_{a=0} + p\langle\Delta O_B\rangle_{a=1}$. Since $\langle\Delta O_B\rangle_{a=0}$ is negative and $\langle\Delta O_B\rangle_{a=1}$ is positive, the signal is attenuated and moves towards zero.
+
+The numerical results in Figure~\ref{fig:cls-Ns-main} show this linear decay for all simulated configurations. For the star-interaction model $H^{(1)}$, a clear sign-flip threshold appears around $p \approx 0.25$, consistent with the findings in \cite{QKDbyQET}. While the absolute magnitude of the energy signal is larger than that of the charge signal in this model, both are similarly vulnerable to this error (see Appendix Fig.~\ref{fig:classical_err_alice_ham} and Fig.~\ref{fig:classical_err_nn_ham_x} for a direct comparison). However, for the more realistic nearest-neighbor model ($H^{(2)}$), the energy signal diminishes rapidly with system size $N$, whereas the charge signal remains more stable (a trend clearly visible in the energy data in Appendix Fig.~\ref{fig:energy_vs_classical_err_for_n}). This highlights that for larger distances, the charge protocol's signal is more resilient, even though the fundamental error threshold remains similar.
+
 From Figure~\ref{fig:classical-main} one can see that error flipping the classical bit communicated from Alice to Bob changes the extracted value sign at Bob's site at high probabilities. This is the expected result since by the protocol's design and from simulations of the protocol in previous sections we showed that flipping this bit inverts the sign measured by Bob. Comparing to energy from the equivalence simulation in~\cite{QKDbyQET} (see also Figures~\ref{fig:classical_err_alice_ham},~\ref{fig:classical_err_nn_ham_x} and~\ref{fig:classical_err_nn_ham_y} in Appendix), the charge is somewhat more robust to such error where the sign flips around \(p_{err} \approx  0.32\) instead of \(p_{err} \approx  0.25\) for energy, a threshold introduce in~\cite{QKDbyQET} and is confirmed in our own energy teleportation simulations (Appendix Fig.~\ref{fig:classical_err_alice_ham}, Fig.~\ref{fig:classical_err_nn_ham_x} and Fig.~\ref{fig:classical_err_nn_ham_y}).
 
 \begin{figure}[ht]
@@ -41,11 +41,6 @@ not prominent at low error probabilities.}
 
 \subsection{Mixture with an Excited State}
 \label{subsec:mixture}
-
-Perfect ground state preparation is experimentally challenging; a common imperfection is a residual population of excited states, modeled as a classical mixture $\rho = (1-p)\rho_{gs} + p\rho_{excited}$. The teleported signal becomes a weighted average of the contributions from each state.
-
-Figure~\ref{fig:mixture-main} reveals a critical performance difference between energy and charge teleportation.
-This difference in robustness stems from the nature of the observables themselves. The energy teleportation signal is highly sensitive to the local energy expectation value $\langle H_B\rangle$. Low-lying excitations contribute a large positive energy offset, which can easily overwhelm the negative teleported signal originating from the ground state component, causing a premature sign-flip fatal to the QKD protocol.
 
 \begin{figure}[ht!]
     \centering
@@ -61,6 +56,26 @@ This difference in robustness stems from the nature of the observables themselve
   \label{fig:mixture-main}
 \end{figure}
 
+Perfect ground state preparation is experimentally challenging; a common imperfection is a residual population of excited states, modeled as a classical mixture $\rho = (1-p)\rho_{gs} + p\rho_{excited}$. The teleported signal becomes a weighted average of the contributions from each state.
+
+Figure~\ref{fig:mixture-main} reveals a critical performance difference between energy and charge teleportation.
+This difference in robustness stems from the nature of the observables themselves. The energy teleportation signal is highly sensitive to the local energy expectation value $\langle H_B\rangle$. Low-lying excitations contribute a large positive energy offset, which can easily overwhelm the negative teleported signal originating from the ground state component, causing a premature sign-flip fatal to the QKD protocol.
+
+% This is part of the next subsection of superposition with excited state error, it is here for formatting resons
+\begin{figure*}[htbp]
+    \centering
+    \subfloat[Numerical, \(H^{(2)}\), \(N{=}2\), \(\sigma_A=X_0\)]{
+        \includegraphics[width=0.8\columnwidth]{plots/errors/numerical/N2_charge_vs_p_excited_superposition_error.png}
+    }
+    \hfill
+    \subfloat[Qiskit, \(H^{(2)}\), \(N{=}2\), \(\sigma_A=X_0\)]{
+        \includegraphics[width=0.9\columnwidth]{plots/errors/qiskit/N2_charge_vs_p_excited_superposition_error.png}
+    }
+  
+  \caption{Coherent superposition with an excited state for the $H^{(2)}$ model ($N=2, \sigma_A=X_0$). Similar to the classical mixture, the charge protocol proves its resilient.}
+  \label{fig:superposition-main}
+\end{figure*}
+
 In contrast, the charge observable $Q_B$, which is related to local spin parity, is less sensitive to these absolute energy shifts. The quantum correlations responsible for generating the signal's sign (the $\eta_Q$ term) often retain their structure across different low-energy states. As a result, the contribution from the excited state does not introduce a large positive offset, and the teleported charge signal remains negative over a much wider range of error probabilities, merely decreasing in magnitude.
 While both signals degrade as the mixture probability $p$ increases, the energy signal frequently crosses zero and becomes positive at moderate error levels ($p \approx 0.15-0.25$) \cite{QKDbyQET}, a critical vulnerability that is evident in our energy simulations shown in Appendix Fig.~\ref{fig:nn_X_num_mixture_error_appendix} and Fig.~\ref{fig:nn_Y_num_mixture_error_appendix}. In contrast, the charge signal often remains negative even at high error probabilities, merely decreasing in magnitude. This superior robustness of charge stems from the nature of the observables. Low-lying excitations can significantly alter the local energy expectation value $\langle H_B \rangle$, contributing a large positive offset term ($\xi_H$) that overwhelms the negative teleported signal from the ground state. The charge observable $Q_B$, which is tied to local spin parity, is less sensitive to such energy shifts. The correlations responsible for charge teleportation ($\eta_Q$) often retain their sign across different low-energy manifolds, preserving the integrity of the key bit.
 
@@ -71,26 +86,8 @@ The Qiskit simulations (top panels of Fig.~\ref{fig:mixture-main}) corroborate t
 
 A coherent error creating a superposition $|\psi\rangle = \sqrt{1-p}|\psi_{gs}\rangle + e^{i\alpha}\sqrt{p}|\psi_{excited}\rangle$ introduces interference terms into the expectation values of $\xi$ and $\eta$. This leads to a non-linear dependence on the error probability $p$, as shown in Figure~\ref{fig:superposition-main}. Similar to the classical mixture, the energy protocol is more susceptible to sign-flips than the charge protocol, as shown in the energy data in Appendix Fig.~\ref{fig:nn_X_num_superposition_error_appendix} and Fig.~\ref{fig:nn_Y_num_superposition_error_appendix}. The phase sensitivity inherent in the superposition can destructively interfere with the commutator term $\eta$, which is the engine of teleportation, and this effect appears more pronounced for the energy observable. The Qiskit simulations again highlight the increased statistical variance, making it difficult to distinguish the true non-linear signal from finite-shot noise.
 
-\begin{figure}[htbp]
-    \centering
-    \subfloat[Numerical, \(H^{(2)}\), \(N{=}2\), \(\sigma_A=X_0\)]{
-        \includegraphics[width=0.8\columnwidth]{plots/errors/numerical/N2_charge_vs_p_excited_superposition_error.png}
-    }
-    \vspace{0.5em}
-    \subfloat[Qiskit, \(H^{(2)}\), \(N{=}2\), \(\sigma_A=X_0\)]{
-        \includegraphics[width=0.9\columnwidth]{plots/errors/qiskit/N2_charge_vs_p_excited_superposition_error.png}
-    }
-  
-  \caption{Coherent superposition with an excited state for the $H^{(2)}$ model ($N=2, \sigma_A=X_0$). Similar to the classical mixture, the charge protocol proves its resilient.}
-  \label{fig:superposition-main}
-\end{figure}
-
 \subsection{Bit-Flip and Phase-Flip Errors}
 \label{subsec:quantum-channel-errors}
-
-We now consider local quantum channel noise acting on individual qubits.
-
-\paragraph{Bit-Flip Error ($X_n$).} This error, modeled by $\rho \rightarrow (1-p)\rho + pX_n\rho X_n$, degrades the specific quantum correlations leveraged by the protocol. As shown in Figure~\ref{fig:bitflip-main}, both energy and charge signals decay smoothly with the error probability $p$. Sign-crossings are rare, indicating that the protocol is relatively robust against this error type. Energy generally maintains a larger absolute signal, which in principle makes it easier to measure, provided the noise level is low enough to prevent ambiguity (cf. the energy data in Appendix Figs.~\ref{fig:alice_num_bitflip_error_appendix},~\ref{fig:nn_X_num_bitflip_error_appendix}, and~\ref{fig:nn_Y_num_bitflip_error_appendix}).
 
 \begin{figure}[ht!]
     \centering
@@ -131,6 +128,10 @@ We now consider local quantum channel noise acting on individual qubits.
   \label{fig:phaseflip-main}
 \end{figure*}
 
+We now consider local quantum channel noise acting on individual qubits.
+
+\paragraph{Bit-Flip Error ($X_n$).} This error, modeled by $\rho \rightarrow (1-p)\rho + pX_n\rho X_n$, degrades the specific quantum correlations leveraged by the protocol. As shown in Figure~\ref{fig:bitflip-main}, both energy and charge signals decay smoothly with the error probability $p$. Sign-crossings are rare, indicating that the protocol is relatively robust against this error type. Energy generally maintains a larger absolute signal, which in principle makes it easier to measure, provided the noise level is low enough to prevent ambiguity (cf. the energy data in Appendix Figs.~\ref{fig:alice_num_bitflip_error_appendix},~\ref{fig:nn_X_num_bitflip_error_appendix}, and~\ref{fig:nn_Y_num_bitflip_error_appendix}).
+
 \paragraph{Phase-Flip Error ($Z_n$).} The impact of a phase-flip error depends critically on its location.
 
 \begin{itemize}
@@ -140,9 +141,7 @@ We now consider local quantum channel noise acting on individual qubits.
 
 In both cases, energy and charge show similar qualitative degradation, although the protocol is clearly more sensitive to noise on Bob's side.
 
-\subsection{Energy vs. Charge: A Consolidated View}
-\label{subsec:consolidated}
-
+% This belongs to the next subsection, it is here for formatting reasons
 \begin{table*}[t]
 \small
 \centering
@@ -166,6 +165,9 @@ Phase-Flip on Bob (Z) & Both decay rapidly & Moderate for E; Low for Q & Inverts
 \bottomrule
 \end{tabularx}
 \end{table*}
+
+\subsection{Energy vs. Charge: A Consolidated View}
+\label{subsec:consolidated}
 
 Our analysis reveals a consistent trade-off between energy and charge teleportation. \textbf{Energy teleportation} can yield a stronger absolute signal, especially for the directly-coupled star Hamiltonian ($H^{(1)}$). However, this larger signal comes at the cost of fragility. Energy is fundamentally sensitive to errors that shift local energy offsets, such as contamination from excited states, which can induce premature sign-flips that are fatal to a QKD protocol. Moreover, its practical implementation is hampered by higher statistical noise arising from the need to measure non-commuting observables separately (Appendix~\ref{appendix:stats-analysis}).
 

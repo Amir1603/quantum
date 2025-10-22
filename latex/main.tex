@@ -28,22 +28,16 @@
 \title{Quantum Key Distribution via Charge Teleportation}
 \author{Amir Yona}
 \email[]{yonaamir@gmail.com}
-%\homepage[]{Your web page}
-%\thanks{}
-%\altaffiliation{}
-\affiliation{Tel Aviv University, Tel Aviv, Israel}
-
-%Collaboration name if desired (requires use of superscriptaddress
-%option in \documentclass). \noaffiliation is required (may also be
-%used with the \author command).
-%\collaboration can be followed by \email, \homepage, \thanks as well.
-%\collaboration{}
-%\noaffiliation
+\author{Yaron Oz}
+\email[]{yaronoz@tauex.tau.ac.il}
+\affiliation{School of Physics and Astronomy, Tel Aviv University, Ramat Aviv 69978, Israel}
 
 \date{\today}
 
 \begin{abstract}
-In this work, we have proposed, simulated, and analyzed a Quantum Key Distribution (QKD) protocol based on the teleportation of a local charge observable. By studying two distinct Transverse Field Ising Models—one with a central star-coupling interaction ($H^{(1)}$) and another with nearest-neighbor interactions ($H^{(2)}$)—we have systematically compared the performance of charge teleportation against energy teleportation. Our investigation, conducted through both numerical simulations and Qiskit-based quantum circuit implementations, confirms that charge teleportation offers significant advantages for cryptographic applications. Our primary finding is the superior stability and robustness of the charge-based protocol. While energy teleportation can, in certain regimes, yield a larger absolute signal ($\langle \Delta H_B \rangle$), it is highly sensitive to statistical noise and exhibits an asymmetric response to Alice's classical bit choice. In contrast, the teleported charge expectation value ($\langle \Delta Q_B \rangle$) shows a perfect mirror symmetry, which is crucial for a reliable bit-to-key mapping. This symmetry, combined with a signal that remains stable and scalable as the system size $N$ increases, makes the charge protocol inherently more resilient to the finite-shot noise that characterizes near-term quantum hardware. Critically, our protocol was validated on real quantum hardware for a minimal two-qubit system ($N=1$). Despite the presence of device noise, the experimental results successfully reproduced the characteristic separation of Bob's observable expectation values, confirming the fundamental viability of the QKD mechanism.
+
+We introduce a quantum key distribution (QKD) primitive based on charge teleportation: by  Local Operations and Classical Communication (LOCC) on an entangled many-body ground state, Alice’s one-bit choice steers the sign of a local charge shift at Bob, which directly encodes the key bit. Relative to energy teleportation schemes, the charge signal is bit-symmetric, measured in a single basis, and markedly more robust to realistic noise and model imperfections. We instantiate the protocol on transverse-field Ising models, star-coupled and one-dimensional chain,  obtain closed-form results for two qubits, and for larger systems confirm performance via exact diagonalization, circuit-level simulations, and a proof-of-principle hardware run. We quantify resilience to classical bit flips and local quantum noise, identifying regimes where sign integrity, and hence key correctness, is preserved. These results position charge teleportation as a practical, low-rate QKD primitive compatible with near-term platforms.
+
 \end{abstract}
 
 \maketitle
@@ -56,11 +50,11 @@ In this work, we have proposed, simulated, and analyzed a Quantum Key Distributi
 \input{6 - noise and errors}
 \input{7 - summary}
 
-% If you have acknowledgments, this puts in the proper section head.
 \begin{acknowledgments}
-% put your acknowledgments here.
+We would like to thank Kazuki Ikeda for valuable discussions. This work is supported in part by the Israeli Science Foundation Excellence Center, the US-Israel Binational Science Foundation, and the Israel Ministry of Science.
 \end{acknowledgments}
 
+\newpage
 \appendix
 \section*{Appendix}
 \addcontentsline{toc}{section}{Appendix}

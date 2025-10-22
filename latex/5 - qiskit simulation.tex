@@ -151,20 +151,26 @@ These results underscore the relative robustness of charge-based teleportation i
     \centering
     \subfloat[Charge teleportation]{
         \includegraphics[width=0.45\textwidth]{plots/qiskit/real hw/real_hw_charge_vs_J.png}
+        \label{subfloat:real_hw_charge_results}
     }
     \hfill
     \subfloat[Energy teleportation]{
         \includegraphics[width=0.45\textwidth]{plots/qiskit/real hw/real_hw_energy_vs_J.png}
+        \label{subfloat:real_hw_energy_results}
     }
-    \caption{Experimental protocol results obtained from real quantum hardware for \( N = 1 \), using Alice’s \( \sigma_A = X_0 \) basis. Each point represents an independent execution for a fixed value of coupling \( J \).\newline\textbf{\textcolor{BrickRed}{TODO: Update to new results with error bars after running the protocol}}}
+    \caption{Experimental protocol results obtained from real quantum hardware for \( N = 1 \), using Alice’s \( \sigma_A = X_0 \) basis. Each point represents an independent execution for a fixed value of coupling \( J \).}
     \label{fig:real_hw_results}
 \end{figure*}
 
-To complete the analysis, we also implement the teleportation protocol on an actual quantum processor via the IBM Q backend. The experiment was conducted for the minimal configuration with \( N = 1 \) using Alice's basis \( \sigma_A = X_0 \), which corresponds to both the \( H^{(1)} \) and \( H^{(2)} \) models in this simple setting. The charge and energy observables were measured separately using the circuits introduced earlier.
+To complete the analysis, we implement the teleportation protocol on an actual quantum processor, the \texttt{ibm\_torino} QPU, via the \texttt{IBM Quantum Platform}. The experiment was conducted for the minimal configuration with \( N = 1 \) using Alice's basis \( \sigma_A = X_0 \), which corresponds to both the \( H^{(1)} \) and \( H^{(2)} \) models in this simple setting. The charge and energy observables were measured separately using the circuits introduced earlier.
 
-Although the data points are fewer than in the simulated case—due to the significant overhead and resource demand of real hardware runs—the results clearly indicate that the protocol operates as expected even in the presence of device noise. For both energy and charge, the results exhibit the characteristic split between the two classical outcomes (\( c \) or \( c \oplus 1 \)), affirming the correctness of the teleportation mechanism.
+The results, shown in Figure~\ref{fig:real_hw_results}, provide crucial insight into the protocol's performance in the presence of realistic device noise. A key observation is a significant positive offset in the measured expectation values compared to the ideal simulations. This is particularly evident at \( J=0 \), where both the charge and energy signals are positive, regardless of Alice's classical bit choice (\( a=0 \) or \( a=1 \)). Such a systematic shift could be caused by various factors, including an imperfectly prepared ground state, decoherence, or measurement readout errors.
 
-The robustness of charge teleportation is particularly evident here, aligning with our earlier observations from simulations. This experiment provides practical validation that observable teleportation is feasible on real quantum hardware using only local operations and classical communication, without requiring full quantum state teleportation or entanglement swapping.
+For the energy teleportation protocol, this offset proves to be critical. As seen in Figure~\ref{subfloat:real_hw_energy_results}, the expectation values for the \( a=0 \) branch remain positive across the entire range of \( J \). Since the protocol's security relies on encoding key bits in the sign of the measured observable, the persistent positive sign means the protocol fails to produce a distinguishable key. Without sophisticated error correction to compensate for this offset, energy teleportation is not viable in this noisy environment.
+
+In stark contrast, the charge teleportation protocol demonstrates its superior robustness. While it is also affected by the initial offset at \( J=0 \), the signal strength for the \( a=0 \) branch grows sufficiently negative as \( J \) increases. As shown in Figure~\ref{subfloat:real_hw_charge_results}, the signal overcomes the systematic positive bias, re-establishing the clear sign separation between the \( a=0 \) and \( a=1 \) branches. This confirms that for a large enough coupling \( J \), the charge protocol remains functional and can reliably encode key bits.
+
+This experiment provides practical validation that observable teleportation is feasible on near-term quantum hardware using only LOCC. More importantly, it highlights that while the underlying mechanism works, the choice of observable is paramount. The pronounced resilience of charge teleportation against systematic hardware noise reinforces our central claim that it is a more practical and robust candidate for QKD applications.
 
 \subsection{Summary: Insights from Qiskit Simulations}
 
