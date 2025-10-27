@@ -79,14 +79,14 @@ class NumericalRunConf:
         return None
 
     @staticmethod
-    def generate_errors_configurations(error_name: str):
-        if error_name == 'p_classical_error': return ErrorsConf.generate_classical_error()
-        if error_name == 'p_depol_error': return ErrorsConf.generate_depolarization_error()
-        if error_name == 'p_bitflip_error': return ErrorsConf.generate_bitflip_error()
-        if error_name == 'p_alice_phaseflip_error': return ErrorsConf.generate_alice_phase_flip_error()
-        if error_name == 'p_bob_phaseflip_error': return ErrorsConf.generate_bob_phase_flip_error()
-        if error_name == 'p_excited_mixture_error': return ErrorsConf.generate_excited_mixture_error()
-        if error_name == 'p_excited_superposition_error': return ErrorsConf.generate_excited_superposition_error()
+    def generate_errors_configurations(error_name: str, num_points: int = None, p_max: float = None):
+        if error_name == 'p_classical_error': return ErrorsConf.generate_classical_error(num_points, p_max)
+        if error_name == 'p_depol_error': return ErrorsConf.generate_depolarization_error(num_points, p_max)
+        if error_name == 'p_bitflip_error': return ErrorsConf.generate_bitflip_error(num_points, p_max)
+        if error_name == 'p_alice_phaseflip_error': return ErrorsConf.generate_alice_phase_flip_error(num_points, p_max)
+        if error_name == 'p_bob_phaseflip_error': return ErrorsConf.generate_bob_phase_flip_error(num_points, p_max)
+        if error_name == 'p_excited_mixture_error': return ErrorsConf.generate_excited_mixture_error(num_points, p_max)
+        if error_name == 'p_excited_superposition_error': return ErrorsConf.generate_excited_superposition_error(num_points, p_max)
 
     @staticmethod
     def generate_class_comm_error_Ns(name: str) -> list[int]:
