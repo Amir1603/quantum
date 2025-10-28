@@ -1,52 +1,74 @@
-\section{Security Analysis}
+\section{Cryptographic Security Analysis}
 \label{sec:security_analysis}
 
 The analysis in Section~\ref{sec:noise-errors} demonstrates the protocol's \textit{robustness}, identifying the physical error thresholds at which the teleported charge signal $\langle \Delta Q_B \rangle$ flips sign---a catastrophic failure. However, a full security proof requires a more rigorous, cryptographic framework to guarantee that a positive secret key rate $K$ exists, even in the presence of noise below this threshold. This section outlines this framework, transitioning from protocol-specific attacks to a quantitative security proof against general coherent attacks by an eavesdropper, Eve.
 
 \subsection{Protocol-Specific Attack Models}
+\label{sec:attack_models}
 
-As established in \cite{Dolev2025}, the protocol is inherently secure against several key attack models. In a Man-in-the-Middle (MITM) attack, Eve may know the Hamiltonian, intercept the classical communication (Alice's basis choice $\sigma_A$ and bit $c$), and attempt to forge Bob's result. This attack fails because Bob's outcome (the sign of $\langle \Delta Q_B \rangle$) depends not only on the classical bit $c$ but also on the shared quantum correlations. Eve cannot deterministically reproduce the correct sign without possessing the entangled state, and any attempt to do so would require post-selection capabilities, which are not physically realizable.
+As established in \cite{Dolev2022}, the protocol is inherently secure against several key attack models. In a Man-in-the-Middle (MITM) attack, Eve may know the Hamiltonian, intercept the classical communication (Alice's basis choice $\sigma_A$ and bit $a$), and attempt to forge Bob's result. This attack fails because Bob's outcome (the sign of $\langle \Delta Q_B \rangle$) depends not only on the classical bit $a$ but also on the shared quantum correlations. Eve cannot deterministically reproduce the correct sign without possessing the entangled state, and any attempt to do so would require post-selection capabilities, which are not physically realizable.
 
 In an intercept-resend attack, where Eve establishes separate entangled states with Alice and Bob, the protocol also fails. Bob's measurement outcome will be uncorrelated with Alice's bit, resulting in a random key string that will be detected during parameter estimation.
 
-Furthermore, as noted in Section~\ref{sec:nn_hamiltonian}, the use of a random measurement basis by Alice (e.g., randomly choosing between $\sigma_A = X_0$ and $\sigma_A = Y_0$ for the $H^{(2)}$ model) protects against an adversary performing weak measurements to learn about state imperfections \cite{Dolev2025}.
+Furthermore, as noted in Section~\ref{sec:numerical_sim}, the use of a random measurement basis by Alice (e.g., randomly choosing between $\sigma_A = X_0$ and $\sigma_A = Y_0$ for the $H^{(2)}$ model) protects against an adversary performing weak measurements to learn about state imperfections \cite{Dolev2022}.
 
 \subsection{Quantitative Security and Secret Key Rate}
+\label{sec:key_rate_formula}
 
-While robust against these specific attacks, a general security proof must bound the information Eve can gain from any physical interaction, including coherent attacks. The standard approach \cite{Scarani2009} is to compute the asymptotic secret key rate, $K$, given by the Devetak-Winter formula \cite{Devetak2005}:
-$$
-K \ge I(A:B) - \chi(B:E)
-$$
-Here, $I(A:B)$ is the classical mutual information between Alice and Bob, and $\chi(B:E)$ is the Holevo information, which provides an upper bound on the information Eve can gain about Bob's key.
+While robust against these specific attacks, a general security proof must bound the information Eve can gain from any physical interaction, including coherent attacks. The standard approach \cite{Scarani2009} is to compute the asymptotic secret key rate, $K_{\text{asym}}$, (in the limit of infinite signals) which is lower-bounded by the Devetak-Winter formula \cite{Devetak2005}:
+\begin{equation}
+    K_{\text{asym}} \ge 1 - h(e_{\text{bit}}) - h(e_{\text{ph}})
+\end{equation}
+where $h(x) = -x \log_2(x) - (1-x) \log_2(1-x)$ is the binary entropy function. Here, $1 - h(e_{\text{bit}})$ bounds the classical mutual information between Alice and Bob, $I(A:B)$, and $h(e_{\text{ph}})$ bounds the Holevo information $\chi(B:E)$, which is the upper bound on the information Eve can gain about Bob's key.
 
 \subsection{Parameter Estimation}
+\label{sec:parameter_estimation}
 
-To calculate $K$, Alice and Bob must publicly sacrifice a random subset of their measurement data to estimate two key parameters.
+To calculate $K_{\text{asym}}$, Alice and Bob must publicly sacrifice a random subset of their measurement data to estimate two key parameters.
 
-\begin{enumerate}
-    \item \textbf{Bit Error Rate ($e_{\rm bit}$):} The classical information $I(A:B)$ is determined by the Quantum Bit Error Rate (QBER), $e_{\rm bit}$, via $I(A:B) = 1 - h(e_{\rm bit})$, where $h(x)$ is the binary entropy function. In our protocol, $e_{\rm bit}$ is the observed probability that Bob measures the wrong sign (e.g., a positive charge, logical '0') when Alice intended the opposite (e.g., sent $a=0$, logical '1'). This is measured over the rounds where they use the same basis setting (e.g., Alice uses $X_0$ and Bob applies the corresponding $Y_N$ rotation).
+\begin{itemize}
+    \item \textbf{$e_{\text{bit}}$ (QBER):} The Quantum Bit Error Rate, or QBER, is the error rate measured in the "key generation" basis (e.g., Alice $\sigma_A=X_0$). This is the observed probability that Bob measures the wrong sign (e.g., a positive charge, logical '0') when Alice intended the opposite (e.g., sent $a=0$, logical '1').
 
-    \item \textbf{Phase Error Rate ($e_{\rm ph}$):} Eve's information $\chi(B:E)$ is bounded by the phase error rate, $e_{\rm ph}$, via $\chi(B:E) \le h(e_{\rm ph})$ \cite{Scarani2009}. The phase error rate is the error rate that \textbf{would have been} observed if Alice and Bob had measured in a complementary basis.
-\end{enumerate}
+    \item \textbf{$e_{\text{ph}}$ (Phase Error):} The Phase Error Rate is the (unmeasured) error rate in the complementary "test" basis (e.g., Alice $\sigma_A=Y_0$).
+\end{itemize}
 
 The phase error rate $e_{\rm ph}$ is not measured directly. Instead, it is estimated by using the rounds where Alice and Bob randomly choose \textbf{different} bases. For example, in the $H^{(2)}$ model, Alice's random choice between $\sigma_A=X_0$ and $\sigma_A=Y_0$ is the mechanism for this. The rounds where they use the "mismatched" bases are sacrificed to test the quantum correlations (e.g., visibility). These correlations provide a verifiable upper bound on $e_{\rm ph}$ through entropic uncertainty relations \cite{Tomamichel2011}.
 
-\subsection{Security Thresholds and Finite-Key Analysis}
+\subsection{Simulation of Key Rate vs. Physical Noise}
+\label{sec:simulation_key_rate}
 
-The analysis in Section~\ref{sec:noise-errors} (e.g., Figure~\ref{fig:cls-Ns-main}) identifies the \textit{robustness threshold}, $p_{\rm classical} \approx 0.25-0.32$, where the protocol signal $\langle \Delta Q_B \rangle$ itself flips. The \textit{security threshold}, however, is the point where the secret key rate $K$ first drops to zero. This occurs when the observed errors, $e_{\rm bit}$ and $e_{\rm ph}$ (which are caused by the underlying physical noise $p$), become too high, i.e., when $1 - h(e_{\rm bit}) - h(e_{\rm ph}) \le 0$. This security threshold will always be reached at a lower noise level $p$ than the signal-flip threshold.
+To connect this framework to our physical model, we simulate the protocol under the "phase-flip at Bob's site" noise model ($p_{\text{bob\_phaseflip}}$) for the $H^{(2)}$ Hamiltonian. For each noise probability $p$, we run two simulations: one in the key basis ($\sigma_A=X_0$) to find $e_{\text{bit}}(p)$, and one in the test basis ($\sigma_A=Y_0$) to find the test basis error, which gives the bound $e_{\text{ph}}(p)$. This allows us to plot the key rate $K_{\text{asym}}$ as a function of the underlying physical noise.
 
-% TODO - Insert new Figure plot here
-% This figure should plot the asymptotic key rate K_asym as a function of 
-% the physical noise parameter p (e.g., phase-flip probability).
-% \begin{figure}[h!]
-%     \centering
-%     \includegraphics[width=0.8\columnwidth]{path/to/key_rate_plot.pdf}
-%     \caption{Asymptotic secret key rate $K_{\rm asym} = 1 - h(e_{\rm bit}) - h(e_{\rm ph})$ as a function of the physical phase-flip noise probability $p$. The key rate drops to zero at the security threshold $p_{\rm th} \approx X.XX$, which is significantly lower than the protocol's robustness threshold.}
-%     \label{fig:key_rate}
-% \end{figure}
+The results for $N=2, 3,$ and $4$ (with $J=2, h=1$) are presented in Figure \ref{fig:key_rates}.
 
-% TODO - Update this paragraph with the results from your new simulation
-To quantify this, we simulate the protocol under physical noise $p$ (e.g., phase-flip noise from Sec. VI.B) and directly calculate the resulting $e_{\rm bit}(p)$ and $e_{\rm ph}(p)$. The phase error rate $e_{\rm ph}(p)$ is bounded from the simulated correlations in the complementary basis \cite{Scarani2009}.
-Our simulation results, plotted in Figure \ref{fig:key_rate}, show the asymptotic key rate $K_{\rm asym}(p) = 1 - h(e_{\rm bit}(p)) - h(e_{\rm ph}(p))$ as a function of the noise. We find the security threshold to be $p_{\rm th} \approx X.XX$. This confirms that while the protocol is robust up to $p \approx 0.25-0.32$, secure key generation is only possible for noise levels $p < p_{\rm th}$.
+\begin{figure}[htbp]
+    \centering
+    \subfloat[\( N = 2 \) (Secure)]{
+        \includegraphics[width=0.32\textwidth]{plots/security/key_rates_vs_bob_phaseflip_J2_h1_N2.png}
+    }
+    \hfill
+    \subfloat[\( N = 3 \) (Insecure)]{
+        \includegraphics[width=0.32\textwidth]{plots/security/key_rates_vs_bob_phaseflip_J2_h1_N3.png}
+    }
+    \hfill
+    \subfloat[\( N = 4 \) (Insecure)]{
+        \includegraphics[width=0.32\textwidth]{plots/security/key_rates_vs_bob_phaseflip_J2_h1_N4.png}
+    }
 
-Finally, for any practical implementation with a finite number of signals $N$, the asymptotic rate $K$ is an overestimation. A composable security proof must be used, which accounts for the statistical fluctuations in the estimation of $e_{\rm bit}$ and $e_{\rm ph}$ from a finite data set. These finite-key corrections, which introduce security parameters $\varepsilon_{\rm sec}$, are provided by standard frameworks \cite{Tomamichel2012, Lim2014} and are necessary to calculate a secure key length $\ell$ from a practical implementation.
+    \caption{Asymptotic key rate analysis for the $H^{(2)}$ model ($J=2, h=1$) under phase-flip noise on Bob's site. Plots show the QBER ($e_{\text{bit}}$), the test basis error ($e_{\text{ph}}$), and the resulting asymptotic key rate ($K_{\text{asym}}$) as a function of noise probability $p$.}
+    \label{fig:key_rates}
+\end{figure}
+
+The simulation results in Fig. \ref{fig:key_rates} reveal a critical dependence on the system size $N$.
+For the minimal chain $N=2$, the protocol is secure. The asymptotic key rate $K_{\text{asym}}$ (green line) is positive for zero noise, $K_{\text{asym}}(p=0) > 0$, indicating a secure channel. This is achieved despite a high intrinsic phase error $e_{\text{ph}}(p=0) \approx 0.19$ because the bit error rate is sufficiently low, $e_{\text{bit}}(p=0) \approx 0.04$. The resulting key rate $K_{\text{asym}}(p=0) = 1 - h(0.04) - h(0.19) \approx 0.05$ is small but positive. The protocol can tolerate noise up to a threshold of $p_{\text{th}} \approx 0.02$, after which $K_{\text{asym}}$ drops to zero.
+
+For longer chains, $N=3$ and $N=4$, the protocol is not secure for these Hamiltonian parameters ($J=2, h=1$). The key rate is zero for all noise levels, $K_{\text{asym}} = 0$. This failure is not a flaw in the simulation but a physical result: the intrinsic quantum correlations are too weak. As seen in the $N=3$ plot, the intrinsic phase error $e_{\text{ph}}(p=0) \approx 0.23$ is so high that the combined information leakage $h(e_{\text{bit}}) + h(e_{\text{ph}})$ exceeds 1, making $K_{\text{asym}}$ negative (and thus plotted as zero).
+
+This result demonstrates that while the protocol is a valid proof-of-concept, its practical application requires careful optimization of the Hamiltonian parameters ($J, h$).
+
+\subsection{Finite-Key Effects and Future Work}
+\label{sec:finite_key}
+
+The preceding analysis is in the asymptotic limit of infinite signals. For any practical implementation with a finite number of signals, $M$, the asymptotic rate $K_{\text{asym}}$ is an overestimation. A composable security proof must be used, which accounts for the statistical fluctuations in the estimation of $e_{\rm bit}$ and $e_{\rm ph}$ from a finite data set. The composable, finite-key security rate $\ell$ is given by more complex bounds \cite{Tomamichel2012, Lim2014}, which introduce correction terms that depend on $1/\sqrt{M}$ and the desired security parameter $\varepsilon_{\text{sec}}$.
+
+Our analysis confirms the fundamental viability of the charge teleportation mechanism for QKD. The next steps involve a) optimizing the Hamiltonian parameters $J$ and $h$ to maximize the intrinsic key rate and secure distance $N$, and b) applying finite-key analysis to the optimized protocol to determine the practical key rates achievable with a realistic number of signals.
