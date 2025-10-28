@@ -27,7 +27,7 @@ where $h(x) = -x \log_2(x) - (1-x) \log_2(1-x)$ is the binary entropy function. 
 To calculate $K_{\text{asym}}$, Alice and Bob must publicly sacrifice a random subset of their measurement data to estimate two key parameters.
 
 \begin{itemize}
-    \item \textbf{$e_{\text{bit}}$ (QBER):} The Quantum Bit Error Rate, or QBER, is the error rate measured in the "key generation" basis (e.g., Alice $\sigma_A=X_0$). This is the observed probability that Bob measures the wrong sign (e.g., a positive charge, logical '0') when Alice intended the opposite (e.g., sent $a=0$, logical '1').
+    \item \textbf{$e_{\text{bit}}$ ($Q_{BER}$):} The Quantum Bit Error Rate, or $Q_{BER}$, is the error rate measured in the "key generation" basis (e.g., Alice $\sigma_A=X_0$). This is the observed probability that Bob measures the wrong sign (e.g., a positive charge, logical '0') when Alice intended the opposite (e.g., sent $a=0$, logical '1').
 
     \item \textbf{$e_{\text{ph}}$ (Phase Error):} The Phase Error Rate is the (unmeasured) error rate in the complementary "test" basis (e.g., Alice $\sigma_A=Y_0$).
 \end{itemize}
@@ -55,14 +55,14 @@ The results for $N=2, 3,$ and $4$ (with $J=2, h=1$) are presented in Figure \ref
         \includegraphics[width=0.32\textwidth]{plots/security/key_rates_vs_bob_phaseflip_J2_h1_N4.png}
     }
 
-    \caption{Asymptotic key rate analysis for the $H^{(2)}$ model ($J=2, h=1$) under phase-flip noise on Bob's site. Plots show the QBER ($e_{\text{bit}}$), the test basis error ($e_{\text{ph}}$), and the resulting asymptotic key rate ($K_{\text{asym}}$) as a function of noise probability $p$.}
+    \caption{Asymptotic key rate analysis for the $H^{(2)}$ model ($J=2, h=1$) under phase-flip noise on Bob's site. Plots show the $Q_{BER}$ ($e_{\text{bit}}$), the test basis error ($e_{\text{ph}}$), and the resulting asymptotic key rate ($K_{\text{asym}}$) as a function of noise probability $p$.}
     \label{fig:key_rates}
 \end{figure}
 
 The simulation results in Fig. \ref{fig:key_rates} reveal a critical dependence on the system size $N$.
 For the minimal chain $N=2$, the protocol is secure. The asymptotic key rate $K_{\text{asym}}$ (green line) is positive for zero noise, $K_{\text{asym}}(p=0) > 0$, indicating a secure channel. This is achieved despite a high intrinsic phase error $e_{\text{ph}}(p=0) \approx 0.19$ because the bit error rate is sufficiently low, $e_{\text{bit}}(p=0) \approx 0.04$. The resulting key rate $K_{\text{asym}}(p=0) = 1 - h(0.04) - h(0.19) \approx 0.05$ is small but positive. The protocol can tolerate noise up to a threshold of $p_{\text{th}} \approx 0.02$, after which $K_{\text{asym}}$ drops to zero.
 
-For longer chains, $N=3$ and $N=4$, the protocol is not secure for these Hamiltonian parameters ($J=2, h=1$). The key rate is zero for all noise levels, $K_{\text{asym}} = 0$. This failure is not a flaw in the simulation but a physical result: the intrinsic quantum correlations are too weak. As seen in the $N=3$ plot, the intrinsic phase error $e_{\text{ph}}(p=0) \approx 0.23$ is so high that the combined information leakage $h(e_{\text{bit}}) + h(e_{\text{ph}})$ exceeds 1, making $K_{\text{asym}}$ negative (and thus plotted as zero).
+For longer chains, $N=3$ and $N=4$, the protocol is not secure for these Hamiltonian parameters ($J=2, h=1$). The key rate is zero for all noise levels, $K_{\text{asym}} = 0$. This failure is not a flaw, but a physical result: the intrinsic quantum correlations are too weak. As seen in the $N=3$ plot, the intrinsic phase error $e_{\text{ph}}(p=0) \approx 0.23$ is so high that the combined information leakage $h(e_{\text{bit}}) + h(e_{\text{ph}})$ exceeds 1, making $K_{\text{asym}}$ negative (and thus plotted as zero).
 
 This result demonstrates that while the protocol is a valid proof-of-concept, its practical application requires careful optimization of the Hamiltonian parameters ($J, h$).
 
