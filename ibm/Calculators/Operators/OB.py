@@ -71,24 +71,11 @@ class BobOperator(Operator):
 
             self.teleported_values[a] = np.trace(rho_B @ self.matrix).real
 
-    def calculate_final_probabilities(self, gs_dm: np.ndarray):
-        """
-        Calculates the final outcome probabilities for a=0 and a=1.
-        This method is intended to be overridden by subclasses (like QB)
-        that define specific projectors.
-        """
-        # This base implementation is a fallback, populating with NaNs
-        # to signal it's not implemented, but preventing a crash.
-        self.probabilities = {
-            False: {'p_plus': np.nan, 'p_zero': np.nan, 'p_minus': np.nan},
-            True:  {'p_plus': np.nan, 'p_zero': np.nan, 'p_minus': np.nan}
-        }
-
     def calc_teleported_values_using_eta_xi(self):
         den = np.sqrt(self.eta**2 + self.xi**2)
         numerators = {
-            True: self.eta**2 + self.xi**2,
-            False: -self.eta**2 + self.xi**2
+            True: -self.eta**2 + self.xi**2,
+            False: self.eta**2 + self.xi**2
         }
 
         if den == 0:
@@ -163,13 +150,14 @@ class QB(BobOperator):
 
         return {'plus': pi_plus, 'minus': pi_minus}
 
-    def calculate_final_probabilities(self, gs_dm: np.ndarray):
+    def calculate_final_probabilities(self, gs_dm: np.ndarray, p_classical_comm_err: float):
         """
         Calculates the final outcome probabilities for the QB observable.
         Maps QB eigenvalue 1 (Z_N = +1) to 'p_plus'.
         Maps QB eigenvalue 0 (Z_N = -1) to 'p_minus'.
         """
-        As = [False, True] # a=0, a=1
+        As = [False, True]
+        self.teleported_values = {}
 
         alice_idx = utils.get_alice_idx(self.N)
         bob_idx = utils.get_bob_idx(self.N)
@@ -177,7 +165,7 @@ class QB(BobOperator):
         probs = {}
 
         for a in As:
-            rho_B_a = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
+            rho_B = csc_matrix((2**(self.N+1), 2**(self.N+1)), dtype=complex)
 
             for mu in [-1, 1]: # Alice's measurement outcome b
                 I = utils.get_pauli_operator_on_site('I', alice_idx, self.N)
@@ -186,17 +174,23 @@ class QB(BobOperator):
 
                 bob_base = utils.AliceBase.X if self.alice_base == utils.AliceBase.Y else utils.AliceBase.Y
                 sigma_B = utils.get_pauli_operator_on_site(bob_base, bob_idx, self.N)
-                
-                # Note: We use p_classical_comm_err = 0 for this analysis,
-                # as quantum noise is passed in via gs_dm.
+
                 U_B = expm(-1j * mu * ((-1)**a) * self.theta * sigma_B.toarray())
 
                 inner_part = P_A @ gs_dm @ P_A
-                rho_B_a += U_B @ inner_part @ U_B.conj().T
+
+                # Avoid excessive numerical calculation if it is redundant and no error applies
+                if p_classical_comm_err != 0:
+                    U_B_err = expm(-1j * mu * ((-1)**(not a)) * self.theta * sigma_B.toarray())
+                    rho_B += (1-p_classical_comm_err) * U_B @ inner_part @ U_B.conj().T \
+                            + p_classical_comm_err * U_B_err @ inner_part @ U_B_err.conj().T
+                else:
+                    rho_B += U_B @ inner_part @ U_B.conj().T
 
             # Calculate probabilities by tracing against projectors
-            p_plus_1 = np.trace(rho_B_a @ self.projectors['plus']).real
-            p_minus_1 = np.trace(rho_B_a @ self.projectors['minus']).real
+            p_plus_1 = np.trace(rho_B @ self.projectors['plus']).real
+            p_minus_1 = np.trace(rho_B @ self.projectors['minus']).real
+            self.teleported_values[a] = np.trace(rho_B @ self.matrix).real
             
             # Ensure probabilities sum to 1 (or close to it)
             norm = p_plus_1 + p_minus_1

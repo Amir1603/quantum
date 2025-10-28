@@ -39,12 +39,9 @@ class NumericalTFIM(TFIMCalculator):
 
             if hasattr(op, 'calculate_final_probabilities'):
                 # This method should use self.rho.data and populate op.probabilities
-                op.calculate_final_probabilities(self.rho.data)
+                op.calculate_final_probabilities(self.rho.data, conf.errors.p_classical_error)
             else:
-                print(f"Warning: Operator {type(op).__name__} does not have 'calculate_final_probabilities' method.")
-                print(f"         Please implement this method in your {type(op).__name__} (or BobOperator) class.")
-                # We don't populate op.probabilities, so the fallback in plot_theoretical_values... will trigger.
-                pass 
+                op.calc_teleported_values(self.rho.data, conf.errors.p_classical_error)
 
     def calc_all(self, conf: Conf):
         """

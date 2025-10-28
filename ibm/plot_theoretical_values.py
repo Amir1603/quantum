@@ -9,41 +9,13 @@ def binary_entropy(x):
     """ Calculates the binary entropy h(x). """
     x = np.clip(x, 1e-9, 1 - 1e-9) # Avoid log(0)
     return -x * np.log2(x) - (1 - x) * np.log2(1 - x)
+
 def single_run(conf: Conf, alice_base: utils.AliceBase, hamiltonian_class: type, OB_types: dict[str, type]):
     OBs = {k: OB_class(conf.h, conf.J, conf.N, alice_base) for k, OB_class in OB_types.items()}
     H = hamiltonian_class(conf.h, conf.J, conf.N)
 
     ntfim = NumericalTFIM(H, list(OBs.values()))
     ntfim.calc_probabilities(conf)
-
-    for v in OBs.values():
-        if not hasattr(v, 'probabilities'):
-            # Fallback if calc_probabilities is not yet implemented in NumericalTFIM
-            # This allows the user's old code to run without crashing
-            print("Warning: 'NumericalTFIM.calc_probabilities(conf)' is not yet implemented.")
-            print("         Please implement it to return v.probabilities dict.")
-            print("         Falling back to old 'calc_all(conf)' for now. Security analysis will fail.")
-            ntfim.calc_all(conf) # Run the old function as a fallback
-            break # Exit loop, v.teleported_values is populated by calc_all
-
-        # Calculate expectation values from probabilities
-        if False not in v.probabilities or True not in v.probabilities:
-             # Handle cases where probabilities might not be calculated
-             print(f"Warning: Probabilities not found for {v}. Setting teleported_values to 0.")
-             v.teleported_values = {False: 0.0, True: 0.0}
-             continue
-
-        # For a=0 (False)
-        p_false = v.probabilities[False]
-
-        if not v.teleported_values:
-            v.teleported_values = {}
-
-        v.teleported_values[False] = p_false['p_plus'] - p_false['p_minus']
-        
-        # For a=1 (True)
-        p_true = v.probabilities[True]
-        v.teleported_values[True] = p_true['p_plus'] - p_true['p_minus']
 
     return OBs
 
