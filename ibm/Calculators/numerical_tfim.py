@@ -10,6 +10,39 @@ class NumericalTFIM(TFIMCalculator):
         self.H = H
         self.ops = {type(o).__name__: o for o in ops}
 
+    def calc_probabilities(self, conf: Conf):
+        """
+        Calculate the ground state, apply errors, and then calculate
+        the measurement probabilities for each operator.
+        This method is designed to populate `op.probabilities` for each operator.
+        """
+        # 1. State Preparation and Error Application
+        # (This is the same setup as calc_all)
+        self.E0, gs0, self.E1, ex1 = self.H.get_lowest_states()
+        self.gs0, self.ex1 = Statevector(gs0), Statevector(ex1)
+
+        self.gs_rho = NumericalTFIM._compute_density_matrix(self.gs0)
+        self.ex1_rho = NumericalTFIM._compute_density_matrix(self.ex1)
+
+        # This method (which I assume exists from your calc_all) 
+        # creates self.rho from self.gs_rho, self.ex1_rho and conf.errors
+        # This is the noisy density matrix *before* Alice's measurement
+        self.apply_errors(conf) 
+
+        # 2. Calculate Probabilities for each Operator
+        for op in self.ops.values():
+            # These methods are needed to find the optimal angle, which is
+            # required before calculating the final state.
+            op.shift(self.gs_rho.data)
+            op.calc_eta_xi(self.gs_rho.data)
+            op.calc_optimal_angle()
+
+            if hasattr(op, 'calculate_final_probabilities'):
+                # This method should use self.rho.data and populate op.probabilities
+                op.calculate_final_probabilities(self.rho.data, conf.errors.p_classical_error)
+            else:
+                op.calc_teleported_values(self.rho.data, conf.errors.p_classical_error)
+
     def calc_all(self, conf: Conf):
         """
         Calculate the ground state, first excited state, and their properties.

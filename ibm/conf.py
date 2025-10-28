@@ -4,8 +4,13 @@ import numpy as np
 
 class ErrorsConf:
     @staticmethod
-    def generate_classical_error(num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
+    def generate_classical_error(num_points=None, p_max=None):
+        if not num_points:
+            num_points = 21
+        if not p_max:
+            p_max = 1.0
+
+        probs = np.linspace(0.0, p_max, num_points).tolist()
 
         confs = []
         for p in probs:
@@ -15,8 +20,13 @@ class ErrorsConf:
         return confs
 
     @staticmethod
-    def generate_depolarization_error(num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
+    def generate_depolarization_error(num_points=None, p_max=None):
+        if not num_points:
+            num_points = 21
+        if not p_max:
+            p_max = 1.0
+
+        probs = np.linspace(0.0, p_max, num_points).tolist()
 
         confs = []
         for p in probs:
@@ -26,8 +36,13 @@ class ErrorsConf:
         return confs
 
     @staticmethod
-    def generate_bitflip_error(num_points=11):
-        probs = np.linspace(0.0, 0.5, num_points).tolist()
+    def generate_bitflip_error(num_points=None, p_max=None):
+        if not num_points:
+            num_points = 11
+        if not p_max:
+            p_max = 0.5
+
+        probs = np.linspace(0.0, p_max, num_points).tolist()
 
         confs = []
         for p in probs:
@@ -37,8 +52,13 @@ class ErrorsConf:
         return confs
 
     @staticmethod
-    def generate_alice_phase_flip_error(num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
+    def generate_alice_phase_flip_error(num_points=None, p_max=None):
+        if not num_points:
+            num_points = 21
+        if not p_max:
+            p_max = 1.0
+
+        probs = np.linspace(0.0, p_max, num_points).tolist()
 
         confs = []
         for p in probs:
@@ -48,8 +68,13 @@ class ErrorsConf:
         return confs
 
     @staticmethod
-    def generate_bob_phase_flip_error(num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
+    def generate_bob_phase_flip_error(num_points=None, p_max=None):
+        if not num_points:
+            num_points = 21
+        if not p_max:
+            p_max = 1.0
+
+        probs = np.linspace(0.0, p_max, num_points).tolist()
 
         confs = []
         for p in probs:
@@ -59,8 +84,13 @@ class ErrorsConf:
         return confs
 
     @staticmethod
-    def generate_excited_mixture_error(num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
+    def generate_excited_mixture_error(num_points=None, p_max=None):
+        if not num_points:
+            num_points = 21
+        if not p_max:
+            p_max = 1.0
+
+        probs = np.linspace(0.0, p_max, num_points).tolist()
 
         confs = []
         for p in probs:
@@ -70,8 +100,13 @@ class ErrorsConf:
         return confs
 
     @staticmethod
-    def generate_excited_superposition_error(num_points=21):
-        probs = np.linspace(0.0, 1.0, num_points).tolist()
+    def generate_excited_superposition_error(num_points=None, p_max=None):
+        if not num_points:
+            num_points = 21
+        if not p_max:
+            p_max = 1.0
+
+        probs = np.linspace(0.0, p_max, num_points).tolist()
 
         confs = []
         for p in probs:
