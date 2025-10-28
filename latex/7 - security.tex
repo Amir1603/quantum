@@ -6,11 +6,11 @@ The analysis in Section~\ref{sec:noise-errors} demonstrates the protocol's \text
 \subsection{Protocol-Specific Attack Models}
 \label{sec:attack_models}
 
-As established in \cite{Dolev2022}, the protocol is inherently secure against several key attack models. In a Man-in-the-Middle (MITM) attack, Eve may know the Hamiltonian, intercept the classical communication (Alice's basis choice $\sigma_A$ and bit $a$), and attempt to forge Bob's result. This attack fails because Bob's outcome (the sign of $\langle \Delta Q_B \rangle$) depends not only on the classical bit $a$ but also on the shared quantum correlations. Eve cannot deterministically reproduce the correct sign without possessing the entangled state, and any attempt to do so would require post-selection capabilities, which are not physically realizable.
+As established in \cite{QKDbyQET}, the protocol is inherently secure against several key attack models. In a Man-in-the-Middle (MITM) attack, Eve may know the Hamiltonian, intercept the classical communication (Alice's basis choice $\sigma_A$ and bit $a$), and attempt to forge Bob's result. This attack fails because Bob's outcome (the sign of $\langle \Delta Q_B \rangle$) depends not only on the classical bit $a$ but also on the shared quantum correlations. Eve cannot deterministically reproduce the correct sign without possessing the entangled state, and any attempt to do so would require post-selection capabilities, which are not physically realizable.
 
 In an intercept-resend attack, where Eve establishes separate entangled states with Alice and Bob, the protocol also fails. Bob's measurement outcome will be uncorrelated with Alice's bit, resulting in a random key string that will be detected during parameter estimation.
 
-Furthermore, as noted in Section~\ref{sec:numerical_sim}, the use of a random measurement basis by Alice (e.g., randomly choosing between $\sigma_A = X_0$ and $\sigma_A = Y_0$ for the $H^{(2)}$ model) protects against an adversary performing weak measurements to learn about state imperfections \cite{Dolev2022}.
+Furthermore, as noted in Section~\ref{sec:numerical_sim}, the use of a random measurement basis by Alice (e.g., randomly choosing between $\sigma_A = X_0$ and $\sigma_A = Y_0$ for the $H^{(2)}$ model) protects against an adversary performing weak measurements to learn about state imperfections \cite{QKDbyQET}.
 
 \subsection{Quantitative Security and Secret Key Rate}
 \label{sec:key_rate_formula}
