@@ -32,7 +32,7 @@ To calculate $K_{\text{asym}}$, Alice and Bob must publicly sacrifice a random s
     \item \textbf{$e_{\text{ph}}$ (Phase Error):} The Phase Error Rate is the (unmeasured) error rate in the complementary "test" basis (e.g., Alice $\sigma_A=Y_0$).
 \end{itemize}
 
-The phase error rate $e_{\rm ph}$ is not measured directly. Instead, it is estimated by using the rounds where Alice and Bob randomly choose \textbf{different} bases. For example, in the $H^{(2)}$ model, Alice's random choice between $\sigma_A=X_0$ and $\sigma_A=Y_0$ is the mechanism for this. The rounds where they use the "mismatched" bases are sacrificed to test the quantum correlations (e.g., visibility). These correlations provide a verifiable upper bound on $e_{\rm ph}$ through entropic uncertainty relations \cite{Tomamichel2011}.
+The phase error rate $e_{\rm ph}$ is not measured directly. Instead, it is estimated by using the rounds where Alice and Bob randomly choose \textbf{different} bases. For example, in the $H^{(2)}$ model, Alice's random choice between $\sigma_A=X_0$ and $\sigma_A=Y_0$ is the mechanism for this. The rounds where they use the "mismatched" bases are sacrificed to test the quantum correlations (e.g., visibility). These correlations provide a verifiable upper bound on $e_{\rm ph}$ through entropic uncertainty relations \cite{Tomamichel2011, Koashi2009}.
 
 % This figure is part of the next subsection, it is here for formatting reasons.
 \begin{figure}[htbp]
@@ -79,6 +79,6 @@ This result demonstrates that while the protocol is a valid proof-of-concept, it
 \subsection{Finite-Key Effects and Future Work}
 \label{sec:finite_key}
 
-The preceding analysis is in the asymptotic limit of infinite signals. For any practical implementation with a finite number of signals, $M$, the asymptotic rate $K_{\text{asym}}$ is an overestimation. A composable security proof must be used, which accounts for the statistical fluctuations in the estimation of $e_{\rm bit}$ and $e_{\rm ph}$ from a finite data set. The composable, finite-key security rate $\ell$ is given by more complex bounds \cite{Tomamichel2012, Lim2014}, which introduce correction terms that depend on $1/\sqrt{M}$ and the desired security parameter $\varepsilon_{\text{sec}}$.
+The preceding analysis is in the asymptotic limit of infinite signals. For any practical implementation, one must account for the effects of realistic devices and finite statistics \cite{Xu2020, Renner2005}. For any practical implementation with a finite number of signals, $M$, the asymptotic rate $K_{\text{asym}}$ is an overestimation. A composable security proof must be used, which accounts for the statistical fluctuations in the estimation of $e_{\rm bit}$ and $e_{\rm ph}$ from a finite data set. The composable, finite-key security rate $\ell$ is given by more complex bounds \cite{Tomamichel2012, Lim2014}, which introduce correction terms that depend on $1/\sqrt{M}$ and the desired security parameter $\varepsilon_{\text{sec}}$.
 
 Our analysis confirms the fundamental viability of the charge teleportation mechanism for QKD. The next steps involve a) optimizing the Hamiltonian parameters $J$ and $h$ to maximize the intrinsic key rate and secure distance $N$, and b) applying finite-key analysis to the optimized protocol to determine the practical key rates achievable with a realistic number of signals.
