@@ -162,6 +162,7 @@ cython_debug/
 #.idea/
 
 # Artifacts
+artifacts/*
 */artifacts/
 *.png
 
