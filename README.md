@@ -1,7 +1,7 @@
 # quantum
 
 #### (De)Activating VENV
-In order to __activate__ the virtual env, you should run these 3 commands:
+In order to __activate__ the virtual env, you should run these 3 commands from inside the `ibm` directory:
 1) `python -m venv .venv`
 2) `source .venv/bin/activate`
 __Tip:__ You can now make sure the virtual env is activated using `which python` or `which pip`.
