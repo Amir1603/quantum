@@ -22,7 +22,8 @@ U_B(c,\sigma_B)=e^{-i\theta(-1)^c\sigma_B}.
 
 Expanding explicitly and using commutation properties $[P_A,O_B]=0$ and $[P_A,U_B]=0$, we derive the teleported observable expectation:
 \begin{align}
-\langle\Delta O_B\rangle&=\frac{1}{2}\sum_b\Tr\left[\rho_{gs}(1-(-1)^b\sigma_A)(e^{-i\theta(-1)^{b\oplus a}\sigma_B}O_B e^{i\theta(-1)^{b\oplus a}\sigma_B}-O_B)\right]\nonumber\\
+&\langle\Delta O_B\rangle \nonumber\\
+&= \frac{1}{2}\sum_bTr\left[\rho_{gs}(1-(-1)^b\sigma_A)(e^{-i\theta(-1)^{b\oplus a}\sigma_B}O_B e^{i\theta(-1)^{b\oplus a}\sigma_B}-O_B)\right] \nonumber\\
 &=\frac{\xi}{2}(1-\cos 2\theta)-\frac{(-1)^a\eta}{2}\sin 2\theta,
 \end{align}
 where we defined:
@@ -103,4 +104,3 @@ we obtain:
 with \( O_A O_B = X_0 X_N \) or \( Y_0 Y_N \) depending on the measurement basis.
 
 This expression encapsulates the full analytical result for the teleportation of the charge observable, and underlies the mechanism by which logical bits can be extracted from sign changes in the expectation value. The classical bit $a$ determines the logical encoding convention and enforces the QKD protocol’s security.
-
