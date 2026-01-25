@@ -6,6 +6,20 @@
 
 This appendix provides an extended analysis of the QKD protocol's performance under various noise models, complementing the discussion in Section~\ref{sec:noise-errors}. We present a comprehensive set of numerical simulations for both the star-interaction Hamiltonian ($H^{(1)}$) and the nearest-neighbor Hamiltonian ($H^{(2)}$), examining the resilience of both charge and energy teleportation.
 
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|p{6cm}|p{6cm}|}
+\hline
+\textbf{Error Model} & \textbf{Star-Coupled ($H^{(1)}$) Trend} & \textbf{Nearest-Neighbor ($H^{(2)}$) Trend} \\ \hline
+Classical Comm. Error & Linear decay; Sign flip at $p \approx 0.25$. Energy signal stronger but equally fragile. & Linear decay. Charge signal is smaller but maintains sign integrity longer for large $N$. \\ \hline
+Excited State Mixture & Energy signal flips sign rapidly ($p < 0.2$). Charge signal decays but remains negative (secure). & Same trend. Energy fails almost immediately; Charge is highly robust ($p > 0.4$). \\ \hline
+Bit-Flip ($X$) & Gradual decay for both. No sharp failure threshold. & Smooth decay. Charge signal remains distinguishable up to high error rates. \\ \hline
+Phase-Flip ($Z$) on Bob & Rapid linear decay. Fails at $p \approx 0.33$. & Rapid decay for both. Dominant failure mode for Bob's side errors. \\ \hline
+\end{tabular}
+\caption{Summary of noise resilience trends. The Star-Coupled ($H^{(1)}$) results (omitted for brevity) exhibit qualitatively similar behavior to the Nearest-Neighbor ($H^{(2)}$) results shown below, though with generally higher absolute signal magnitudes due to direct connectivity.}
+\label{tab:noise_summary}
+\end{table}
+
 \subsection{Classical Communication Error}
 
 \input{Appendix/noise-errors/classical-comm}

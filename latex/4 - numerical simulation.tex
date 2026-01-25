@@ -39,25 +39,6 @@ Figure~\ref{fig:alice_x_vs_j} shows the simulated expectation values of Bob’s 
     \item In the \textbf{charge teleportation protocol}, the observable expectation values are symmetric and exhibit the expected mirror-image pattern under bit flipping, aligning with the predictions in the teleportation formalism.
 \end{itemize}
 
-\begin{figure}[ht]
-    \centering
-    \subfloat[\( N = 2 \)]{
-        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/X/N2_charge_vs_J.png}
-    }
-    \hfill
-    \subfloat[\( N = 3 \)]{
-        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/X/N3_charge_vs_J.png}
-    }
-
-    \medskip
-    
-    \subfloat[\( N = 4 \)]{
-        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/X/N4_charge_vs_J.png}
-    }
-    \caption{\( Q_B \) vs. \( J \), for the nearest-neighbors model \( H^{(2)} \), with \( h=1 \) and \( \sigma_A = X_0 \).}
-    \label{fig:nn_x_vs_j}
-\end{figure}
-
 \subsubsection{Energy vs. Charge Teleportation: Comparative Discussion}
 
 Although energy and charge teleportation protocols share the same structure of local operations and classical communication (LOCC), they differ substantially in their physical implementation and resulting behavior:
@@ -75,21 +56,36 @@ These findings corroborate the observations in~\cite{IkedaTeleportingCharge, QKD
 
 \begin{figure}[ht]
     \centering
-    \subfloat[\( N = 2 \)]{
-        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/Y/N2_charge_vs_J.png}
+    \subfloat[\( N = 2 \), \( \sigma_A = X_0 \)]{
+        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/X/N2_charge_vs_J.png}
     }
     \hfill
-    \subfloat[\( N = 3 \)]{
+    \subfloat[\( N = 2 \), \( \sigma_A = Y_0 \)]{
+        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/Y/N2_charge_vs_J.png}
+    }
+
+    \medskip
+
+    \subfloat[\( N = 3 \), \( \sigma_A = X_0 \)]{
+        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/X/N3_charge_vs_J.png}
+    }
+    \hfill
+    \subfloat[\( N = 3 \), \( \sigma_A = Y_0 \)]{
         \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/Y/N3_charge_vs_J.png}
     }
 
     \medskip
-    
-    \subfloat[\( N = 4 \)]{
+
+    \subfloat[\( N = 4 \), \( \sigma_A = X_0 \)]{
+        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/X/N4_charge_vs_J.png}
+    }
+    \hfill
+    \subfloat[\( N = 4 \), \( \sigma_A = Y_0 \)]{
         \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/Y/N4_charge_vs_J.png}
     }
-    \caption{\( Q_B \) vs. \( J \), for the nearest-neighbors model \( H^{(2)} \), with \( h=1 \) and \( \sigma_A = Y_0 \).}
-    \label{fig:nn_y_vs_j}
+
+    \caption{\( Q_B \) vs. \( J \), for the nearest-neighbors model \( H^{(2)} \), with \( h=1 \).}
+    \label{fig:nn_vs_j}
 \end{figure}
 
 \subsubsection{Importance of Coupling Ratio and Energy Scale}
@@ -102,34 +98,15 @@ Detailed simulations varying \( h \) at fixed \( J \), and the corresponding dep
 
 We now present simulation results for the teleportation protocol under the nearest-neighbor interaction Hamiltonian \( H^{(2)} \), (as defined in equation ~\ref{eq:H2}). Unlike the star-type model, this Hamiltonian restricts Alice’s influence to her immediate neighbor, resulting in significantly reduced and more localized entanglement propagation.
 
-\begin{figure}[ht]
-    \centering
-    \subfloat[\( N = 2 \)]{
-        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/both/N2_charge_vs_J.png}
-    }
-    \hfill
-    \subfloat[\( N = 3 \)]{
-        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/both/N3_charge_vs_J.png}
-    }
-
-    \medskip
-    
-    \subfloat[\( N = 4 \)]{
-        \includegraphics[width=0.45\columnwidth]{plots/numerical/NearestNeighbors/both/N4_charge_vs_J.png}
-    }
-    \caption{Comparison of \( Q_B \) vs. \( J \) under \( \sigma_A = X_0 \) and \( Y_0 \).}
-    \label{fig:nn_combined_vs_j}
-\end{figure}
-
 \subsubsection{Protocol Implementation and Basis Choices}
 
 For this interaction pattern, the case \( N = 1 \) is equivalent to the previous star model and is therefore omitted. From \( N = 2 \) and beyond, we simulate both energy and charge teleportation protocols, using two distinct measurement bases for Alice: \( \sigma_A = X \) and \( \sigma_A = Y \).
 
 \subsubsection{Extracted Observables vs. Coupling Strength \texorpdfstring{\( J \)}{J}}
 
-Figures~\ref{fig:nn_x_vs_j} and~\ref{fig:nn_y_vs_j} show the extracted expectation values at Bob’s site as a function of the coupling \( J \), for both basis choices. As expected, the magnitude of the teleported observable diminishes with increasing system size, reflecting the locality of interaction.
+Figure~\ref{fig:nn_vs_j} shows the extracted expectation values at Bob’s site as a function of the coupling \( J \), for both basis choices. As expected, the magnitude of the teleported observable diminishes with increasing system size, reflecting the locality of interaction.
 
-Interestingly, while both energy and charge teleportation degrade as \( N \) increases, the \textbf{energy protocol appears more robust to the choice of measurement basis}. This is clearly seen in Figure~\ref{fig:nn_combined_vs_j}, where the curves corresponding to different bases remain relatively close in the energy case but diverge significantly in the charge case.
+Interestingly, while both energy and charge teleportation degrade as \( N \) increases, the \textbf{energy protocol appears more robust to the choice of measurement basis}. This is clearly seen by the different amplitudes and axis scale in Figure~\ref{fig:nn_vs_j} compared to the energy case.
 
 \subsubsection{Implications for Teleportation Robustness and QKD}
 

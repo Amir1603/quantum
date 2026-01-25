@@ -144,6 +144,8 @@ It is also noteworthy that the \textbf{charge teleportation protocol is less sen
 
 These results underscore the relative robustness of charge-based teleportation in hardware-limited scenarios, as well as the practical challenges in implementing QET for energy observables in extended systems.
 
+The increased statistical variance observed in the energy protocols is a direct consequence of error propagation: since the energy operator terms do not commute, they must be measured in separate circuit executions, summing their variances (see Appendix~\ref{appendix:stats-analysis} for derivation).
+
 \subsection{Qiskit Experiment on Real Quantum Hardware}
 \label{sec:hardware_results}
 
@@ -168,30 +170,6 @@ The results, shown in Figure~\ref{fig:real_hw_results}, provide crucial insight 
 
 For the energy teleportation protocol, this offset proves to be critical. As seen in Figure~\ref{subfloat:real_hw_energy_results}, the expectation values for the \( a=0 \) branch remain positive across the entire range of \( J \). Since the protocol's security relies on encoding key bits in the sign of the measured observable, the persistent positive sign means the protocol fails to produce a distinguishable key. Without sophisticated error correction to compensate for this offset, energy teleportation is not viable in this noisy environment.
 
-In stark contrast, the charge teleportation protocol demonstrates its superior robustness. While it is also affected by the initial offset at \( J=0 \), the signal strength for the \( a=0 \) branch grows sufficiently negative as \( J \) increases. As shown in Figure~\ref{subfloat:real_hw_charge_results}, the signal overcomes the systematic positive bias, re-establishing the clear sign separation between the \( a=0 \) and \( a=1 \) branches. This confirms that for a large enough coupling \( J \), the charge protocol remains functional and can reliably encode key bits.
+The charge teleportation protocol demonstrates its enhanced robustness. While it is also affected by the initial offset at \( J=0 \), the signal strength for the \( a=0 \) branch grows sufficiently negative as \( J \) increases. As shown in Figure~\ref{subfloat:real_hw_charge_results}, the signal overcomes the systematic positive bias, re-establishing the clear sign separation between the \( a=0 \) and \( a=1 \) branches. This confirms that for a large enough coupling \( J \), the charge protocol remains functional and can reliably encode key bits.
 
 This experiment provides practical validation that observable teleportation is feasible on near-term quantum hardware using only LOCC. More importantly, it highlights that while the underlying mechanism works, the choice of observable is paramount. The pronounced resilience of charge teleportation against systematic hardware noise reinforces our central claim that it is a more practical and robust candidate for QKD applications.
-
-\subsection{Summary: Insights from Qiskit Simulations}
-
-The results presented in this section highlight both the promise and practical limitations of observable teleportation protocols when implemented in real or simulated quantum systems:
-
-\begin{itemize}
-    \item \textbf{Charge vs. Energy Teleportation:} Across all experiments, charge teleportation demonstrates higher stability, cleaner signal separation, and reduced statistical noise. This superior statistical clarity, stemming from its single-operator measurement, is a key practical advantage for QKD. It implies that a charge-based protocol would require fewer experimental shots to establish a key bit with high confidence, making it more efficient and scalable with system size \( N \) on near-term quantum devices.
-
-    \item \textbf{Hardware Scalability:} While teleportation works well for small \( N \), scaling to larger systems introduces challenges. In the nearest-neighbor model, indirect interaction between Alice and Bob weakens the effective signal and increases the number of shots required for convergence. This highlights the trade-off between physical model realism and practical observability.
-
-    \item \textbf{Measurement-Induced Noise:} For energy teleportation, the need to separately estimate components of Bob’s Hamiltonian (due to non-commuting terms) introduces statistical inconsistencies. This is exacerbated in longer chains where signal propagation is more fragile.
-
-    \item \textbf{Basis Sensitivity:} Simulations with different measurement bases for Alice (\( \sigma_A = X_0 \) vs. \( \sigma_A = Y_0 \)) show that the protocol’s output and robustness are basis-dependent. The X basis typically exhibits more resilience to noise, making it more suitable for experimental implementations.
-
-    \item \textbf{Practical Feasibility:} Most importantly, all results consistently support the theoretical predictions of the QET protocol. The Qiskit simulations reproduce the numerical results with high fidelity, and the real hardware experiment—despite lower resolution—demonstrates that the protocol is experimentally realizable even under present-day quantum hardware constraints.
-\end{itemize}
-
-Together, these insights underscore the power of observable teleportation as a physically meaningful and technically feasible protocol for quantum information processing.
-
-A key observation from the simulations is the difference in statistical stability between the charge and energy teleportation protocols. The increased fluctuations in the energy plots are not merely noise but a direct and predictable consequence of the measurement process itself. As derived in Appendix~\ref{appendix:stats-analysis}, Bob's local Hamiltonian $H_B$ consists of non-commuting terms that must be measured in separate experiments. The total statistical error on $\langle H_B \rangle$ is therefore a sum in quadrature of the uncertainties from each independent measurement, a process known as error propagation. This inherently leads to a larger final uncertainty compared to the charge observable $Q_B$, which is determined from a single experimental setup.
-
-Furthermore, the degradation of the signal for larger systems (e.g., $N=3, 4$ in the nearest-neighbor model) can be understood through the Signal-to-Noise Ratio (SNR). As the distance between Alice and Bob increases, the teleported signal $\abs{\langle O \rangle}$ weakens, while the intrinsic variance of a single-shot measurement remains roughly constant. Consequently, the SEM becomes comparable to the signal itself, requiring an exponentially larger number of shots to resolve the expectation value from the statistical noise floor.
-
-These results highlight the statistical robustness of the charge teleportation protocol. Its reliance on a single measurement basis and a strong, consistent signal across different coupling regimes makes it a more resilient and practical candidate for applications like QKD, particularly in the presence of finite-shot noise characteristic of near-term quantum devices.

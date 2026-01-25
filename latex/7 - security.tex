@@ -3,6 +3,8 @@
 
 The analysis in Section~\ref{sec:noise-errors} demonstrates the protocol's \textit{robustness}, identifying the physical error thresholds at which the teleported charge signal $\langle \Delta Q_B \rangle$ flips sign---a catastrophic failure. However, a full security proof requires a more rigorous, cryptographic framework to guarantee that a positive secret key rate $K$ exists, even in the presence of noise below this threshold. This section outlines this framework, transitioning from protocol-specific attacks to a quantitative security proof against general coherent attacks by an eavesdropper, Eve.
 
+Our analysis assumes a trusted-device setting where the underlying Hamiltonian and ground state are trusted resources.
+
 \subsection{Protocol-Specific Attack Models}
 \label{sec:attack_models}
 
