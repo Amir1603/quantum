@@ -36,20 +36,20 @@
 
 \begin{abstract}
 
-We demonstrate that charge teleportation serves as a superior observable for Quantum Energy Teleportation (QET)-based cryptographic primitives. While following the LOCC protocol structure of earlier proposals~\cite{QKDbyQET}, we show that decoding key bits via local charge rather than energy provides exact bit symmetry and enhanced robustness: by  Local Operations and Classical Communication (LOCC) on an entangled many-body ground state, Alice’s one-bit choice steers the sign of a local charge shift at Bob, which directly encodes the key bit. Relative to energy teleportation schemes, the charge signal is bit-symmetric, measured in a single basis, and markedly more robust to realistic noise and model imperfections. We instantiate the protocol on transverse-field Ising models, star-coupled and one-dimensional chain,  obtain closed-form results for two qubits, and for larger systems confirm performance via exact diagonalization, circuit-level simulations, and a proof-of-principle hardware run. We quantify resilience to classical bit flips and local quantum noise, identifying regimes where sign integrity, and hence key correctness, is preserved. These results position charge teleportation as a practical, low-rate QKD primitive compatible with near-term platforms.
+We demonstrate that charge teleportation serves as a superior observable for Quantum Energy Teleportation (QET)-based cryptographic primitives. While following the LOCC protocol structure of earlier proposals~\cite{QKDbyQET}, we show that decoding key bits via local charge rather than energy provides exact bit symmetry and enhanced robustness: by  Local Operations and Classical Communication (LOCC) on an entangled many-body ground state, Alice’s one-bit choice steers the sign of a local charge shift at Bob, which directly encodes the key bit. Relative to energy teleportation schemes, the charge signal is bit-symmetric, measured in a single basis, and markedly more robust to realistic noise and model imperfections. We instantiate the protocol on transverse-field Ising models, star-coupled and one-dimensional chain,  obtain closed-form results for two qubits, and for larger systems confirm performance via exact diagonalization, circuit-level simulations, and a proof-of-principle hardware run. We quantify resilience to classical bit flips and local quantum noise, identifying regimes where sign integrity, and hence key correctness, is preserved. These results position charge teleportation as a practical, \textbf{low-rate QKD primitive} compatible with near-term platforms.
 
 \end{abstract}
 
 \maketitle
 
-\input{1 - introduction}
-\input{2 - protocol}
-\input{3 - hamiltonians}
-\input{4 - numerical simulation}
-\input{5 - qiskit simulation}
-\input{6 - noise and errors}
-\input{7 - security}
-\input{8 - summary}
+\input{1-introduction}
+\input{2-protocol}
+\input{3-hamiltonians}
+\input{4-numerical_simulation}
+\input{5-qiskit_simulation}
+\input{6-noise_and_errors}
+\input{7-security}
+\input{8-summary}
 
 \begin{acknowledgments}
 We would like to thank Kazuki Ikeda for valuable discussions. This work is supported in part by the Israeli Science Foundation Excellence Center, the US-Israel Binational Science Foundation, and the Israel Ministry of Science.
@@ -61,10 +61,10 @@ We would like to thank Kazuki Ikeda for valuable discussions. This work is suppo
 \addcontentsline{toc}{section}{Appendix}
 \input{Appendix/protocol}
 \input{Appendix/hamiltonians}
-\input{Appendix/numerical simulation}
-\input{Appendix/qiskit simulation}
-\input{Appendix/statistical analysis}
-\input{Appendix/noise and errors}
+\input{Appendix/numerical_simulation}
+\input{Appendix/qiskit_simulation}
+\input{Appendix/statistical_analysis}
+\input{Appendix/noise_and_errors}
 
 \clearpage
 

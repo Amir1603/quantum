@@ -27,9 +27,9 @@ A primary metric for protocol failure is the sign reversal of the teleported exp
 
 An error in the classical channel, where the bit Alice sends is flipped with probability $p$, causes Bob to apply the incorrect unitary operation. This effectively creates a statistical mixture of the intended ($a=0$) and flipped ($a=1$) outcomes. As analyzed in \cite{QKDbyQET}, this leads to a linear degradation of the expected signal: $\langle\Delta O_B\rangle_p = (1-p)\langle\Delta O_B\rangle_{a=0} + p\langle\Delta O_B\rangle_{a=1}$. Since $\langle\Delta O_B\rangle_{a=0}$ is negative and $\langle\Delta O_B\rangle_{a=1}$ is positive, the signal is attenuated and moves towards zero.
 
-The numerical results in Figure~\ref{fig:cls-Ns-main} show this linear decay for all simulated configurations. For the star-interaction model $H^{(1)}$, a clear sign-flip threshold appears around $p \approx 0.25$, consistent with the findings in \cite{QKDbyQET}. While the absolute magnitude of the energy signal is larger than that of the charge signal in this model, both are similarly vulnerable to this error (see Appendix Fig.~\ref{fig:classical_err_alice_ham} and Fig.~\ref{fig:classical_err_nn_ham_x} for a direct comparison). However, for the more realistic nearest-neighbor model ($H^{(2)}$), the energy signal diminishes rapidly with system size $N$, whereas the charge signal remains more stable (a trend clearly visible in the energy data in Appendix Fig.~\ref{fig:energy_vs_classical_err_for_n}). This highlights that for larger distances, the charge protocol's signal is more resilient, even though the fundamental error threshold remains similar.
+The numerical results in Figure~\ref{fig:cls-Ns-main} show this linear decay for all simulated configurations. For the star-interaction model $H^{(1)}$, a clear sign-flip threshold appears around $p \approx 0.25$, consistent with the findings in \cite{QKDbyQET}. While the absolute magnitude of the energy signal is larger than that of the charge signal in this model, both are similarly vulnerable to this error. However, for the more realistic nearest-neighbor model ($H^{(2)}$), the energy signal diminishes rapidly with system size $N$, whereas the charge signal remains more stable (a trend clearly visible in the energy data in Appendix Fig.~\ref{fig:energy_vs_classical_err_for_n}). This highlights that for larger distances, the charge protocol's signal is more resilient, even though the fundamental error threshold remains similar.
 
-From Figure~\ref{fig:classical-main} one can see that error flipping the classical bit communicated from Alice to Bob changes the extracted value sign at Bob's site at high probabilities. This is the expected result since by the protocol's design and from simulations of the protocol in previous sections we showed that flipping this bit inverts the sign measured by Bob. Comparing to energy from the equivalence simulation in~\cite{QKDbyQET} (see also Figures~\ref{fig:classical_err_alice_ham},~\ref{fig:classical_err_nn_ham_x} and~\ref{fig:classical_err_nn_ham_y} in Appendix), the charge is somewhat more robust to such error where the sign flips around \(p_{err} \approx  0.32\) instead of \(p_{err} \approx  0.25\) for energy, a threshold introduce in~\cite{QKDbyQET} and is confirmed in our own energy teleportation simulations (Appendix Fig.~\ref{fig:classical_err_alice_ham}, Fig.~\ref{fig:classical_err_nn_ham_x} and Fig.~\ref{fig:classical_err_nn_ham_y}).
+From Figure~\ref{fig:classical-main} one can see that error flipping the classical bit communicated from Alice to Bob changes the extracted value sign at Bob's site at high probabilities. This is the expected result since by the protocol's design and from simulations of the protocol in previous sections we showed that flipping this bit inverts the sign measured by Bob. Comparing to energy from the equivalence simulation in~\cite{QKDbyQET} (see also Figures~\ref{fig:classical_err_nn_ham_x} and~\ref{fig:classical_err_nn_ham_y} in Appendix), the charge is somewhat more robust to such error where the sign flips around \(p_{err} \approx  0.32\) instead of \(p_{err} \approx  0.25\) for energy, a threshold introduce in~\cite{QKDbyQET} and is confirmed in our own energy teleportation simulations (Appendix Fig.~\ref{fig:classical_err_nn_ham_x} and Fig.~\ref{fig:classical_err_nn_ham_y}).
 
 \begin{figure}[ht]
   \centering
@@ -81,14 +81,6 @@ While both signals degrade as the mixture probability $p$ increases, the energy 
 
 The Qiskit simulations (top panels of Fig.~\ref{fig:mixture-main}) corroborate these findings while also illustrating the practical measurement challenges. The energy plots exhibit significant statistical variance, a direct result of the weak signal and the error propagation from measuring non-commuting terms (Appendix~\ref{appendix:stats-analysis}). The charge plots are markedly smoother, underscoring not only its theoretical robustness but also its superior statistical stability in a measurement context. This trend holds across all tested Hamiltonians and system sizes, as detailed in Appendix~\ref{appendix:noise-errors}.
 
-\subsection{Superposition with an Excited State}
-\label{subsec:superposition}
-
-A coherent error creating a superposition $|\psi\rangle = \sqrt{1-p}|\psi_{gs}\rangle + e^{i\alpha}\sqrt{p}|\psi_{excited}\rangle$ introduces interference terms into the expectation values of $\xi$ and $\eta$. This leads to a non-linear dependence on the error probability $p$, as shown in Figure~\ref{fig:superposition-main}. Similar to the classical mixture, the energy protocol is more susceptible to sign-flips than the charge protocol, as shown in the energy data in Appendix Fig.~\ref{fig:nn_X_num_superposition_error_appendix} and Fig.~\ref{fig:nn_Y_num_superposition_error_appendix}. The phase sensitivity inherent in the superposition can destructively interfere with the commutator term $\eta$, which is the engine of teleportation, and this effect appears more pronounced for the energy observable. The Qiskit simulations again highlight the increased statistical variance, making it difficult to distinguish the true non-linear signal from finite-shot noise.
-
-\subsection{Bit-Flip and Phase-Flip Errors}
-\label{subsec:quantum-channel-errors}
-
 \begin{figure}[ht!]
     \centering
     \subfloat[Numerical, \(H^{(2)}\), \(N{=}2\), \(\sigma_A=X_0\)]{
@@ -128,18 +120,19 @@ A coherent error creating a superposition $|\psi\rangle = \sqrt{1-p}|\psi_{gs}\r
   \label{fig:phaseflip-main}
 \end{figure*}
 
+\subsection{Superposition with an Excited State}
+\label{subsec:superposition}
+
+A coherent error creating a superposition $|\psi\rangle = \sqrt{1-p}|\psi_{gs}\rangle + e^{i\alpha}\sqrt{p}|\psi_{excited}\rangle$ introduces interference terms into the expectation values of $\xi$ and $\eta$. This leads to a non-linear dependence on the error probability $p$, as shown in Figure~\ref{fig:superposition-main}. Similar to the classical mixture, the energy protocol is more susceptible to sign-flips than the charge protocol, as shown in the energy data in Appendix Fig.~\ref{fig:nn_X_num_superposition_error_appendix} and Fig.~\ref{fig:nn_Y_num_superposition_error_appendix}. The phase sensitivity inherent in the superposition can destructively interfere with the commutator term $\eta$, which is the engine of teleportation, and this effect appears more pronounced for the energy observable. The Qiskit simulations again highlight the increased statistical variance, making it difficult to distinguish the true non-linear signal from finite-shot noise.
+
+\subsection{Bit-Flip and Phase-Flip Errors}
+\label{subsec:quantum-channel-errors}
+
 We now consider local quantum channel noise acting on individual qubits.
 
-\paragraph{Bit-Flip Error ($X_n$).} This error, modeled by $\rho \rightarrow (1-p)\rho + pX_n\rho X_n$, degrades the specific quantum correlations leveraged by the protocol. As shown in Figure~\ref{fig:bitflip-main}, both energy and charge signals decay smoothly with the error probability $p$. Sign-crossings are rare, indicating that the protocol is relatively robust against this error type. Energy generally maintains a larger absolute signal, which in principle makes it easier to measure, provided the noise level is low enough to prevent ambiguity (cf. the energy data in Appendix Figs.~\ref{fig:alice_num_bitflip_error_appendix},~\ref{fig:nn_X_num_bitflip_error_appendix}, and~\ref{fig:nn_Y_num_bitflip_error_appendix}).
+\paragraph{Bit-Flip Error ($X_n$).} This error, modeled by $\rho \rightarrow (1-p)\rho + pX_n\rho X_n$, degrades the specific quantum correlations leveraged by the protocol. As shown in Figure~\ref{fig:bitflip-main}, both energy and charge signals decay smoothly with the error probability $p$. Sign-crossings are rare, indicating that the protocol is relatively robust against this error type. Energy generally maintains a larger absolute signal, which in principle makes it easier to measure, provided the noise level is low enough to prevent ambiguity (cf. the energy data in Appendix Figs.~\ref{fig:nn_X_num_bitflip_error_appendix} and~\ref{fig:nn_Y_num_bitflip_error_appendix}).
 
 \paragraph{Phase-Flip Error ($Z_n$).} The impact of a phase-flip error depends critically on its location.
-
-\begin{itemize}
-    \item \textbf{On Alice ($Z_0$):} A phase flip on Alice's qubit prior to her measurement effectively decoheres her measurement basis (since $\{Z_0, X_0\}=0$ and $\{Z_0, Y_0\}=0$). This directly suppresses the commutator term $\eta=i\langle[O_B, \sigma_B]\sigma_A\rangle$, thereby attenuating the teleported signal, a behavior observed for both charge (Fig.~\ref{fig:phaseflip-main}) and energy (Appendix Figs.~\ref{fig:nn_X_num_alice_phaseflip_error_appendix} and~\ref{fig:nn_Y_num_alice_phaseflip_error_appendix}).
-    \item \textbf{On Bob ($Z_N$):} A phase flip on Bob's qubit is more detrimental. Since Bob's unitary operation is typically a rotation around the Y or X axis, the transformation $Z_N R_Y(\theta) Z_N^\dagger = R_Y(-\theta)$ shows that a phase flip inverts the sign of his rotation. This is equivalent to receiving a flipped classical bit from Alice and causes a rapid linear decay that accelerates the protocol's failure, an effect that is equally detrimental to the charge (Fig.~\ref{fig:phaseflip-main}) and energy (Appendix Figs.~\ref{fig:alice_num_bob_phaseflip_error_appendix},~\ref{fig:nn_X_num_bob_phaseflip_error_appendix} and~\ref{fig:nn_Y_num_bob_phaseflip_error_appendix}).
-\end{itemize}
-
-In both cases, energy and charge show similar qualitative degradation, although the protocol is clearly more sensitive to noise on Bob's side.
 
 % This belongs to the next subsection, it is here for formatting reasons
 \begin{table*}[t]
@@ -165,6 +158,13 @@ Phase-Flip on Bob (Z) & Both decay rapidly & Moderate for E; Low for Q & Inverts
 \bottomrule
 \end{tabularx}
 \end{table*}
+
+\begin{itemize}
+    \item \textbf{On Alice ($Z_0$):} A phase flip on Alice's qubit prior to her measurement effectively decoheres her measurement basis (since $\{Z_0, X_0\}=0$ and $\{Z_0, Y_0\}=0$). This directly suppresses the commutator term $\eta=i\langle[O_B, \sigma_B]\sigma_A\rangle$, thereby attenuating the teleported signal, a behavior observed for both charge (Fig.~\ref{fig:phaseflip-main}) and energy (Appendix Figs.~\ref{fig:nn_X_num_alice_phaseflip_error_appendix} and~\ref{fig:nn_Y_num_alice_phaseflip_error_appendix}).
+    \item \textbf{On Bob ($Z_N$):} A phase flip on Bob's qubit is more detrimental. Since Bob's unitary operation is typically a rotation around the Y or X axis, the transformation $Z_N R_Y(\theta) Z_N^\dagger = R_Y(-\theta)$ shows that a phase flip inverts the sign of his rotation. This is equivalent to receiving a flipped classical bit from Alice and causes a rapid linear decay that accelerates the protocol's failure, an effect that is equally detrimental to the charge (Fig.~\ref{fig:phaseflip-main}) and energy (Appendix Figs.~\ref{fig:nn_X_num_bob_phaseflip_error_appendix} and~\ref{fig:nn_Y_num_bob_phaseflip_error_appendix}).
+\end{itemize}
+
+In both cases, energy and charge show similar qualitative degradation, although the protocol is clearly more sensitive to noise on Bob's side.
 
 \subsection{Energy vs. Charge: A Consolidated View}
 \label{subsec:consolidated}
